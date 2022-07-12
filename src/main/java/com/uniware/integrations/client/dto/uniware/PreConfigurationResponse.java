@@ -1,4 +1,4 @@
-package com.uniware.integrations.client.dto;
+package com.uniware.integrations.client.dto.uniware;
 
 import java.util.Map;
 

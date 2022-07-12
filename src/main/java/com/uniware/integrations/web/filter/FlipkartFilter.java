@@ -59,6 +59,25 @@ public class FlipkartFilter extends OncePerRequestFilter {
             FlipkartRequestContext.current().setApiVersion(apiVersion);
             ThreadContextUtils.setThreadMetadata("HTTP");
 
+            String authToken = request.getHeader("AuthToken");
+            String location = request.getHeader("Location");
+            String userName = request.getHeader("UserName");
+            String password = request.getHeader("Password");
+
+            FlipkartRequestContext.current().setAuthToken(authToken);
+            FlipkartRequestContext.current().setLocationId(location);
+            FlipkartRequestContext.current().setUserName(userName);
+            FlipkartRequestContext.current().setPassword(password);
+//
+//            FlipkartRequestContext.current().getApiHeaders().put("Content-Type", "application/json");
+//            FlipkartRequestContext.current().getApiHeaders().put("Authorization", "Bearer" + authToken);
+
+            if (!FlipkartRequestContext.current().validate()) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                LOGGER.error("Mandatory Flipkart header missing");
+                return;
+            }
+
             LOGGER.info("Starting processing request :- {}", requestData);
 
             String hostname = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec("hostname").getInputStream())).readLine();

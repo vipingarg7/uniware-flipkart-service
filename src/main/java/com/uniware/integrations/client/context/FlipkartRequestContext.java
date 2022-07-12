@@ -1,5 +1,6 @@
 package com.uniware.integrations.client.context;
 
+import com.unifier.core.utils.StringUtils;
 import com.uniware.integrations.client.constants.ChannelSource;
 import com.uniware.integrations.client.utils.Constants;
 import java.util.HashMap;
@@ -17,15 +18,38 @@ public class FlipkartRequestContext {
     private String              apiVersion;
     private String              requestURI;
     private String              requestIdentifier;
-    private ChannelSource channelSource;
+    private ChannelSource       channelSource;
+    private Map<String,String>  apiHeaders = new HashMap<>();
+    private Map<String, String> sellerPanelHeaders = new HashMap<>();
+    private String              userName;
+    private String              password;
+    private String              sellerId;
+    private String              locationId;
+    private String              authToken;
+    private String              authTokenExpiresIn;
+    private String              refreshToken;
     private Map<String, Object> contextVariables = new HashMap();
 
-    public FlipkartRequestContext() {}
+    public FlipkartRequestContext() {
+        sellerPanelHeaders.put("Accept", "application/json, text/javascript, */*; q=0.01");
+        sellerPanelHeaders.put("Accept-Encoding", "gzip");
+        sellerPanelHeaders.put("X-Requested-With", "XMLHttpRequest");
+        sellerPanelHeaders.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36");
+        sellerPanelHeaders.put("Content-Type", "application/json");
+    }
 
     public FlipkartRequestContext(FlipkartRequestContext flipkartRequestContext) {
         setApiVersion(flipkartRequestContext.getApiVersion());
         setRequestURI(flipkartRequestContext.getRequestURI());
         setRequestIdentifier(flipkartRequestContext.getRequestIdentifier());
+        setSellerPanelHeaders(flipkartRequestContext.getSellerPanelHeaders());
+        setSellerId(this.sellerId = flipkartRequestContext.getSellerId());
+        setLocationId(flipkartRequestContext.getLocationId());
+        setUserName(flipkartRequestContext.getUserName());
+        setPassword(flipkartRequestContext.getPassword());
+        setAuthToken(flipkartRequestContext.getAuthToken());
+        setAuthTokenExpiresIn(flipkartRequestContext.getAuthTokenExpiresIn());
+        setRefreshToken(flipkartRequestContext.getRefreshToken());
     }
 
     public static void setContext(FlipkartRequestContext flipkartRequestContext) {
@@ -99,4 +123,74 @@ public class FlipkartRequestContext {
     public static String generateRequestIdentifier() {
         return UUID.randomUUID().toString();
     }
+
+    public Map<String, String> getSellerPanelHeaders() {
+        return sellerPanelHeaders;
+    }
+
+    public void setSellerPanelHeaders(Map<String, String> sellerPanelHeaders) {
+        this.sellerPanelHeaders = sellerPanelHeaders;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getSellerId() {
+        return sellerId;
+    }
+
+    public void setSellerId(String sellerId) {
+        this.sellerId = sellerId;
+    }
+
+    public String getLocationId() {
+        return locationId;
+    }
+
+    public void setLocationId(String locationId) {
+        this.locationId = locationId;
+    }
+
+    public String getAuthToken() {
+        return authToken;
+    }
+
+    public void setAuthToken(String authToken) {
+        this.authToken = authToken;
+    }
+
+    public String getAuthTokenExpiresIn() {
+        return authTokenExpiresIn;
+    }
+
+    public void setAuthTokenExpiresIn(String authTokenExpiresIn) {
+        this.authTokenExpiresIn = authTokenExpiresIn;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public boolean validate() {
+        return !StringUtils.isBlank(authToken) && !StringUtils.isBlank(locationId)
+                && !StringUtils.isBlank(userName) && !StringUtils.isBlank(password);
+    }
+
 }

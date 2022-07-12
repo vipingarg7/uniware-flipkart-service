@@ -1,4 +1,4 @@
-package com.uniware.integrations.client.dto;
+package com.uniware.integrations.client.dto.api.responseDto;
 
 /**
  * Created by vipin on 26/05/22.
