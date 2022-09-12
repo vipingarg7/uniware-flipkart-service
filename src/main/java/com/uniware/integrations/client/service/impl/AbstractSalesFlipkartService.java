@@ -1,5 +1,6 @@
 package com.uniware.integrations.client.service.impl;
 
+import com.uniware.integrations.client.dto.uniware.CatalogPreProcessorRequest;
 import com.uniware.integrations.client.dto.uniware.CatalogSyncRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
@@ -24,8 +25,9 @@ public abstract class AbstractSalesFlipkartService implements SalesFlipkartServi
 
     @Override public Response connectorVerification(Map<String, String> headers, String payload){ return null; };
 
-    @Override public Response doCatalogSync(Map<String, String> headers, CatalogSyncRequest catalogSyncRequest){ return null; };
+    @Override public Response catalogSyncPreProcessor(Map<String, String> headers, CatalogPreProcessorRequest catalogPreProcessorRequest){ return null; };
 
+    @Override public Response fetchCatalog(Map<String, String> headers, CatalogSyncRequest catalogSyncRequest) { return null; };
     @Override public Response fetchPendency(Map<String, String> headers, FetchPendencyRequest fetchPendencyRequest) { return null; };
 
     @Override public Response fetchOrders(Map<String, String> headers, FetchOrderRequest orderSyncRequest) { return null; }

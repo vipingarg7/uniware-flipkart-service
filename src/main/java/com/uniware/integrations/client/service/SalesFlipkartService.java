@@ -1,5 +1,6 @@
 package com.uniware.integrations.client.service;
 
+import com.uniware.integrations.client.dto.uniware.CatalogPreProcessorRequest;
 import com.uniware.integrations.client.dto.uniware.CatalogSyncRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
@@ -22,7 +23,7 @@ public interface SalesFlipkartService extends FlipkartService {
 
     Response connectorVerification(Map<String, String> headers, String payload);
     
-    Response doCatalogSync(Map<String, String> headers, CatalogSyncRequest catalogSyncRequest);
+    Response catalogSyncPreProcessor(Map<String, String> headers, CatalogPreProcessorRequest catalogPreProcessorRequest);
     
     Response fetchPendency(Map<String, String> headers, FetchPendencyRequest fetchPendencyRequest);
 
@@ -37,5 +38,7 @@ public interface SalesFlipkartService extends FlipkartService {
     Response closeShippingManifest(Map<String, String> headers, CloseShippingManifestRequest closeShippingManifestRequest);
 
     Response updateInventory(Map<String, String> headers, UpdateInventoryRequest updateInventoryRequest);
+
+    Response fetchCatalog(Map<String, String> headers, CatalogSyncRequest catalogSyncRequest);
 }
 

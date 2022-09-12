@@ -1,6 +1,10 @@
 package com.uniware.integrations.client.service.impl;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.unifier.core.fileparser.DelimitedFileParser;
+import com.unifier.core.fileparser.ExcelSheetParser;
+import com.unifier.core.fileparser.Row;
 import com.unifier.core.utils.DateUtils;
 import com.unifier.core.utils.JsonUtils;
 import com.unifier.core.utils.NumberUtils;
@@ -15,6 +19,7 @@ import com.uniware.integrations.client.dto.DispatchShipmentStatus;
 import com.uniware.integrations.client.dto.Filter;
 import com.uniware.integrations.client.dto.Invoice;
 import com.uniware.integrations.client.dto.OrderItem;
+import com.uniware.integrations.client.dto.OrderItems;
 import com.uniware.integrations.client.dto.PackRequest;
 import com.uniware.integrations.client.dto.SerialNumber;
 import com.uniware.integrations.client.dto.Shipment;
@@ -24,10 +29,18 @@ import com.uniware.integrations.client.dto.TaxItem;
 import com.uniware.integrations.client.dto.api.requestDto.DispatchStandardShipmentV3Request;
 import com.uniware.integrations.client.dto.api.requestDto.UpdateInventoryV3Request;
 import com.uniware.integrations.client.dto.api.responseDto.DispatchStandardShipmentV3Response;
+import com.uniware.integrations.client.dto.api.responseDto.InvoiceDetailsResponseV3;
+import com.uniware.integrations.client.dto.api.responseDto.ShipmentPackV3Response;
+import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadNUploadHistoryResponse;
+import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadRequestStatusResponse;
 import com.uniware.integrations.client.dto.api.responseDto.UpdateInventoryV3Response;
+import com.uniware.integrations.client.dto.uniware.CatalogPreProcessorRequest;
 import com.uniware.integrations.client.dto.uniware.CatalogSyncRequest;
+import com.uniware.integrations.client.dto.uniware.CatalogSyncResponse;
+import com.uniware.integrations.client.dto.uniware.ChannelItemType;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestResponse;
+import com.uniware.integrations.client.dto.uniware.CreateInvoiceResponse;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
 import com.uniware.integrations.client.dto.uniware.Error;
 import com.uniware.integrations.client.dto.uniware.FetchOrderRequest;
@@ -50,13 +63,19 @@ import com.uniware.integrations.client.service.FlipkartSellerApiService;
 import com.uniware.integrations.client.service.FlipkartSellerPanelService;
 import com.uniware.integrations.core.dto.api.Response;
 import com.uniware.integrations.client.dto.uniware.PreConfigurationResponse;
+import com.uniware.integrations.uniware.invoice.response.dto.InvoiceTaxDetailsFromChannel;
 import com.uniware.integrations.utils.ResponseUtil;
+import com.uniware.integrations.web.context.TenantRequestContext;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -64,7 +83,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 
@@ -87,7 +105,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     @Autowired
     private FlipkartSellerPanelService flipkartSellerPanelService;
 
-    @Override public Response preConfiguration(Map<String, String> headers, String payload,String connectorName) {
+    @Override public Response preConfiguration(Map<String, String> headers, String payload, String connectorName) {
         PreConfigurationResponse channelPreConfigurationResponse = new PreConfigurationResponse();
         HashMap<String, String> params = new HashMap<>();
         params.put("client_id", environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_APPLICATION_ID));
@@ -129,9 +147,173 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         return ResponseUtil.success("Logged in Successfully");
     }
 
-    @Override public Response doCatalogSync(Map<String, String> headers, CatalogSyncRequest catalogSyncRequest) {
-        // Todo - BusinessLogic
+
+    public List<String> getFullfimentByListSourceCode(String sourceCode) {
+        List<String> fullfilmentByList = new ArrayList<>();
+        if ( StringUtils.equalsIngoreCaseAny(sourceCode,"FLIPKART","2GUD","FLIPKART_OMNI")){
+            fullfilmentByList.add("seller");
+        }
+        else if ( StringUtils.equalsIngoreCaseAny(sourceCode,"FLIPKART_LITE","FLIPKART_SMART")) {
+            fullfilmentByList.add("SellerSmart");
+            fullfilmentByList.add("Seller Smart");
+            fullfilmentByList.add("FA & SellerSmart");
+            fullfilmentByList.add("Flipkart and Seller Smart");
+        }
+        else if ( StringUtils.equalsIngoreCaseAny(sourceCode,"FLIPKART_FA") ) {
+            fullfilmentByList.add("FA");
+            fullfilmentByList.add("FA & SellerSmart");
+        }
+        return  fullfilmentByList;
+    }
+
+    /*
+        Description - Returns latest file of same day with following properties operationType = GENERATED, errorRowExist = false, fileFormat - CSV or XLS, uploadedOn is today date.
+        Note - Order of files in StockFileResponseList is from PRESENT TO PAST
+     */
+    public String getStockFile(StockFileDownloadNUploadHistoryResponse stockFileDownloadNUploadHistoryResponse) {
+
+        Optional<StockFileDownloadNUploadHistoryResponse.StockFileResponseList> stockFileResponseList = stockFileDownloadNUploadHistoryResponse.getStockFileResponseList().stream()
+                .filter( e -> !e.getErrorRowsExists()
+                &&  ("GENERATED").equalsIgnoreCase(e.getFileOperationType())
+                && StringUtils.equalsIngoreCaseAny(e.getFileFormat(),"CSV","XLS")
+                && DateUtils.isToday(DateUtils.getDateFromEpoch(e.getUploadedOn())))
+                .findFirst();
+        if ( stockFileResponseList.isPresent()){
+            StockFileDownloadNUploadHistoryResponse.StockFileResponseList fileDetails = stockFileResponseList.get();
+            String fileLink = fileDetails.getFileLink();
+            String fileFormat = fileDetails.getFileFormat();
+            String fileName = fileDetails.getFileName();
+            LOGGER.info("Stock file found with following details. FileName - {}, fileFormat - {}, FileLink - {}",fileName, fileFormat, fileLink);
+
+            String stockFilePath = flipkartSellerPanelService.downloadStockFile(fileName,fileLink,fileFormat);
+            if ( stockFilePath == null ){
+                LOGGER.error("Unable to download stock file.");
+            }
+            else {
+                return stockFilePath;
+            }
+        }
+        else {
+            LOGGER.info("Unable to found valid stock file. Either of following properties not match - operationType = GENERATED, errorRowExist = false, fileFormat - CSV or XLS ");
+        }
         return null;
+    }
+
+    private CatalogSyncResponse fetchCatalogInternal(Iterator<Row> rows, int pageSize) {
+
+        CatalogSyncResponse catalogSyncResponse = null;
+        while ( rows.hasNext() && pageSize-- > 0) {
+            Row row = rows.next();
+            boolean isValid = validateRow(row);
+            if (isValid) {
+                ChannelItemType channelItemType = new ChannelItemType.Builder()
+                        .setChannelCode(TenantRequestContext.current().getChannelCode())
+                        .setChannelProductId(getChannelProductIdBySourceCode(row,TenantRequestContext.current().getSourceCode()))
+                        .setSellerSkuCode(row.getColumnValue("Seller SKU Id"))
+                        .setProductName(row.getColumnValue("Product Title"))
+                        .setSellingPrice(new BigDecimal(row.getColumnValue("Your Selling Price")))
+                        .setMrp(new BigDecimal(row.getColumnValue("MRP")))
+                        .setCurrencyCode("INR")
+                        .build();
+
+                channelItemType.addAttribute(new ChannelItemType.Attribute.Builder()
+                        .setName("FSN")
+                        .setValue(row.getColumnValue("Flipkart Serial Number"))
+                        .build());
+
+                catalogSyncResponse.addChannelItemType(channelItemType);
+            }
+        }
+        if ( rows.hasNext())
+            catalogSyncResponse.setHasMore(true);
+
+        return catalogSyncResponse;
+    }
+
+    private boolean validateRow(Row row) {
+        if ( "FLIPKART_OMNI".equalsIgnoreCase(TenantRequestContext.current().getSourceCode())
+                && "SELLER".equalsIgnoreCase(row.getColumnValue("Shipping Provider"))) {
+            LOGGER.info("Skipped row {}, For FLIPKART_OMNI we don't fetch listing have SHIPPING_PROVDER : SELLER",row.toString());
+            return false;
+        }
+        return true;
+    }
+
+    private String getChannelProductIdBySourceCode(Row row, String sourceCode) {
+        if ( "FLIPKART_FA".equalsIgnoreCase(sourceCode))
+            return row.getColumnValue("Flipkart Serial Number");
+        if ( "FLIPKART_LITE".equalsIgnoreCase(sourceCode))
+            return row.getColumnValue("Seller SKU Id");
+
+        return row.getColumnValue("Listing ID");
+    }
+
+    public Response fetchCatalog(Map<String, String> headers, CatalogSyncRequest catalogSyncRequest) {
+
+        CatalogSyncResponse catalogSyncResponse = null;
+
+        String stockFilePath = catalogSyncRequest.getStockFilePath();
+        String fileFormat = stockFilePath.substring(stockFilePath.lastIndexOf('.'));
+        int skipIntialLines = catalogSyncRequest.getPageNumber() * catalogSyncRequest.getPageSize();
+        Iterator<Row> rows = null;
+        if ( ("CSV").equalsIgnoreCase(fileFormat)){
+            rows = new DelimitedFileParser("stockFilePath").parse(skipIntialLines,true);
+        }
+        else if (("XLS").equalsIgnoreCase(fileFormat)) {
+            rows = new ExcelSheetParser("stockFilePath").parse(skipIntialLines,true);
+        }
+
+        catalogSyncResponse = fetchCatalogInternal(rows, catalogSyncRequest.getPageSize());
+
+        if ( catalogSyncResponse != null )
+            ResponseUtil.success("Catalog synced successfully", catalogSyncResponse);
+
+        return null;
+    }
+
+
+
+    @Override public Response catalogSyncPreProcessor(Map<String, String> headers, CatalogPreProcessorRequest catalogPreProcessorRequest) {
+
+        boolean loginSuccess = flipkartSellerPanelService.sellerPanelLogin(FlipkartRequestContext.current().getUserName(), FlipkartRequestContext.current().getPassword(), false);
+        if (!loginSuccess) {
+            return ResponseUtil.failure("Login Session could not be established");
+        }
+
+        String stockfilePath = null;
+
+        // check if already a file is under generation process or not.
+        StockFileDownloadRequestStatusResponse stockFileDownloadRequestStatusResponse = flipkartSellerPanelService.getStockFileDownloadRequestStatus();
+        if ( "PROCESSING".equalsIgnoreCase(stockFileDownloadRequestStatusResponse.getDownloadState())){
+            LOGGER.info("File generation is in PROCESSING state. Will retry after sometime...");
+            ResponseUtil.success("File generation is in PROCESSING state. Wait for sometime...", stockFileDownloadRequestStatusResponse);
+        }
+        else if ( "COMPLETED".equalsIgnoreCase(stockFileDownloadRequestStatusResponse.getDownloadState())) {
+            LOGGER.info("Stock file generation completed.");
+        }
+        else {
+            LOGGER.error("ALERT - CASE NOT HANDLED");
+        }
+
+        // Check if the stock file exist in StockFileDownloadNUploadHistory if yes then download the it otherwise generate a new one
+        StockFileDownloadNUploadHistoryResponse stockFileDownloadNUploadHistoryResponse = flipkartSellerPanelService.getStockFileDownloadNUploadHistory();
+        stockfilePath = getStockFile(stockFileDownloadNUploadHistoryResponse);
+
+        // todo manual run check
+        if ( stockfilePath == null ) {
+            boolean isRequestStockFileSuccessful = flipkartSellerPanelService.requestStockFile();
+            if (isRequestStockFileSuccessful) {
+                StockFileDownloadRequestStatusResponse stockFileDownloadRequestStatusResponse1 = flipkartSellerPanelService.getStockFileDownloadRequestStatus();
+                ResponseUtil.success("Requested a new stock file. Wait for sometime...", stockFileDownloadRequestStatusResponse1);
+            } else {
+                return ResponseUtil.failure("Getting Error while requesting report...");
+            }
+        }
+
+        HashMap<String,String> fileDetails = new HashMap<>(1);
+        fileDetails.put("filePath",stockfilePath);
+        return ResponseUtil.success("File downloaded Successfully", fileDetails);
+
     }
 
     @Override public Response fetchPendency(Map<String, String> headers, FetchPendencyRequest fetchPendencyRequest) {
@@ -171,7 +353,6 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             shipmentTypes.add(Filter.ShipmentTypesEnum.NORMAL);
             shipmentTypes.add(Filter.ShipmentTypesEnum.SELF);
             searchNormalShipmentResponse = flipkartSellerApiService.searchPreDispatchShipmentPost(selfShipmentsAheadDaysToLookFor,shipmentTypes,false,false );
-
         } else {
             searchNormalShipmentResponse = flipkartSellerApiService.searchPreDispatchShipmentGet((String) requestMetadata.get("nextPageUrlForNormalShipments"));
         }
@@ -207,74 +388,137 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
     }
 
+    // Todo Async
     @Override public Response generateInvoice(Map<String, String> headers, GenerateInvoiceRequest generateInvoiceRequest) {
 
-        ShipmentPackV3Request shipmentPackV3Request = preparePackShipmentRequest(generateInvoiceRequest);
+        CreateInvoiceResponse createInvoiceResponse = null;
+        GenerateInvoiceRequest.ShippingPackage shippingPackage = generateInvoiceRequest.getShippingPackage();
+        ShipmentDetailsSearchResponseV3 shipmentDetails = flipkartSellerApiService.getShipmentDetails(shippingPackage.getSaleOrder().getCode());
+        if (shipmentDetails.getShipments() == null) {
+            //todo throw  error response
+        }
 
+        List<OrderItem> orderItems = shipmentDetails.getShipments().get(0).getOrderItems();
+        boolean isLabelGenerated = !orderItems.stream().filter(orderItem -> orderItem.getStatus().name().equalsIgnoreCase("approved")).findAny().isPresent();
+        boolean isShipmentReadyToShip = orderItems.stream().filter(orderItem -> orderItem.getStatus().name().equalsIgnoreCase("PACKED")).findAny().isPresent();
+        boolean packingInProgress = orderItems.stream().filter(orderItem -> orderItem.getStatus().name().equalsIgnoreCase("PACKING_IN_PROGRESS")).findAny().isPresent();
+        orderItems.stream().forEach(orderItem -> LOGGER.info("Shipment:{} order item id:{}, listingId:{}, status :{}, quantity:{} ", shippingPackage.getSaleOrder().getCode(), orderItem.getOrderItemId(),orderItem.getListingId(), orderItem.getStatus(), orderItem.getQuantity()));
 
-        return null;
-    }
+        if(packingInProgress){
+            //todo throw  error response
+        }
 
-    private ShipmentPackV3Request preparePackShipmentRequest(GenerateInvoiceRequest generateInvoiceRequest) {
-
-        ShipmentPackV3Request shipmentPackV3Request = null;
-        GenerateInvoiceRequest.ShippingPackage shippingPackage = new GenerateInvoiceRequest.ShippingPackage();
-
-
-
-
-
-
-        SubShipments subShipment = new SubShipments();
-        subShipment.subShipmentId("SS-1");
-        subShipment.setDimensions(getDimensions(shippingPackage));
-
-        Invoice invoice = new Invoice();
-        invoice.setOrderId(shippingPackage.getSaleOrder().getDisplayOrderCode());
-        invoice.setInvoiceNumber("");
-        invoice.setInvoiceDate(LocalDate.now());
-
-        HashSet<String> combinationIdentifierSet = new HashSet<>();
-        Map<String,Integer> saleOrderItemToQtyMap = new HashMap<>();
-        for (GenerateInvoiceRequest.SaleOrderItem saleOrderItem : shippingPackage.getSaleOrderItems()) {
-            if ( combinationIdentifierSet.add(saleOrderItem.getCombinationIdentifier()) ){
-                saleOrderItemToQtyMap.put(saleOrderItem.getChannelSaleOrderItemCode(),1)
-            }
-            else {
-                saleOrderItemToQtyMap.compute(saleOrderItem.getChannelSaleOrderItemCode(),(key,val) -> val+1);
+        if(!isLabelGenerated){
+            boolean isPackConfirmed = packShipment(shippingPackage);
+            if(isPackConfirmed){
+                isShipmentReadyToShip = true;
+                isLabelGenerated = true;
+            }else{
+                //todo throw  error response
             }
         }
 
-        TaxItem taxItem = new TaxItem();
-        saleOrderItemToQtyMap.entrySet().stream().
 
-
-        PackRequest packRequest = new PackRequest();
-        packRequest.shipmentId(shippingPackage.getSaleOrder().getCode());
-        packRequest.setLocationId(FlipkartRequestContext.current().getLocationId());
-        packRequest.addSerialNumbersItem();
-        packRequest.addSubShipmentsItem(subShipment);
-        packRequest.addInvoicesItem()
+//        Map<String,String> saleOrderItemCodeToChannelProductId = generateInvoiceRequest.getShippingPackage().getSaleOrderItems().stream().coll
+        InvoiceDetailsResponseV3 invoiceDetailsResponseV3 = flipkartSellerApiService.getInvoicesInfo(generateInvoiceRequest.getShippingPackage().getSaleOrder().getCode());
+        if ( invoiceDetailsResponseV3 != null ){
+            createInvoiceResponse.setInvoiceCode(invoiceDetailsResponseV3.getInvoices().get(0).getInvoiceNumber());
+            createInvoiceResponse.setDisplayCode(invoiceDetailsResponseV3.getInvoices().get(0).getInvoiceNumber());
+            createInvoiceResponse.setChannelCreatedTime(invoiceDetailsResponseV3.getInvoices().get(0).getInvoiceDate().toDate());
+            for (OrderItems orderItem: invoiceDetailsResponseV3.getInvoices().get(0).getOrderItems()) {
+//             todo   createInvoiceResponse.set
+            }
+        }
 
         return null;
     }
 
-    private Dimensions getDimensions(GenerateInvoiceRequest.ShippingPackage shippingPackage) {
+    private boolean packShipment(GenerateInvoiceRequest.ShippingPackage shippingPackage) {
+        ShipmentPackV3Request shipmentPackV3Request = preparePackShipmentRequest(shippingPackage);
+        ShipmentPackV3Response shipmentPackV3Response = flipkartSellerApiService.packShipment(shipmentPackV3Request);
+        if("SUCCESS".equalsIgnoreCase(shipmentPackV3Response.getShipments().get(0).getStatus())){
+            return confirmIfShipmentPacked(shippingPackage.getSaleOrder().getCode());
+        }
+        return false;
+    }
+
+    private boolean confirmIfShipmentPacked(String shipmentId) {
+        int retryCount = 10;
+        while (--retryCount > 0) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+//      todo      if(flipkartSellerApiService.confirmShipmentPacked(shipmentId)){
+//                return true;
+//            }
+        }
+        return false;
+    }
+
+    private Map<String, Long> getSaleOrderItemToQtyMap(List<GenerateInvoiceRequest.SaleOrderItem> saleOrderItemList) {
+        Set<String> combinationIdentifierSet = new HashSet<>();
+        Map<String, Long> saleOrderItemToQty = saleOrderItemList.stream()
+                .filter(saleOrderItem -> StringUtils.isBlank(saleOrderItem.getCombinationIdentifier()) || combinationIdentifierSet.add(saleOrderItem.getCombinationIdentifier()))
+                .collect(Collectors.groupingBy(saleOrderItem -> saleOrderItem.getChannelProductId(), Collectors.counting()));
+        return saleOrderItemToQty;
+    }
+
+    private ShipmentPackV3Request preparePackShipmentRequest(GenerateInvoiceRequest.ShippingPackage shippingPackage) {
+
+        PackRequest packRequest = new PackRequest();
+
+        Map<String,Long> saleOrderItemToQty = getSaleOrderItemToQtyMap(shippingPackage.getSaleOrderItems());
+
+        Map<String,Integer> saleOrderItemToQtyMap = new HashMap<>();
+        for (GenerateInvoiceRequest.SaleOrderItem saleOrderItem : shippingPackage.getSaleOrderItems()) {
+            // Todo serial number handling
+            List<String> serialNumbers = new ArrayList<>();
+            if ( saleOrderItem.getItemDetails() != null ) {
+                JsonObject itemDetailsJson = new Gson().fromJson(saleOrderItem.getItemDetails(), JsonObject.class);
+                String imei = itemDetailsJson.getAsJsonObject().get("imei").getAsString();
+                if ( StringUtils.isEmpty(imei)) {
+                    imei = itemDetailsJson.getAsJsonObject().get("serialNumber").getAsString();
+                }
+                if ( StringUtils.isNotEmpty(imei) )
+                    serialNumbers = Arrays.stream(imei.split(",")).collect(Collectors.toList());
+
+//                packRequest.addSerialNumbersItem(new SerialNumber().orderItemId(saleOrderItem.getChannelSaleOrderItemCode()).serialNumbers(serialNumbers));
+            }
+        }
+
+        SubShipments subShipment = new SubShipments().subShipmentId("SS-1").dimensions(getPackDimension(shippingPackage));
+        Invoice invoice = new Invoice().orderId(shippingPackage.getSaleOrder().getDisplayOrderCode()).invoiceNumber("").invoiceDate(LocalDate.now());
+
+
+        packRequest.shipmentId(shippingPackage.getSaleOrder().getCode());
+        packRequest.setLocationId(FlipkartRequestContext.current().getLocationId());
+//        packRequest.addSerialNumbersItem();
+        packRequest.addSubShipmentsItem(subShipment);
+        packRequest.addInvoicesItem(invoice);
+        saleOrderItemToQtyMap.entrySet().stream().forEach(entry -> packRequest.addTaxItemsItem(new TaxItem().orderItemId(entry.getKey()).quantity(entry.getValue()).taxRate(BigDecimal.ZERO)));
+        ShipmentPackV3Request shipmentPackV3Request = new ShipmentPackV3Request();
+        shipmentPackV3Request.addShipmentsItem(packRequest);
+        return shipmentPackV3Request;
+    }
+
+    private Dimensions getPackDimension(GenerateInvoiceRequest.ShippingPackage shippingPackage) {
         Dimensions dimensions = null;
         Map<String,String> additionalInfoMap = JsonUtils.jsonToMap(shippingPackage.getSaleOrder().getAdditionalInfo());
         if ( additionalInfoMap.get("dimensions") != null ) {
             dimensions = new Gson().fromJson(additionalInfoMap.get("dimensions"), Dimensions.class);
         }
         else if ( shippingPackage.getLength().compareTo(BigDecimal.ONE) > 1) {
-            dimensions.setLength(shippingPackage.getLength());
-            dimensions.setBreadth(shippingPackage.getBreadth());
-            dimensions.setHeight(shippingPackage.getHeight());
-            dimensions.setWeight(shippingPackage.getWeight());
+            dimensions.setLength(shippingPackage.getLength().divide(BigDecimal.TEN));
+            dimensions.setBreadth(shippingPackage.getBreadth().divide(BigDecimal.TEN));
+            dimensions.setHeight(shippingPackage.getHeight().divide(BigDecimal.TEN));
+            dimensions.setWeight(shippingPackage.getWeight().divide(BigDecimal.valueOf(1000)));
         }
         else {
             dimensions.defaultDimensions();
         }
-
+        return dimensions;
     }
 
     @Override public Response generateShipLabel(Map<String, String> headers, GenerateLabelRequest generateLabelRequest) {
