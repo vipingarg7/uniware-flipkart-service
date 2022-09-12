@@ -1,5 +1,6 @@
 package com.uniware.integrations.client.config;
 
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 
@@ -9,10 +10,11 @@ import org.springframework.context.annotation.PropertySources;
 
 @PropertySources(
         {
-                @PropertySource("classpath:/flipkart_dropship/flipkart_dropship-${spring.profiles.active}.properties"),
-                @PropertySource("classpath:/flipkart_dropship/flipkart_dropship-${spring.profiles.active}.properties"),
+                @PropertySource("classpath:/flipkart_dropship/flipkartDropship-prod.properties"),
+                @PropertySource("classpath:/flipkart_dropship/flipkartDropship-qa.properties")
         }
 )
+@Configuration
 public class ConfigurationManager {
 
 

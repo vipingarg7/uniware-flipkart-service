@@ -11,6 +11,4 @@ import org.springframework.stereotype.Service;
 @FlipkartClient(version = "v1",channelSource = { ChannelSource.FLIPKART_FA})
 public class FlipkartFaServiceImpl extends AbstractSalesFlipkartService {
 
-
-
 }
