@@ -619,7 +619,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             shipment.setLocationId(FlipkartRequestContext.current().getLocationId());
             shipment.setTrackingId(shippingManifestItem.getTrackingNumber());
             shipment.setTentativeDeliveryDate((DateUtils.addDaysToDate(DateUtils.getCurrentDate(),5));
-            shipment.setDeliveryPartner();
+            shipment.setDeliveryPartner("DUMMY");
             dispatchSelfShipmentRequestV3.addShipmentsItem(shipment);
         }
         return dispatchSelfShipmentRequestV3;
