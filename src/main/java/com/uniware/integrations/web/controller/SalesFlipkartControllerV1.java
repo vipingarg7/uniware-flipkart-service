@@ -4,6 +4,7 @@ import com.uniware.integrations.client.dto.uniware.CatalogPreProcessorRequest;
 import com.uniware.integrations.client.dto.uniware.CatalogSyncRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
+import com.uniware.integrations.client.dto.uniware.FetchCurrentChannelManifestRequest;
 import com.uniware.integrations.client.dto.uniware.FetchOrderRequest;
 import com.uniware.integrations.client.dto.uniware.FetchPendencyRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;
@@ -89,6 +90,11 @@ public class SalesFlipkartControllerV1 extends BaseController {
     @PutMapping(value = "/inventory", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> updateInventory(@RequestHeader Map<String,String> headers, @RequestBody UpdateInventoryRequest updateInventoryRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).updateInventory(headers, updateInventoryRequest));
+    }
+
+    @PostMapping(value = "/manifest/currentChannelManifest", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Response> fetchCurrentChannelManifest(@RequestHeader Map<String,String> headers, @RequestBody FetchCurrentChannelManifestRequest fetchCurrentChannelManifestRequest) {
+        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).fetchCurrentChannelManifest(headers, fetchCurrentChannelManifestRequest));
     }
 
 }

@@ -39,6 +39,14 @@ public class DispatchRequest {
     @JsonProperty("dispatchDate")
     private DateTime dispatchDate = null;
 
+    public DispatchRequest incrementOrderItemQuantityByOne(String orderItemId) {
+        for (ConfirmItemRow item : this.getOrderItems()) {
+            if (item.getOrderItemId().equalsIgnoreCase(orderItemId))
+                item.quantity(item.getQuantity() + 1);
+        }
+        return this;
+    }
+
     public DispatchRequest facilityId(String facilityId) {
         this.facilityId = facilityId;
         return this;

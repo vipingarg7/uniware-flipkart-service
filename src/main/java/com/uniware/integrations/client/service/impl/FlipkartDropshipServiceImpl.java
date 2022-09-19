@@ -6,6 +6,7 @@ import com.unifier.core.fileparser.DelimitedFileParser;
 import com.unifier.core.fileparser.ExcelSheetParser;
 import com.unifier.core.fileparser.Row;
 import com.unifier.core.utils.DateUtils;
+import com.unifier.core.utils.EncryptionUtils;
 import com.unifier.core.utils.JsonUtils;
 import com.unifier.core.utils.NumberUtils;
 import com.unifier.core.utils.StringUtils;
@@ -14,7 +15,9 @@ import com.uniware.integrations.client.constants.ChannelSource;
 import com.uniware.integrations.client.constants.EnvironmentPropertiesConstant;
 import com.uniware.integrations.client.context.FlipkartRequestContext;
 import com.uniware.integrations.client.dto.Address;
+import com.uniware.integrations.client.dto.ConfirmItemRow;
 import com.uniware.integrations.client.dto.Dimensions;
+import com.uniware.integrations.client.dto.DispatchRequest;
 import com.uniware.integrations.client.dto.DispatchShipmentStatus;
 import com.uniware.integrations.client.dto.Filter;
 import com.uniware.integrations.client.dto.Invoice;
@@ -26,9 +29,11 @@ import com.uniware.integrations.client.dto.Shipment;
 import com.uniware.integrations.client.dto.ShipmentDetails;
 import com.uniware.integrations.client.dto.SubShipments;
 import com.uniware.integrations.client.dto.TaxItem;
+import com.uniware.integrations.client.dto.api.requestDto.DispatchSelfShipmentRequestV3;
 import com.uniware.integrations.client.dto.api.requestDto.DispatchStandardShipmentV3Request;
+import com.uniware.integrations.client.dto.api.requestDto.GetManifestRequest;
 import com.uniware.integrations.client.dto.api.requestDto.UpdateInventoryV3Request;
-import com.uniware.integrations.client.dto.api.responseDto.DispatchStandardShipmentV3Response;
+import com.uniware.integrations.client.dto.api.responseDto.DispatchShipmentV3Response;
 import com.uniware.integrations.client.dto.api.responseDto.InvoiceDetailsResponseV3;
 import com.uniware.integrations.client.dto.api.responseDto.ShipmentPackV3Response;
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadNUploadHistoryResponse;
@@ -43,6 +48,7 @@ import com.uniware.integrations.client.dto.uniware.CloseShippingManifestResponse
 import com.uniware.integrations.client.dto.uniware.CreateInvoiceResponse;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
 import com.uniware.integrations.client.dto.uniware.Error;
+import com.uniware.integrations.client.dto.uniware.FetchCurrentChannelManifestRequest;
 import com.uniware.integrations.client.dto.uniware.FetchOrderRequest;
 import com.uniware.integrations.client.dto.api.requestDto.ShipmentPackV3Request;
 import com.uniware.integrations.client.dto.api.responseDto.AuthTokenResponse;
@@ -63,7 +69,6 @@ import com.uniware.integrations.client.service.FlipkartSellerApiService;
 import com.uniware.integrations.client.service.FlipkartSellerPanelService;
 import com.uniware.integrations.core.dto.api.Response;
 import com.uniware.integrations.client.dto.uniware.PreConfigurationResponse;
-import com.uniware.integrations.uniware.invoice.response.dto.InvoiceTaxDetailsFromChannel;
 import com.uniware.integrations.utils.ResponseUtil;
 import com.uniware.integrations.web.context.TenantRequestContext;
 import java.math.BigDecimal;
@@ -76,6 +81,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -231,6 +237,17 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     }
 
     private boolean validateRow(Row row) {
+
+        if ( StringUtils.isNotBlank(row.getColumnValue("Inactive Reason"))){
+            LOGGER.info("Skipped row {}, due to {}",row.toString(),row.getColumnValue("Inactive Reason"));
+            return false;
+        }   else if ( row.getColumnValue("Listing Archival") == null || ("ARCHIVED").equalsIgnoreCase(row.getColumnValue("Listing Archival"))) {
+            LOGGER.info("Skipped row {}, as either its  Listing Archival is null or has value ARCHIVED",row.toString());
+            return false;
+        }   else if ( ) {
+
+        }
+
         if ( "FLIPKART_OMNI".equalsIgnoreCase(TenantRequestContext.current().getSourceCode())
                 && "SELLER".equalsIgnoreCase(row.getColumnValue("Shipping Provider"))) {
             LOGGER.info("Skipped row {}, For FLIPKART_OMNI we don't fetch listing have SHIPPING_PROVDER : SELLER",row.toString());
@@ -534,34 +551,78 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     @Override public Response closeShippingManifest(Map<String, String> headers, CloseShippingManifestRequest closeShippingManifestRequest) {
 
         CloseShippingManifestResponse closeShippingManifestResponse = null;
-        Map<String,String> shippingPackageCodeToSaleOrderCode = new HashMap<>();
-        DispatchStandardShipmentV3Request dispatchStandardShipmentRequestV3 = closeShippingManifestInternal(closeShippingManifestRequest, shippingPackageCodeToSaleOrderCode);
-        DispatchStandardShipmentV3Response dispatchStandardShipmentV3Response = flipkartSellerApiService.markStandardFulfilmentShipmentsRTD(dispatchStandardShipmentRequestV3);
+        Map<String,String> saleOrderCodeToShippingPackageCode = new HashMap<>();
 
-        if ( dispatchStandardShipmentV3Response != null ) {
-            for (DispatchShipmentStatus shipments : dispatchStandardShipmentV3Response.getShipments()) {
-                CloseShippingManifestResponse.ShipmentStatus shipmentStatus = new CloseShippingManifestResponse.ShipmentStatus();
-                if ( "SUCCESS".equalsIgnoreCase(shipments.getStatus()) ){
-                    shipmentStatus.setShipmentCode(shipments.getShipmentId());
-                    shipmentStatus.setStatus("SUCCESS");
-                } else if ( "FAILURE".equalsIgnoreCase(shipments.getStatus()) ) {
-                    shipmentStatus.setShipmentCode(shipments.getShipmentId());
-                    shipmentStatus.setStatus("FAILURE");
-                    shipmentStatus.setErrorCode(shipments.getErrorCode());
-                    shipmentStatus.setErrorMessage(shipments.getErrorMessage());
-                    shipmentStatus.setSaleOrderCode(shippingPackageCodeToSaleOrderCode.get(shipments.getShipmentId()));
+        DispatchShipmentV3Response dispatchShipmentV3Response = null;
+
+        if ("CHANNEL".equalsIgnoreCase(closeShippingManifestRequest.getShippingManager())){
+            DispatchStandardShipmentV3Request dispatchStandardShipmentRequestV3 = prepareDispatchStandardShipmentRequest(closeShippingManifestRequest, saleOrderCodeToShippingPackageCode);
+            dispatchShipmentV3Response = flipkartSellerApiService.markStandardFulfilmentShipmentsRTD(dispatchStandardShipmentRequestV3);
+        }
+        else if ("SELF".equalsIgnoreCase(closeShippingManifestRequest.getShippingManager())) {
+            DispatchSelfShipmentRequestV3 dispatchSelfShipmentRequestV3 = prepareDispatchSelfShipmentRequest(closeShippingManifestRequest, saleOrderCodeToShippingPackageCode);
+            dispatchShipmentV3Response = flipkartSellerApiService.markSelfShipDispatch(dispatchSelfShipmentRequestV3);
+        }
+
+
+        if ( dispatchShipmentV3Response != null ) {
+            for (DispatchShipmentStatus shipments : dispatchShipmentV3Response.getShipments()) {
+                if ( "FAILURE".equalsIgnoreCase(shipments.getStatus()) ) {
+                    CloseShippingManifestResponse.FailedShipment failedShipment = new CloseShippingManifestResponse.FailedShipment();
+                    failedShipment.setShipmentCode(saleOrderCodeToShippingPackageCode.get(shipments.getShipmentId()));
+                    failedShipment.setFailureReason(shipments.getErrorMessage());
+                    failedShipment.setSaleOrderCode(shipments.getShipmentId());
                     // Todo check whether we can identify if the shipment is cancelled or not ??
                     if ( "CANCELLED".equalsIgnoreCase(shipments.getErrorMessage()))
-                        shipmentStatus.setIsCancelled(true);
-                }
-                closeShippingManifestResponse.addShipment(shipmentStatus);
-            }
+                        failedShipment.setCancelled(true);
 
+                    closeShippingManifestResponse.addFailedShipment(failedShipment);
+                }
+            }
             closeShippingManifestResponse.setShippingManifestLink("");
             return ResponseUtil.success("Manifest Closed Successfully.",closeShippingManifestResponse);
         } else {
             return ResponseUtil.failure("Unable to close Manifest");
         }
+    }
+
+    private DispatchSelfShipmentRequestV3 prepareDispatchSelfShipmentRequest(CloseShippingManifestRequest closeShippingManifestRequest, Map<String, String> shippingPackageCodeToSaleOrderCode) {
+        DispatchSelfShipmentRequestV3 dispatchSelfShipmentRequestV3 = null;
+        for (CloseShippingManifestRequest.ShippingManifestItems shippingManifestItem : closeShippingManifestRequest.getShippingManifestItems()) {
+            DispatchRequest shipment = new DispatchRequest();
+
+            HashSet<String> combinationIdentifierSet = new HashSet<>();
+            HashSet<String> channelSaleOrderItemCodeSet = new HashSet<>();
+            for (SaleOrderItem saleOrderItem : shippingManifestItem.getSaleOrderItems()) {
+                ConfirmItemRow confirmItemRow = null;
+                // Inside if block handle bundle sku
+                if ( saleOrderItem.getCombinationIdentifier() != null
+                        && combinationIdentifierSet.add(saleOrderItem.getCombinationIdentifier())
+                        && channelSaleOrderItemCodeSet.add(saleOrderItem.getChannelSaleOrderItemCode()) ) {
+                    confirmItemRow.orderItemId(saleOrderItem.getChannelSaleOrderItemCode());
+                    confirmItemRow.quantity(1);
+                }
+                else {
+                    if ( channelSaleOrderItemCodeSet.add(saleOrderItem.getChannelSaleOrderItemCode())){
+                        confirmItemRow.orderItemId(saleOrderItem.getChannelSaleOrderItemCode());
+                        confirmItemRow.quantity(1);
+                    } else {
+                        shipment.incrementOrderItemQuantityByOne(saleOrderItem.getChannelSaleOrderItemCode());
+                    }
+                }
+                shipment.addOrderItemsItem(confirmItemRow);
+            }
+
+
+            shipment.setShipmentId(shippingManifestItem.getSaleOrderCode());
+            shipment.setDispatchDate();
+            shipment.setLocationId(FlipkartRequestContext.current().getLocationId());
+            shipment.setTrackingId(shippingManifestItem.getTrackingNumber());
+            shipment.setTentativeDeliveryDate((DateUtils.addDaysToDate(DateUtils.getCurrentDate(),5));
+            shipment.setDeliveryPartner();
+            dispatchSelfShipmentRequestV3.addShipmentsItem(shipment);
+        }
+        return dispatchSelfShipmentRequestV3;
     }
 
     @Override public Response updateInventory(Map<String, String> headers, UpdateInventoryRequest updateInventoryRequest) {
@@ -607,7 +668,6 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
         return ResponseUtil.failure("Unable to update inventory");
     }
-
 
     public Response triggerInvoiceAndLabel(){
         ShipmentPackV3Request shipmentPackRequest = new ShipmentPackV3Request();
@@ -772,20 +832,48 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         return updateInventoryV3Request;
     }
 
-    // prepare flipkart mark shipment RTD request
-    public DispatchStandardShipmentV3Request closeShippingManifestInternal(CloseShippingManifestRequest closeShippingManifestRequest, Map<String, String> shippingPackageCodeToSaleOrderCode) {
+    /*
+        Description - prepare dispatch request for standard shipments from uniware manifest request body
+     */
+    public DispatchStandardShipmentV3Request prepareDispatchStandardShipmentRequest(CloseShippingManifestRequest closeShippingManifestRequest, Map<String, String> saleOrderCodeToShippingPackageCode) {
 
         DispatchStandardShipmentV3Request dispatchStandardShipmentV3Request = null;
         for (CloseShippingManifestRequest.ShippingManifestItems shippingManifestItem : closeShippingManifestRequest.getShippingManifestItems()) {
             dispatchStandardShipmentV3Request.addShipmentId(shippingManifestItem.getSaleOrderCode());
-            shippingPackageCodeToSaleOrderCode.put(shippingManifestItem.getShippingPackageCode(),shippingManifestItem.getSaleOrderCode());
+            saleOrderCodeToShippingPackageCode.put(shippingManifestItem.getSaleOrderCode(),shippingManifestItem.getShippingPackageCode());
         }
         dispatchStandardShipmentV3Request.setLocationId(FlipkartRequestContext.current().getLocationId());
 
         return dispatchStandardShipmentV3Request;
     }
 
+    public Response fetchCurrentChannelManifest(Map<String,String> headers, FetchCurrentChannelManifestRequest fetchCurrentChannelManifestRequest) {
 
+        GetManifestRequest getManifestRequest = new GetManifestRequest.Builder()
+                .setParams(new GetManifestRequest.Params.Builder()
+                        .setVendorGroupCode(getVendorGroupCode(fetchCurrentChannelManifestRequest.getShippingProviderCode()))
+                        .setIsMps(false)
+                        .setLocationId(FlipkartRequestContext.current().getLocationId())
+                        .build())
+                .build();
+
+        String manifestFilePath = com.uniware.integrations.utils.StringUtils.join('_', TenantRequestContext.current().getTenantCode(), EncryptionUtils.md5Encode(String.valueOf(System.currentTimeMillis())), UUID.randomUUID().toString(), fetchCurrentChannelManifestRequest.getShippingManifestCode()) + ".pdf";
+
+        boolean isManifestDownloaded = flipkartSellerApiService.getCurrentChannelManifest(getManifestRequest, manifestFilePath);
+
+        if (isManifestDownloaded) {
+            Map<String,String> manifestDetails = new HashMap<>();
+            manifestDetails.put("filePath", manifestFilePath);
+            ResponseUtil.success("Manifest downloaded successfully", manifestDetails);
+        }
+
+        return ResponseUtil.failure("Unable to download Manifest");
+    }
+
+    private String getVendorGroupCode(String shippingProviderCode) {
+        String vendorCode = shippingProviderCode;
+        // todo
+    }
 
     public  static void main(String[] args) {
         System.out.println(LocalDate.now());

@@ -5,12 +5,12 @@ import com.uniware.integrations.client.dto.DispatchShipmentStatus;
 import java.util.List;
 import java.util.Objects;
 
-public class DispatchStandardShipmentV3Response {
+public class DispatchShipmentV3Response {
 
     @JsonProperty("shipments")
     private List<DispatchShipmentStatus> shipments;
 
-    public DispatchStandardShipmentV3Response addShipmentsItem(DispatchShipmentStatus shipmentsItem) {
+    public DispatchShipmentV3Response addShipmentsItem(DispatchShipmentStatus shipmentsItem) {
         if (this.shipments == null) {
             this.shipments = new java.util.ArrayList<>();
         }
@@ -39,8 +39,8 @@ public class DispatchStandardShipmentV3Response {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        DispatchStandardShipmentV3Response DispatchStandardShipmentV3Response = (DispatchStandardShipmentV3Response) o;
-        return Objects.equals(this.shipments, DispatchStandardShipmentV3Response.shipments);
+        DispatchShipmentV3Response DispatchShipmentV3Response = (DispatchShipmentV3Response) o;
+        return Objects.equals(this.shipments, DispatchShipmentV3Response.shipments);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class DispatchStandardShipmentV3Response {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class DispatchStandardShipmentV3Response {\n");
+        sb.append("class DispatchShipmentV3Response {\n");
 
         sb.append("    shipments: ").append(toIndentedString(shipments)).append("\n");
         sb.append("}");
