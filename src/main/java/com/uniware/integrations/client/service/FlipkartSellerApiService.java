@@ -16,13 +16,14 @@ import com.uniware.integrations.client.dto.Filter;
 import com.uniware.integrations.client.dto.Pagination;
 import com.uniware.integrations.client.dto.Sort;
 import com.uniware.integrations.client.dto.api.requestDto.DispatchStandardShipmentV3Request;
+import com.uniware.integrations.client.dto.api.requestDto.GetManifestRequest;
 import com.uniware.integrations.client.dto.api.requestDto.SearchShipmentRequestV3;
 import com.uniware.integrations.client.dto.api.requestDto.ShipmentDeliveryRequestV3;
 import com.uniware.integrations.client.dto.api.requestDto.ShipmentPackV3Request;
 import com.uniware.integrations.client.dto.api.requestDto.UpdateInventoryV3Request;
 import com.uniware.integrations.client.dto.api.responseDto.AuthTokenResponse;
 import com.uniware.integrations.client.dto.api.requestDto.DispatchSelfShipmentRequestV3;
-import com.uniware.integrations.client.dto.api.responseDto.DispatchStandardShipmentV3Response;
+import com.uniware.integrations.client.dto.api.responseDto.DispatchShipmentV3Response;
 import com.uniware.integrations.client.dto.api.responseDto.InvoiceDetailsResponseV3;
 import com.uniware.integrations.client.dto.api.responseDto.SearchShipmentResponseV3;
 import com.uniware.integrations.client.dto.api.responseDto.ShipmentDetailsSearchResponseV3;
@@ -242,11 +243,11 @@ public class FlipkartSellerApiService {
         return null;
     }
 
-    public ShipmentStatusV3Response markSelfShipFulfmarkSelfShipFulfilmentShipmentsRTDilmentShipmentsRTD(DispatchSelfShipmentRequestV3 dispatchSelfShipmentRequest) {
+    public DispatchShipmentV3Response markSelfShipDispatch(DispatchSelfShipmentRequestV3 dispatchSelfShipmentRequest) {
 
         String dispatchSelfShipmentRequestJson = new Gson().toJson(dispatchSelfShipmentRequest);
 
-        ShipmentStatusV3Response shipmentStatusResponse;
+        DispatchShipmentV3Response dispatchShipmentV3Response = null;
         String channelBaseUrl = getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource());
         HttpSender httpSender = HttpSenderFactory.getHttpSenderNoProxy();
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
@@ -256,9 +257,9 @@ public class FlipkartSellerApiService {
         try {
             String response = httpSender.executePost(channelBaseUrl + "/sellers/v3/shipments/selfShip/dispatch",
                     dispatchSelfShipmentRequestJson, headersMap, httpResponseWrapper);
-            shipmentStatusResponse = new Gson().fromJson(response, ShipmentStatusV3Response.class);
-            LOGGER.info("shipmentStatusResponse : " + shipmentStatusResponse);
-            return shipmentStatusResponse;
+            dispatchShipmentV3Response = new Gson().fromJson(response, DispatchShipmentV3Response.class);
+            LOGGER.info("DispatchShipmentV3Response : " + dispatchShipmentV3Response);
+            return dispatchShipmentV3Response;
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -266,12 +267,11 @@ public class FlipkartSellerApiService {
         return null;
     }
 
-    public DispatchStandardShipmentV3Response markStandardFulfilmentShipmentsRTD(DispatchStandardShipmentV3Request dispatchStandardShipmentRequest) {
+    public DispatchShipmentV3Response markStandardFulfilmentShipmentsRTD(DispatchStandardShipmentV3Request dispatchStandardShipmentRequest) {
 
         String dispatchStandardShipmentRequestJson = new Gson().toJson(dispatchStandardShipmentRequest);
 
-
-        DispatchStandardShipmentV3Response dispatchStandardShipmentV3Response;
+        DispatchShipmentV3Response dispatchShipmentV3Response = null;
         String channelBaseUrl = getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource());
         HttpSender httpSender = HttpSenderFactory.getHttpSenderNoProxy();
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
@@ -281,9 +281,9 @@ public class FlipkartSellerApiService {
         try {
             String response = httpSender.executePost(channelBaseUrl + "/sellers/v3/shipments/dispatch",
                     dispatchStandardShipmentRequestJson, headersMap, httpResponseWrapper);
-            dispatchStandardShipmentV3Response = new Gson().fromJson(response, DispatchStandardShipmentV3Response.class);
-            LOGGER.info("dispatchStandardShipmentV3Response : " + dispatchStandardShipmentV3Response);
-            return dispatchStandardShipmentV3Response;
+            dispatchShipmentV3Response = new Gson().fromJson(response, DispatchShipmentV3Response.class);
+            LOGGER.info("dispatchShipmentV3Response : " + dispatchShipmentV3Response);
+            return dispatchShipmentV3Response;
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -363,7 +363,7 @@ public class FlipkartSellerApiService {
         return null;
     }
 
-    public String downloadLabel(String shipmentId, String filePath) {
+    public boolean downloadLabel(String shipmentId, String filePath) {
         HttpSender httpSender = HttpSenderFactory.getHttpSenderNoProxy();
         String channelBaseUrl = getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource());
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
@@ -375,14 +375,15 @@ public class FlipkartSellerApiService {
             String parsedLabel = PdfUtils.parsePdf(filePath);
             if (StringUtils.isNotBlank(parsedLabel)) {
                 LOGGER.info("Label file downloaded at {}", filePath);
-                return filePath;
+                return true;
             } else {
                 LOGGER.info("Label file not available");
+                return false;
             }
         } catch (HttpTransportException | JsonSyntaxException | IOException e) {
             LOGGER.error("Exception while print label", e);
         }
-        return null;
+        return false;
     }
 
     public String downloadInvoice(String shipmentId, String filePath) {
@@ -453,6 +454,33 @@ public class FlipkartSellerApiService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public boolean getCurrentChannelManifest(GetManifestRequest getManifestRequest, String filePath) {
+
+        String getManifestRequestJson = new Gson().toJson(getManifestRequest);
+
+        HttpSender httpSender = HttpSenderFactory.getHttpSenderNoProxy();
+        String channelBaseUrl = getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource());
+        String apiEndpoint = "/sellers/v3/shipments/manifest";
+        HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
+        Map<String, String> headersMap = new HashMap<>();
+        headersMap.put("Content-Type", "application/pdf");
+        headersMap.put("Authorization", "authToken");
+        try {
+            httpSender.downloadToFile( channelBaseUrl + apiEndpoint, getManifestRequestJson, headersMap, HttpSender.MethodType.POST, filePath, httpResponseWrapper);
+            String parsedManifest = PdfUtils.parsePdf(filePath);
+            if (StringUtils.isNotBlank(parsedManifest)) {
+                LOGGER.info("Manifest file downloaded at {}", filePath);
+                return true;
+            } else {
+                LOGGER.info("Manifest file not available");
+            }
+        } catch (HttpTransportException | JsonSyntaxException | IOException e) {
+            LOGGER.error("Exception while print manifest", e);
+        }
+
+        return false;
     }
 
 }

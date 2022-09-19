@@ -4,6 +4,7 @@ import com.uniware.integrations.client.dto.uniware.CatalogPreProcessorRequest;
 import com.uniware.integrations.client.dto.uniware.CatalogSyncRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
+import com.uniware.integrations.client.dto.uniware.FetchCurrentChannelManifestRequest;
 import com.uniware.integrations.client.dto.uniware.FetchOrderRequest;
 import com.uniware.integrations.client.dto.uniware.FetchPendencyRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;
@@ -40,5 +41,7 @@ public interface SalesFlipkartService extends FlipkartService {
     Response updateInventory(Map<String, String> headers, UpdateInventoryRequest updateInventoryRequest);
 
     Response fetchCatalog(Map<String, String> headers, CatalogSyncRequest catalogSyncRequest);
+
+    Response fetchCurrentChannelManifest(Map<String, String> headers, FetchCurrentChannelManifestRequest fetchCurrentChannelManifestRequest);
 }
 

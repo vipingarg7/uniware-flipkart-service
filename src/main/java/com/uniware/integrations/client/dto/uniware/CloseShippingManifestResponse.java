@@ -9,36 +9,63 @@ import lombok.Data;
 public class CloseShippingManifestResponse {
 
     private String shippingManifestLink;
-    private List<ShipmentStatus> shipments;
+    private List<FailedShipment> failedShipments;
 
-    public CloseShippingManifestResponse addShipment(ShipmentStatus shipment) {
-        if (this.shipments == null) {
-            this.shipments = new ArrayList<>();
+    public CloseShippingManifestResponse addFailedShipment(FailedShipment failedShipment) {
+        if ( this.failedShipments == null ) {
+            this.failedShipments = new ArrayList<>();
         }
-        this.shipments.add(shipment);
+        this.failedShipments.add(failedShipment);
         return this;
     }
 
-    @Data
-    public static class ShipmentStatus {
+    public static class FailedShipment {
+        private String shipmentCode;
+        private String saleOrderCode;
+        private String failureReason;
+        private boolean cancelled = false;
+        public FailedShipment() {
+        }
 
-        @JsonProperty("shipmentCode")
-        private String shipmentCode = null;
+        public FailedShipment(String shipmentCode, String saleOrderCode, String failureReason, boolean cancelled) {
+            this.shipmentCode = shipmentCode;
+            this.saleOrderCode = saleOrderCode;
+            this.failureReason = failureReason;
+            this.cancelled = cancelled;
+        }
 
-        @JsonProperty("saleOrderCode")
-        private String saleOrderCode = null;
+        public String getShipmentCode() {
+            return shipmentCode;
+        }
 
-        @JsonProperty("status")
-        private String status = null;
+        public void setShipmentCode(String shipmentCode) {
+            this.shipmentCode = shipmentCode;
+        }
 
-        @JsonProperty("isCancelled")
-        private Boolean isCancelled = false;
+        public String getSaleOrderCode() {
+            return saleOrderCode;
+        }
 
-        @JsonProperty("errorCode")
-        private String errorCode = null;
+        public void setSaleOrderCode(String saleOrderCode) {
+            this.saleOrderCode = saleOrderCode;
+        }
 
-        @JsonProperty("errorMessage")
-        private String errorMessage = null;
+        public String getFailureReason() {
+            return failureReason;
+        }
+
+        public void setFailureReason(String failureReason) {
+            this.failureReason = failureReason;
+        }
+
+        public boolean isCancelled() {
+            return cancelled;
+        }
+
+        public void setCancelled(boolean cancelled) {
+            this.cancelled = cancelled;
+        }
 
     }
+
 }
