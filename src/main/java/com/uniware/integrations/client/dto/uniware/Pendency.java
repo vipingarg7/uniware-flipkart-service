@@ -41,4 +41,10 @@ public class Pendency {
     public void setRequiredInventory(int requiredInventory) {
         this.requiredInventory = requiredInventory;
     }
+
+    public Pendency addRequiredInventory(int qty) {
+        this.requiredInventory = this.requiredInventory + qty;
+        return this;
+    }
+
 }

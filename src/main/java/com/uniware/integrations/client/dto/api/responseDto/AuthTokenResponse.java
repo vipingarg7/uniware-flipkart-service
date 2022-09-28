@@ -8,7 +8,7 @@ public class AuthTokenResponse {
     private String accessToken;
     private String tokenType;
     private String refreshToken;
-    private String expiresIn;
+    private Long expiresIn;
     private String scope;
 
     public String getAccessToken() {
@@ -35,11 +35,11 @@ public class AuthTokenResponse {
         this.refreshToken = refreshToken;
     }
 
-    public String getExpiresIn() {
+    public Long getExpiresIn() {
         return expiresIn;
     }
 
-    public void setExpiresIn(String expiresIn) {
+    public void setExpiresIn(Long expiresIn) {
         this.expiresIn = expiresIn;
     }
 

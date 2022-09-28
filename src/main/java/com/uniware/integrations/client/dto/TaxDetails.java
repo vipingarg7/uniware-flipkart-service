@@ -15,6 +15,12 @@ public class TaxDetails {
     @JsonProperty("sgstRate")
     private BigDecimal sgstRate = null;
 
+    @JsonProperty("utgstRate")
+    private BigDecimal utgstRate = null;
+
+    @JsonProperty("cessRate")
+    private BigDecimal cessRate = null;
+
     public TaxDetails igstRate(BigDecimal igstRate) {
         this.igstRate = igstRate;
         return this;
@@ -69,6 +75,21 @@ public class TaxDetails {
         this.sgstRate = sgstRate;
     }
 
+    public BigDecimal getUtgstRate() {
+        return utgstRate;
+    }
+
+    public void setUtgstRate(BigDecimal utgstRate) {
+        this.utgstRate = utgstRate;
+    }
+
+    public BigDecimal getCessRate() {
+        return cessRate;
+    }
+
+    public void setCessRate(BigDecimal cessRate) {
+        this.cessRate = cessRate;
+    }
 
     @Override
     public boolean equals(java.lang.Object o) {

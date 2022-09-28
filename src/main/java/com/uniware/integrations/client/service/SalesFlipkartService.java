@@ -22,7 +22,7 @@ public interface SalesFlipkartService extends FlipkartService {
 
     Response postConfiguration(Map<String, String> headers, String payload, String connectorName);
 
-    Response connectorVerification(Map<String, String> headers, String payload);
+    Response connectorVerification(Map<String, String> headers, String payload, String connectorName);
     
     Response catalogSyncPreProcessor(Map<String, String> headers, CatalogPreProcessorRequest catalogPreProcessorRequest);
     

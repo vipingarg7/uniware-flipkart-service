@@ -18,7 +18,6 @@ public class SaleOrderItem {
 
     private static final Logger LOG                   = LoggerFactory.getLogger(SaleOrderItem.class);
 
-    @NotBlank
     private String                   itemSku;
 
     private String                   itemName;
@@ -27,7 +26,6 @@ public class SaleOrderItem {
 
     private String                   channelSaleOrderItemCode;
 
-    @NotBlank
     private String                   shippingMethodCode;
 
     @NotBlank
@@ -39,7 +37,6 @@ public class SaleOrderItem {
     @Length(max = 256)
     private String                   giftMessage;
 
-    @NotNull
     @Min(value = 0)
     private BigDecimal totalPrice;
 

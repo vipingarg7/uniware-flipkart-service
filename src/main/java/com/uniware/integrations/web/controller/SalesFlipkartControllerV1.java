@@ -42,9 +42,9 @@ public class SalesFlipkartControllerV1 extends BaseController {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).postConfiguration(headers, payload, connectorName));
     }
 
-    @PostMapping(value = "/connector/validate", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Response> connectorVerification(@RequestHeader Map<String,String> headers, @RequestBody String payload) {
-        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).connectorVerification(headers, payload));
+    @PostMapping(value = "/connector/validate/{connectorName}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Response> connectorVerification(@RequestHeader Map<String,String> headers, @RequestBody String payload, @PathVariable String connectorName) {
+        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).connectorVerification(headers, payload, connectorName));
     }
 
     @PostMapping(value = "/pendency/fetch", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -64,7 +64,7 @@ public class SalesFlipkartControllerV1 extends BaseController {
 
     @PostMapping(value = "/catalog/fetch", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> fetchCatalog(@RequestHeader Map<String,String> headers, @RequestBody CatalogSyncRequest catalogSyncRequest) {
-        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).fetchCatalog(headers, catalogSyncRequest));
+        return ResponseEntity.ok    ().body(((SalesFlipkartService)getFlipkartModel()).fetchCatalog(headers, catalogSyncRequest));
     }
 
     @PostMapping(value = "/invoice/generate", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -92,7 +92,7 @@ public class SalesFlipkartControllerV1 extends BaseController {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).updateInventory(headers, updateInventoryRequest));
     }
 
-    @PostMapping(value = "/manifest/currentChannelManifest", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/currentChannelmanifest", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> fetchCurrentChannelManifest(@RequestHeader Map<String,String> headers, @RequestBody FetchCurrentChannelManifestRequest fetchCurrentChannelManifestRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).fetchCurrentChannelManifest(headers, fetchCurrentChannelManifestRequest));
     }

@@ -24,7 +24,7 @@ public abstract class AbstractSalesFlipkartService implements SalesFlipkartServi
 
     @Override public Response postConfiguration(Map<String, String> headers, String payload, String connectorName) { return null; }
 
-    @Override public Response connectorVerification(Map<String, String> headers, String payload){ return null; };
+    @Override public Response connectorVerification(Map<String, String> headers, String payload, String connectorName){ return null; };
 
     @Override public Response catalogSyncPreProcessor(Map<String, String> headers, CatalogPreProcessorRequest catalogPreProcessorRequest){ return null; };
 

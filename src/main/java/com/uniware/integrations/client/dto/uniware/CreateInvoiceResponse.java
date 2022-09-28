@@ -1,5 +1,6 @@
 package com.uniware.integrations.client.dto.uniware;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -79,10 +80,17 @@ public class CreateInvoiceResponse {
         this.shippingProviderInfo = shippingProviderInfo;
     }
 
-    private class TaxInformation {
+    public static class TaxInformation {
 
         private List<ProductTax> productTaxes = new ArrayList<>();
 
+        public TaxInformation addProductTax(ProductTax productTax) {
+            if ( this.productTaxes == null) {
+                productTaxes = new ArrayList<>();
+            }
+            this.productTaxes.add(productTax);
+            return this;
+        }
         public List<ProductTax> getProductTaxes() {
             return productTaxes;
         }
@@ -93,7 +101,7 @@ public class CreateInvoiceResponse {
         }
     }
 
-    private class ShippingProviderInfo {
+    public class ShippingProviderInfo {
 
         private String trackingNumber;
 
@@ -130,17 +138,17 @@ public class CreateInvoiceResponse {
 
         private String channelProductId;
 
-        private Double taxPercentage;
+        private BigDecimal taxPercentage;
 
-        private double centralGst;
+        private BigDecimal centralGst;
 
-        private double stateGst;
+        private BigDecimal stateGst;
 
-        private double unionTerritoryGst;
+        private BigDecimal unionTerritoryGst;
 
-        private double integratedGst;
+        private BigDecimal integratedGst;
 
-        private double compensationCess;
+        private BigDecimal compensationCess;
 
         public String getChannelProductId() {
             return channelProductId;
@@ -150,51 +158,51 @@ public class CreateInvoiceResponse {
             this.channelProductId = channelProductId;
         }
 
-        public Double getTaxPercentage() {
+        public BigDecimal getTaxPercentage() {
             return taxPercentage;
         }
 
-        public void setTaxPercentage(Double taxPercentage) {
+        public void setTaxPercentage(BigDecimal taxPercentage) {
             this.taxPercentage = taxPercentage;
         }
 
-        public double getCentralGst() {
+        public BigDecimal getCentralGst() {
             return centralGst;
         }
 
-        public void setCentralGst(double centralGst) {
+        public void setCentralGst(BigDecimal centralGst) {
             this.centralGst = centralGst;
         }
 
-        public double getStateGst() {
+        public BigDecimal getStateGst() {
             return stateGst;
         }
 
-        public void setStateGst(double stateGst) {
+        public void setStateGst(BigDecimal stateGst) {
             this.stateGst = stateGst;
         }
 
-        public double getUnionTerritoryGst() {
+        public BigDecimal getUnionTerritoryGst() {
             return unionTerritoryGst;
         }
 
-        public void setUnionTerritoryGst(double unionTerritoryGst) {
+        public void setUnionTerritoryGst(BigDecimal unionTerritoryGst) {
             this.unionTerritoryGst = unionTerritoryGst;
         }
 
-        public double getIntegratedGst() {
+        public BigDecimal getIntegratedGst() {
             return integratedGst;
         }
 
-        public void setIntegratedGst(double integratedGst) {
+        public void setIntegratedGst(BigDecimal integratedGst) {
             this.integratedGst = integratedGst;
         }
 
-        public double getCompensationCess() {
+        public BigDecimal getCompensationCess() {
             return compensationCess;
         }
 
-        public void setCompensationCess(double compensationCess) {
+        public void setCompensationCess(BigDecimal compensationCess) {
             this.compensationCess = compensationCess;
         }
 

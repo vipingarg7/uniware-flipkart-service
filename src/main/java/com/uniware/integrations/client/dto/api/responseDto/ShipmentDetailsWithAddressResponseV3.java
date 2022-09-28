@@ -4,17 +4,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.uniware.integrations.client.dto.ShipmentDetails;
 import java.util.Objects;
 
-public class ShipmentDetailsSearchResponseV3 {
+public class ShipmentDetailsWithAddressResponseV3 {
 
     @JsonProperty("shipments")
     private java.util.List<ShipmentDetails> shipments = null;
 
-    public ShipmentDetailsSearchResponseV3 shipments(java.util.List<ShipmentDetails> shipments) {
+    public ShipmentDetailsWithAddressResponseV3 shipments(java.util.List<ShipmentDetails> shipments) {
         this.shipments = shipments;
         return this;
     }
 
-    public ShipmentDetailsSearchResponseV3 addShipmentsItem(ShipmentDetails shipmentsItem) {
+    public ShipmentDetailsWithAddressResponseV3 addShipmentsItem(ShipmentDetails shipmentsItem) {
         if (this.shipments == null) {
             this.shipments = new java.util.ArrayList<>();
         }
@@ -44,7 +44,7 @@ public class ShipmentDetailsSearchResponseV3 {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        ShipmentDetailsSearchResponseV3 ShipmentDetailsSearchResponse = (ShipmentDetailsSearchResponseV3) o;
+        ShipmentDetailsWithAddressResponseV3 ShipmentDetailsSearchResponse = (ShipmentDetailsWithAddressResponseV3) o;
         return Objects.equals(this.shipments, ShipmentDetailsSearchResponse.shipments);
     }
 

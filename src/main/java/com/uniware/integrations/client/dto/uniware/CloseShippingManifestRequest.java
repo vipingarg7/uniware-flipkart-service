@@ -3,6 +3,7 @@ package com.uniware.integrations.client.dto.uniware;
 import com.uniware.integrations.utils.DateUtils;
 import java.util.Date;
 import java.util.List;
+import org.joda.time.DateTime;
 
 public class CloseShippingManifestRequest {
 
@@ -69,6 +70,7 @@ public class CloseShippingManifestRequest {
         private String trackingNumber;
         private String invoiceCode;
         private Date invoiceDate;
+        private Date dispatchDate;
         private List<SaleOrderItem> saleOrderItems;
 
         public String getSaleOrderCode() {
@@ -105,6 +107,14 @@ public class CloseShippingManifestRequest {
 
         public Date getInvoiceDate() {
             return invoiceDate;
+        }
+
+        public Date getDispatchDate() {
+            return dispatchDate;
+        }
+
+        public void setDispatchDate(Date dispatchDate) {
+            this.dispatchDate = dispatchDate;
         }
 
         public void setInvoiceDate(Date invoiceDate) {
