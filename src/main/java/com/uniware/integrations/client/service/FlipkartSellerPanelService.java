@@ -16,6 +16,7 @@ import com.uniware.integrations.client.dto.api.requestDto.FetchOnHoldOrderReques
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadNUploadHistoryResponse;
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadRequestStatusResponse;
 import com.uniware.integrations.client.dto.uniware.Pendency;
+import com.uniware.integrations.core.dto.api.Response;
 import com.uniware.integrations.utils.http.HttpSenderFactory;
 import com.uniware.integrations.web.context.TenantRequestContext;
 import java.io.UnsupportedEncodingException;
@@ -147,70 +148,18 @@ public class FlipkartSellerPanelService {
         return null;
     }
 
-//    FetchOnHoldOrderRequest.Pagination pagination = new FetchOnHoldOrderRequest.Pagination();
-//        pagination.setPageNumber(1);
-//        pagination.setPageSize(50);
-//
-//    FetchOnHoldOrderRequest.Params params = new FetchOnHoldOrderRequest.Params();
-//        params.setOnHold(true);
-//        params.setSellerId(FlipkartRequestContext.current().getSellerId());
-//
-//    FetchOnHoldOrderRequest.Payload payload = new FetchOnHoldOrderRequest.Payload();
-//        payload.setPagination(pagination);
-//        payload.setParams(params);
-//
-//    FetchOnHoldOrderRequest fetchOnHoldOrderRequest = new FetchOnHoldOrderRequest();
-//        fetchOnHoldOrderRequest.setPayload(payload);
-//        fetchOnHoldOrderRequest.setStatus("shipments_upcoming");
-
-    // Todo pagination - Remove response handling from this method
-    public Map<String, Pendency> getOnHoldOrdersFromPanel(FetchOnHoldOrderRequest fetchOnHoldOrderRequest)  {
+    public String getOnHoldOrdersFromPanel(FetchOnHoldOrderRequest fetchOnHoldOrderRequest)  {
 
         String fetchOnHoldOrderRequestJson = new Gson().toJson(fetchOnHoldOrderRequest);
-        Map<String, Pendency> fsnToPendency =new HashMap<>();
 
         HttpSender httpSender = HttpSenderFactory.getHttpSender();
         try {
             HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
             String response = httpSender.executePost(SELLER_PANEL_URL + "/napi/my-orders/fetch",fetchOnHoldOrderRequestJson,FlipkartRequestContext.current()
-                    .getSellerPanelHeaders() );
-            if (httpResponseWrapper.getResponseStatus().equals(HttpStatus.TOO_MANY_REQUESTS)) {
-                LOGGER.error("Got http error for TOO_MANY_REQUESTS, resposne:{} ", response);
-                LOGGER.info("Session should be available because assumption is that only established session can be throttled");
-                return null;
-            } else {
-                if (StringUtils.isBlank(response)) {
-                    LOGGER.error("Something went wrong");
-                    return null;
-                } else {
-                    try {
-                        JsonObject jsonObject = new Gson().fromJson(response, JsonObject.class);
-                        JsonArray orders = jsonObject.getAsJsonArray("items");
-                        while (orders.iterator().hasNext()) {
-                            JsonObject order = (JsonObject) orders.iterator().next();
-                            List<JsonElement> orderItems = (List<JsonElement>) order.get("orderitems");
-                            for (JsonElement orderItem: orderItems ) {
-                                String fsn = orderItem.getAsJsonObject().get("fsn").getAsString();
-                                if ( fsnToPendency.containsKey(fsn)) {
-                                    int quantity = fsnToPendency.get(fsn).getRequiredInventory();
-                                    int updatedQuantity = quantity + orderItem.getAsJsonObject().get("quantity").getAsInt();
-                                    fsnToPendency.get(fsn).setRequiredInventory(updatedQuantity);
-                                } else {
-                                    Pendency pendency = new Pendency();
-                                    pendency.setChannelProductId(fsn);
-                                    pendency.setProductName(orderItem.getAsJsonObject().get("title").getAsString());
-                                    pendency.setRequiredInventory(orderItem.getAsJsonObject().get("quantity").getAsInt());
-                                    pendency.setSellerSkuCode(orderItem.getAsJsonObject().get("sku").getAsString());
-                                }
-                            }
-                        }
-                        return fsnToPendency;
-                    } catch (JsonSyntaxException e) {
-                        LOGGER.error("Something went wrong, response:{}, e.message:{}", response, e.getMessage());
-                    }
-                }
-            }
-        } catch (HttpTransportException | JsonSyntaxException e) {
+                    .getSellerPanelHeaders(), httpResponseWrapper );
+            return response;
+        }
+        catch (HttpTransportException | JsonSyntaxException e) {
             LOGGER.error("Something went wrong", e);
         }
         return null;

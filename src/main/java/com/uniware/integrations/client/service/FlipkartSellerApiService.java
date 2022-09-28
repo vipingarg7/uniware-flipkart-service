@@ -11,13 +11,9 @@ import com.unifier.core.utils.StringUtils;
 import com.uniware.integrations.client.constants.ChannelSource;
 import com.uniware.integrations.client.constants.EnvironmentPropertiesConstant;
 import com.uniware.integrations.client.context.FlipkartRequestContext;
-import com.uniware.integrations.client.dto.DateFilter;
-import com.uniware.integrations.client.dto.Filter;
-import com.uniware.integrations.client.dto.Pagination;
-import com.uniware.integrations.client.dto.Sort;
 import com.uniware.integrations.client.dto.api.requestDto.DispatchStandardShipmentV3Request;
 import com.uniware.integrations.client.dto.api.requestDto.GetManifestRequest;
-import com.uniware.integrations.client.dto.api.requestDto.SearchShipmentRequestV3;
+import com.uniware.integrations.client.dto.api.requestDto.SearchShipmentRequest;
 import com.uniware.integrations.client.dto.api.requestDto.ShipmentDeliveryRequestV3;
 import com.uniware.integrations.client.dto.api.requestDto.ShipmentPackV3Request;
 import com.uniware.integrations.client.dto.api.requestDto.UpdateInventoryV3Request;
@@ -25,21 +21,19 @@ import com.uniware.integrations.client.dto.api.responseDto.AuthTokenResponse;
 import com.uniware.integrations.client.dto.api.requestDto.DispatchSelfShipmentRequestV3;
 import com.uniware.integrations.client.dto.api.responseDto.DispatchShipmentV3Response;
 import com.uniware.integrations.client.dto.api.responseDto.InvoiceDetailsResponseV3;
-import com.uniware.integrations.client.dto.api.responseDto.SearchShipmentResponseV3;
-import com.uniware.integrations.client.dto.api.responseDto.ShipmentDetailsSearchResponseV3;
+import com.uniware.integrations.client.dto.api.responseDto.LocationDetailsResponse;
+import com.uniware.integrations.client.dto.api.responseDto.SearchShipmentResponse;
+import com.uniware.integrations.client.dto.api.responseDto.ShipmentDetailsWithAddressResponseV3;
+import com.uniware.integrations.client.dto.api.responseDto.ShipmentDetailsWithSubPackages;
 import com.uniware.integrations.client.dto.api.responseDto.ShipmentPackV3Response;
-import com.uniware.integrations.client.dto.api.responseDto.ShipmentStatusV3Response;
 import com.uniware.integrations.client.dto.api.responseDto.ShipmentsDeliverResponseV3;
 import com.uniware.integrations.client.dto.api.responseDto.UpdateInventoryV3Response;
 import com.uniware.integrations.utils.http.HttpSenderFactory;
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +42,35 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class FlipkartSellerApiService {
+
+    public static enum Family {
+        INFORMATIONAL,
+        SUCCESSFUL,
+        REDIRECTION,
+        CLIENT_ERROR,
+        SERVER_ERROR,
+        OTHER;
+
+        private Family() {
+        }
+
+        public static Family familyOf(int statusCode) {
+            switch (statusCode / 100) {
+            case 1:
+                return INFORMATIONAL;
+            case 2:
+                return SUCCESSFUL;
+            case 3:
+                return REDIRECTION;
+            case 4:
+                return CLIENT_ERROR;
+            case 5:
+                return SERVER_ERROR;
+            default:
+                return OTHER;
+            }
+        }
+    }
 
     // Todo
     //  1) add method description
@@ -63,34 +86,26 @@ public class FlipkartSellerApiService {
         return baseUrl;
     }
 
-    public boolean checkLocationId(String locationId) {
-        // todo location api response handling
+    public LocationDetailsResponse getAllLocations() {
+
+        LocationDetailsResponse locationDetailsResponse = null;
         String channelBaseUrl = getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource());
         HashMap<String, String> headersMap = new HashMap<>();
         headersMap.put("cache-control", "no-cache");
+        headersMap.put("Authorization", "authToken");
+
         HttpSender httpSender = HttpSenderFactory.getHttpSender();
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
         try {
             String response = httpSender.executeGet(channelBaseUrl + "/sellers/locations/allLocations", Collections.emptyMap(), headersMap, httpResponseWrapper);
-            //            response = new Gson().fromJson(response, AuthTokenResponse.class);
+            locationDetailsResponse = new Gson().fromJson(response, LocationDetailsResponse.class);
+            return locationDetailsResponse;
         }
         catch (HttpTransportException | JsonSyntaxException e) {
             LOGGER.error("Exception while fetchShipmentTrackingDetails", e);
         }
 
-        return false;
-    }
-
-    public boolean isAuthTokenExpiryNear(){
-
-        Date currentTime = DateUtils.getCurrentTime();
-        Date authTokenExpiresIn = new Date(new Long(FlipkartRequestContext.current().getAuthTokenExpiresIn())) ;
-        int numberOfDaysLeftBeforeExpiry = DateUtils.diff(currentTime, authTokenExpiresIn, DateUtils.Resolution.DAY);
-        LOGGER.info("Number Of days are left in auth token expiry.",numberOfDaysLeftBeforeExpiry);
-        if ( numberOfDaysLeftBeforeExpiry > 2 )
-            return true;
-        else
-            return false;
+        return locationDetailsResponse;
     }
 
     public AuthTokenResponse getAuthToken(Map<String, String> headers, String payload) {
@@ -148,38 +163,10 @@ public class FlipkartSellerApiService {
         return authTokenResponse;
     }
 
-    public SearchShipmentResponseV3 searchPreDispatchShipmentPost(Integer daysAheadToLookFor, List<Filter.ShipmentTypesEnum> shipmentTypes, Boolean isExpress, Boolean fetchPendecy) {
+    public SearchShipmentResponse searchPreDispatchShipmentPost(SearchShipmentRequest searchShipmentRequest)
+    {
 
-        SearchShipmentResponseV3 searchShipmentResponse = null;
-        Filter filter = new Filter();
-        DateFilter dateFilter = new DateFilter();
-        Sort sort = new Sort();
-        Pagination pagination = new Pagination();
-        if ( !fetchPendecy ) {
-            dateFilter.from((new DateTime(DateUtils.addToDate(DateUtils.getCurrentDate(), Calendar.DATE, -7))));
-            dateFilter.to((new DateTime(DateUtils.addToDate(DateUtils.getCurrentDate(), Calendar.DATE, daysAheadToLookFor))));
-            filter.type(Filter.TypeEnum.PREDISPATCH);
-            filter.dispatchAfterDate(dateFilter);
-            filter.locationId("");
-            filter.addStatesItem(Filter.StatesEnum.APPROVED);
-            filter.setShipmentTypes(shipmentTypes);
-            sort.setField(Sort.FieldEnum.ORDERDATE);
-            sort.setOrder(Sort.OrderEnum.DESC);
-            pagination.pageSize(20);
-        } else {
-            dateFilter.from((new DateTime(DateUtils.getCurrentTime())));
-            filter.addStatesItem(Filter.StatesEnum.APPROVED);
-            filter.locationId(FlipkartRequestContext.current().getLocationId());
-            sort.setField(Sort.FieldEnum.DISPATCHBYDATE);
-            sort.setOrder(Sort.OrderEnum.DESC);
-            pagination.pageSize(20);
-        }
-
-        SearchShipmentRequestV3 searchShipmentRequest = new SearchShipmentRequestV3();
-        searchShipmentRequest.dispatchAfterDateValid(true);
-        searchShipmentRequest.setFilter(filter);
-        searchShipmentRequest.setPagination(pagination);
-        searchShipmentRequest.setSort(sort);
+        SearchShipmentResponse searchShipmentResponse = null;
         String searchShipmentRequestJson = new Gson().toJson(searchShipmentRequest);
 
         String channelBaseUrl = getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource());
@@ -191,18 +178,22 @@ public class FlipkartSellerApiService {
         try {
             String response = httpSender.executePost(channelBaseUrl + "/v3/shipments/filter", searchShipmentRequestJson,
                     headersMap, httpResponseWrapper);
-            searchShipmentResponse = new Gson().fromJson(response, SearchShipmentResponseV3.class);
-            LOGGER.info("searchShipmentResponse : " + searchShipmentResponse);
-            return searchShipmentResponse;
+
+            if (httpResponseWrapper.getResponseStatus().is2xxSuccessful()) {
+                searchShipmentResponse = new Gson().fromJson(response, SearchShipmentResponse.class);
+                LOGGER.info("searchShipmentResponse : " + searchShipmentResponse);
+                return searchShipmentResponse;
+            }
         }
         catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Error occur while fetching pendency", e.getMessage());
         }
+
         return null;
     }
 
-    public SearchShipmentResponseV3 searchPreDispatchShipmentGet(String nextPageUrl) {
-        SearchShipmentResponseV3 searchShipmentResponse = null;
+    public SearchShipmentResponse searchPreDispatchShipmentGet(String nextPageUrl) {
+        SearchShipmentResponse searchShipmentResponse = null;
         String channelBaseUrl = getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource());
         HttpSender httpSender = HttpSenderFactory.getHttpSenderNoProxy();
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
@@ -212,7 +203,7 @@ public class FlipkartSellerApiService {
         try {
             String response = httpSender.executeGet(channelBaseUrl + "/sellers" + nextPageUrl, Collections.emptyMap(),
                     headersMap, httpResponseWrapper);
-            searchShipmentResponse = new Gson().fromJson(response, SearchShipmentResponseV3.class);
+            searchShipmentResponse = new Gson().fromJson(response, SearchShipmentResponse.class);
             LOGGER.info("searchShipmentResponse : " + searchShipmentResponse);
             return searchShipmentResponse;
         }
@@ -222,9 +213,12 @@ public class FlipkartSellerApiService {
         return null;
     }
 
-    public ShipmentDetailsSearchResponseV3 getShipmentDetails(String shipmentIds) {
+    /*
+    Description - Api give shipment details with its address details
+     */
+    public ShipmentDetailsWithAddressResponseV3 getShipmentDetailsWithAddress(String shipmentIds) {
 
-        ShipmentDetailsSearchResponseV3 shipmentDetailsSearchResponse = null;
+        ShipmentDetailsWithAddressResponseV3 shipmentDetailsSearchResponse = null;
         String channelBaseUrl = getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource());
         HttpSender httpSender = HttpSenderFactory.getHttpSenderNoProxy();
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
@@ -233,9 +227,30 @@ public class FlipkartSellerApiService {
         headersMap.put("Authorization", "authToken");
         try {
             String response = httpSender.executeGet(channelBaseUrl + "/v3/shipments/" + shipmentIds, Collections.emptyMap(), headersMap, httpResponseWrapper);
-            shipmentDetailsSearchResponse = new Gson().fromJson(response, ShipmentDetailsSearchResponseV3.class);
+            shipmentDetailsSearchResponse = new Gson().fromJson(response, ShipmentDetailsWithAddressResponseV3.class);
             LOGGER.info("shipmentDetailsSearchResponse : " + shipmentDetailsSearchResponse);
             return shipmentDetailsSearchResponse;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public ShipmentDetailsWithSubPackages getShipmentDetailsWithSubPackages(String shipmentIds) {
+
+        ShipmentDetailsWithSubPackages shipmentDetailsWithSubPackages = null;
+        String channelBaseUrl = getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource());
+        HttpSender httpSender = HttpSenderFactory.getHttpSenderNoProxy();
+        HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
+        Map<String, String> headersMap = new HashMap<>();
+        headersMap.put("Content-Type", "application/json");
+        headersMap.put("Authorization", "authToken");
+        try {
+            String response = httpSender.executeGet(channelBaseUrl + "/v3/shipments?" + shipmentIds, Collections.emptyMap(), headersMap, httpResponseWrapper);
+            shipmentDetailsWithSubPackages = new Gson().fromJson(response, ShipmentDetailsWithSubPackages.class);
+            LOGGER.info("shipmentDetailsSearchResponse : " + shipmentDetailsWithSubPackages);
+            return shipmentDetailsWithSubPackages;
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -408,7 +423,7 @@ public class FlipkartSellerApiService {
         return null;
     }
 
-    public String downloadInvoiceAndLabel(String shipmentId, String filePath) {
+    public boolean downloadInvoiceAndLabel(String shipmentId, String filePath) {
         HttpSender httpSender = HttpSenderFactory.getHttpSenderNoProxy();
         String channelBaseUrl = getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource());
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
@@ -420,14 +435,15 @@ public class FlipkartSellerApiService {
             String parsedLabel = PdfUtils.parsePdf(filePath);
             if (StringUtils.isNotBlank(parsedLabel)) {
                 LOGGER.info("InvoiceLabel file downloaded at {}", filePath);
-                return filePath;
+                return true;
             } else {
                 LOGGER.info("InvoiceLabel file not available");
+                return false;
             }
         } catch (HttpTransportException | JsonSyntaxException | IOException e) {
             LOGGER.error("Exception while print InvoiceLabel", e);
         }
-        return null;
+        return false;
     }
 
     public UpdateInventoryV3Response updateInventory(UpdateInventoryV3Request updateInventoryRequest) {

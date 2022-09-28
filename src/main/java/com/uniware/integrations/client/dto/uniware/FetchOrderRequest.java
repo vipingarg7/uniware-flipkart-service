@@ -5,16 +5,16 @@ import java.util.Map;
 
 public class FetchOrderRequest {
 
-    private Long           orderWindow;
+    private int           orderWindow;
     private String         nextToken;
     private List<String>   statuses;
     private Map<String,Object> metdata;
 
-    public Long getOrderWindow() {
+    public int getOrderWindow() {
         return orderWindow;
     }
 
-    public void setOrderWindow(Long orderWindow) {
+    public void setOrderWindow(int orderWindow) {
         this.orderWindow = orderWindow;
     }
 

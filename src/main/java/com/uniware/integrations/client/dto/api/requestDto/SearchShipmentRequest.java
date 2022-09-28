@@ -6,7 +6,7 @@ import com.uniware.integrations.client.dto.Pagination;
 import com.uniware.integrations.client.dto.Sort;
 import java.util.Objects;
 
-public class SearchShipmentRequestV3 {
+public class SearchShipmentRequest {
 
     @JsonProperty("sort")
     private Sort sort = null;
@@ -35,7 +35,7 @@ public class SearchShipmentRequestV3 {
     @JsonProperty("sellerId")
     private String sellerId = null;
 
-    public SearchShipmentRequestV3 sort(Sort sort) {
+    public SearchShipmentRequest sort(Sort sort) {
         this.sort = sort;
         return this;
     }
@@ -53,7 +53,7 @@ public class SearchShipmentRequestV3 {
         this.sort = sort;
     }
 
-    public SearchShipmentRequestV3 pagination(Pagination pagination) {
+    public SearchShipmentRequest pagination(Pagination pagination) {
         this.pagination = pagination;
         return this;
     }
@@ -71,7 +71,7 @@ public class SearchShipmentRequestV3 {
         this.pagination = pagination;
     }
 
-    public SearchShipmentRequestV3 orderDateValid(Boolean orderDateValid) {
+    public SearchShipmentRequest orderDateValid(Boolean orderDateValid) {
         this.orderDateValid = orderDateValid;
         return this;
     }
@@ -89,7 +89,7 @@ public class SearchShipmentRequestV3 {
         this.orderDateValid = orderDateValid;
     }
 
-    public SearchShipmentRequestV3 dispatchByDateValid(Boolean dispatchByDateValid) {
+    public SearchShipmentRequest dispatchByDateValid(Boolean dispatchByDateValid) {
         this.dispatchByDateValid = dispatchByDateValid;
         return this;
     }
@@ -107,7 +107,7 @@ public class SearchShipmentRequestV3 {
         this.dispatchByDateValid = dispatchByDateValid;
     }
 
-    public SearchShipmentRequestV3 dispatchAfterDateValid(Boolean dispatchAfterDateValid) {
+    public SearchShipmentRequest dispatchAfterDateValid(Boolean dispatchAfterDateValid) {
         this.dispatchAfterDateValid = dispatchAfterDateValid;
         return this;
     }
@@ -125,7 +125,7 @@ public class SearchShipmentRequestV3 {
         this.dispatchAfterDateValid = dispatchAfterDateValid;
     }
 
-    public SearchShipmentRequestV3 skuValid(Boolean skuValid) {
+    public SearchShipmentRequest skuValid(Boolean skuValid) {
         this.skuValid = skuValid;
         return this;
     }
@@ -143,7 +143,7 @@ public class SearchShipmentRequestV3 {
         this.skuValid = skuValid;
     }
 
-    public SearchShipmentRequestV3 filter(Filter filter) {
+    public SearchShipmentRequest filter(Filter filter) {
         this.filter = filter;
         return this;
     }
@@ -161,7 +161,7 @@ public class SearchShipmentRequestV3 {
         this.filter = filter;
     }
 
-    public SearchShipmentRequestV3 cancellationDateValid(Boolean cancellationDateValid) {
+    public SearchShipmentRequest cancellationDateValid(Boolean cancellationDateValid) {
         this.cancellationDateValid = cancellationDateValid;
         return this;
     }
@@ -179,7 +179,7 @@ public class SearchShipmentRequestV3 {
         this.cancellationDateValid = cancellationDateValid;
     }
 
-    public SearchShipmentRequestV3 sellerId(String sellerId) {
+    public SearchShipmentRequest sellerId(String sellerId) {
         this.sellerId = sellerId;
         return this;
     }
@@ -206,7 +206,7 @@ public class SearchShipmentRequestV3 {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        SearchShipmentRequestV3 searchShipmentRequest = (SearchShipmentRequestV3) o;
+        SearchShipmentRequest searchShipmentRequest = (SearchShipmentRequest) o;
         return Objects.equals(this.sort, searchShipmentRequest.sort) &&
                 Objects.equals(this.pagination, searchShipmentRequest.pagination) &&
                 Objects.equals(this.orderDateValid, searchShipmentRequest.orderDateValid) &&

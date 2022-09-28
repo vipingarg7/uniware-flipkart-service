@@ -15,6 +15,14 @@ public class TaxItem {
     @JsonProperty("quantity")
     private Integer quantity = null;
 
+    public TaxItem() {};
+
+    public TaxItem(BigDecimal taxRate, String orderItemId, Integer quantity) {
+        this.taxRate = taxRate;
+        this.orderItemId = orderItemId;
+        this.quantity = quantity;
+    }
+
     public TaxItem taxRate(BigDecimal taxRate) {
         this.taxRate = taxRate;
         return this;

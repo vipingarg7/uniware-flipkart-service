@@ -66,11 +66,11 @@ public class FetchOnHoldOrderRequest {
             this.pageNumber = pageNumber;
         }
 
-        public Integer getPageSize() {
+        public int getPageSize() {
             return pageSize;
         }
 
-        public void setPageSize(int pageSize) {
+        public void setPageSize(Integer pageSize) {
             this.pageSize = pageSize;
         }
     }

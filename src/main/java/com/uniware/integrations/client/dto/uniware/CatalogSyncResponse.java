@@ -7,6 +7,7 @@ public class CatalogSyncResponse {
 
     private List<ChannelItemType> channelItemTypes;
     private boolean hasMore = false;
+    private int totalPages;
 
     public CatalogSyncResponse addChannelItemType(ChannelItemType cit) {
         if ( channelItemTypes == null) {
@@ -30,5 +31,13 @@ public class CatalogSyncResponse {
 
     public void setHasMore(boolean hasMore) {
         this.hasMore = hasMore;
+    }
+
+    public int getTotalPages() {
+        return totalPages;
+    }
+
+    public void setTotalPages(int totalPages) {
+        this.totalPages = totalPages;
     }
 }

@@ -1,6 +1,7 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Date;
 import java.util.Objects;
 import org.joda.time.DateTime;
 
@@ -31,13 +32,13 @@ public class DispatchRequest {
     private String trackingId = null;
 
     @JsonProperty("tentativeDeliveryDate")
-    private DateTime tentativeDeliveryDate = null;
+    private Date tentativeDeliveryDate = null;
 
     @JsonProperty("deliveryPartner")
     private String deliveryPartner = null;
 
     @JsonProperty("dispatchDate")
-    private DateTime dispatchDate = null;
+    private Date dispatchDate = null;
 
     public DispatchRequest incrementOrderItemQuantityByOne(String orderItemId) {
         for (ConfirmItemRow item : this.getOrderItems()) {
@@ -196,7 +197,7 @@ public class DispatchRequest {
         this.trackingId = trackingId;
     }
 
-    public DispatchRequest tentativeDeliveryDate(DateTime tentativeDeliveryDate) {
+    public DispatchRequest tentativeDeliveryDate(Date tentativeDeliveryDate) {
         this.tentativeDeliveryDate = tentativeDeliveryDate;
         return this;
     }
@@ -206,11 +207,11 @@ public class DispatchRequest {
      * @return tentativeDeliveryDate
      **/
     
-    public DateTime getTentativeDeliveryDate() {
+    public Date getTentativeDeliveryDate() {
         return tentativeDeliveryDate;
     }
 
-    public void setTentativeDeliveryDate(DateTime tentativeDeliveryDate) {
+    public void setTentativeDeliveryDate(Date tentativeDeliveryDate) {
         this.tentativeDeliveryDate = tentativeDeliveryDate;
     }
 
@@ -232,7 +233,7 @@ public class DispatchRequest {
         this.deliveryPartner = deliveryPartner;
     }
 
-    public DispatchRequest dispatchDate(DateTime dispatchDate) {
+    public DispatchRequest dispatchDate(Date dispatchDate) {
         this.dispatchDate = dispatchDate;
         return this;
     }
@@ -242,11 +243,11 @@ public class DispatchRequest {
      * @return dispatchDate
      **/
     
-    public DateTime getDispatchDate() {
+    public Date getDispatchDate() {
         return dispatchDate;
     }
 
-    public void setDispatchDate(DateTime dispatchDate) {
+    public void setDispatchDate(Date dispatchDate) {
         this.dispatchDate = dispatchDate;
     }
 
