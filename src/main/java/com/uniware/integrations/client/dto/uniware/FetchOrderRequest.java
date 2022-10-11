@@ -6,6 +6,7 @@ import java.util.Map;
 public class FetchOrderRequest {
 
     private int           orderWindow;
+    private int           pageNumber;
     private String         nextToken;
     private List<String>   statuses;
     private Map<String,Object> metdata;
@@ -16,6 +17,14 @@ public class FetchOrderRequest {
 
     public void setOrderWindow(int orderWindow) {
         this.orderWindow = orderWindow;
+    }
+
+    public int getPageNumber() {
+        return pageNumber;
+    }
+
+    public void setPageNumber(int pageNumber) {
+        this.pageNumber = pageNumber;
     }
 
     public String getNextToken() {

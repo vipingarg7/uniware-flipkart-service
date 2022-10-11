@@ -4,19 +4,10 @@ import javax.validation.constraints.NotNull;
 
 public class CatalogSyncRequest {
 
-    private Boolean manualSync;
     @NotNull
     private String  stockFilePath;
     private Integer pageNumber;
     private Integer pageSize;
-
-    public Boolean getManualSync() {
-        return manualSync;
-    }
-
-    public void setManualSync(Boolean manualSync) {
-        this.manualSync = manualSync;
-    }
 
     public String getStockFilePath() {
         return stockFilePath;

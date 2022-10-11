@@ -108,6 +108,7 @@ public class CreateInvoiceResponse {
         private String shippingProvider;
 
         private String shippingLabelLink;
+        private String labelFormat;
 
         public String getTrackingNumber() {
             return trackingNumber;
@@ -131,6 +132,14 @@ public class CreateInvoiceResponse {
 
         public void setShippingLabelLink(String shippingLabelLink) {
             this.shippingLabelLink = shippingLabelLink;
+        }
+
+        public String getLabelFormat() {
+            return labelFormat;
+        }
+
+        public void setLabelFormat(String labelFormat) {
+            this.labelFormat = labelFormat;
         }
     }
 

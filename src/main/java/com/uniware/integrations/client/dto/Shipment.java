@@ -1,16 +1,17 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import java.util.Objects;
 import org.joda.time.DateTime;
 
 public class Shipment {
 
     @JsonProperty("forms")
-    private java.util.List<Form> forms = null;
+    private List<Form> forms = null;
 
     @JsonProperty("subShipments")
-    private java.util.List<SubShipment> subShipments = null;
+    private List<SubShipment> subShipments = null;
 
     @JsonProperty("dispatchByDate")
     private DateTime dispatchByDate = null;
@@ -37,12 +38,12 @@ public class Shipment {
     private Boolean hold = null;
 
     @JsonProperty("orderItems")
-    private java.util.List<OrderItem> orderItems = null;
+    private List<OrderItem> orderItems = null;
 
     @JsonProperty("mps")
     private Boolean mps = null;
 
-    public Shipment forms(java.util.List<Form> forms) {
+    public Shipment forms(List<Form> forms) {
         this.forms = forms;
         return this;
     }
@@ -60,15 +61,15 @@ public class Shipment {
      * @return forms
      **/
     
-    public java.util.List<Form> getForms() {
+    public List<Form> getForms() {
         return forms;
     }
 
-    public void setForms(java.util.List<Form> forms) {
+    public void setForms(List<Form> forms) {
         this.forms = forms;
     }
 
-    public Shipment subShipments(java.util.List<SubShipment> subShipments) {
+    public Shipment subShipments(List<SubShipment> subShipments) {
         this.subShipments = subShipments;
         return this;
     }
@@ -86,11 +87,11 @@ public class Shipment {
      * @return subShipments
      **/
     
-    public java.util.List<SubShipment> getSubShipments() {
+    public List<SubShipment> getSubShipments() {
         return subShipments;
     }
 
-    public void setSubShipments(java.util.List<SubShipment> subShipments) {
+    public void setSubShipments(List<SubShipment> subShipments) {
         this.subShipments = subShipments;
     }
 
@@ -238,7 +239,7 @@ public class Shipment {
         this.hold = hold;
     }
 
-    public Shipment orderItems(java.util.List<OrderItem> orderItems) {
+    public Shipment orderItems(List<OrderItem> orderItems) {
         this.orderItems = orderItems;
         return this;
     }
@@ -256,11 +257,11 @@ public class Shipment {
      * @return orderItems
      **/
     
-    public java.util.List<OrderItem> getOrderItems() {
+    public List<OrderItem> getOrderItems() {
         return orderItems;
     }
 
-    public void setOrderItems(java.util.List<OrderItem> orderItems) {
+    public void setOrderItems(List<OrderItem> orderItems) {
         this.orderItems = orderItems;
     }
 

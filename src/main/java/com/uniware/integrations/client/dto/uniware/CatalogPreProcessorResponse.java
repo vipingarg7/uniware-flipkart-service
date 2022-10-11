@@ -9,7 +9,7 @@ public class CatalogPreProcessorResponse {
     }
     private String filePath;
     private Status reportStatus;
-    private AsyncInstruction async;
+    private AsyncDetails asyncDetails;
 
     public String getFilePath() {
         return filePath;
@@ -27,15 +27,15 @@ public class CatalogPreProcessorResponse {
         this.reportStatus = reportStatus;
     }
 
-    public AsyncInstruction getAsync() {
-        return async;
+    public AsyncDetails getAsyncDetails() {
+        return asyncDetails;
     }
 
-    public void setAsync(AsyncInstruction async) {
-        this.async = async;
+    public void setAsyncDetails(AsyncDetails asyncDetails) {
+        this.asyncDetails = asyncDetails;
     }
 
-    public static class AsyncInstruction {
+    public static class AsyncDetails {
         private int nextRunInMs;
         private int retryCount;
 

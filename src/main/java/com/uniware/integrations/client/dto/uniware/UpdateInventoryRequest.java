@@ -25,7 +25,7 @@ public class UpdateInventoryRequest {
 
         private List<Attributes> attributes;
 
-        private int totalCount;
+        private int quantity;
 
         private List<Facility> facilities;
 
@@ -54,9 +54,9 @@ public class UpdateInventoryRequest {
             this.channelSkuCode = channelSkuCode;
         }
 
-        public int getTotalCount() { return totalCount; }
+        public int getQuantity() { return quantity; }
 
-        public void setTotalCount(int totalCount) { this.totalCount = totalCount; }
+        public void setQuantity(int quantity) { this.quantity = quantity; }
 
         public List<Facility> getFacilities() {
             return facilities;

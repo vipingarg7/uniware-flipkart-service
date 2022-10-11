@@ -9,26 +9,13 @@ public class UpdateInventoryResponse {
         SUCCESS,
         FAILED,
     }
-
-    private Status status;
     private List<Listing> listings;
-    private List<Error> errors;
 
     public UpdateInventoryResponse() {}
-
-    public UpdateInventoryResponse(Status status) { this.status = status;   }
-
-    public Status getStatus() { return status;  }
-
-    public void setStatus(Status status) {  this.status = status;   }
 
     public List<Listing> getListings() {    return listings;    }
 
     public void setListings(List<Listing> listings) {   this.listings = listings;   }
-
-    public List<Error> getErrors() {    return errors;  }
-
-    public void setErrors(List<Error> errors) { this.errors = errors;   }
 
     public void addListing(Listing listing) { this.getListings().add(listing);  }
 
