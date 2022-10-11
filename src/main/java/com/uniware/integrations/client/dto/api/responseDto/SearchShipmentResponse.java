@@ -2,12 +2,13 @@ package com.uniware.integrations.client.dto.api.responseDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.uniware.integrations.client.dto.Shipment;
+import java.util.List;
 import java.util.Objects;
 
 public class SearchShipmentResponse {
 
     @JsonProperty("shipments")
-    private java.util.List<Shipment> shipments = null;
+    private List<Shipment> shipments = null;
 
     @JsonProperty("nextPageUrl")
     private String nextPageUrl = null;
@@ -15,7 +16,7 @@ public class SearchShipmentResponse {
     @JsonProperty("hasMore")
     private Boolean hasMore = null;
 
-    public SearchShipmentResponse shipments(java.util.List<Shipment> shipments) {
+    public SearchShipmentResponse shipments(List<Shipment> shipments) {
         this.shipments = shipments;
         return this;
     }
@@ -33,11 +34,11 @@ public class SearchShipmentResponse {
      * @return shipments
      **/
     
-    public java.util.List<Shipment> getShipments() {
+    public List<Shipment> getShipments() {
         return shipments;
     }
 
-    public void setShipments(java.util.List<Shipment> shipments) {
+    public void setShipments(List<Shipment> shipments) {
         this.shipments = shipments;
     }
 

@@ -6,9 +6,10 @@ import java.util.Map;
 
 public class FetchOrderResponse {
 
-    List<SaleOrder> orders;
-
-    Map<String,Object> metadata;
+    private List<SaleOrder> orders;
+    private String nextToken;
+    private boolean hasMoreOrders = false;
+    private Map<String,Object> metadata;
 
     public FetchOrderResponse addOrders(List<SaleOrder> orders) {
         if (this.orders == null) {
@@ -23,6 +24,22 @@ public class FetchOrderResponse {
 
     public void setOrders(List<SaleOrder> orders) {
         this.orders = orders;
+    }
+
+    public String getNextToken() {
+        return nextToken;
+    }
+
+    public void setNextToken(String nextToken) {
+        this.nextToken = nextToken;
+    }
+
+    public boolean isHasMoreOrders() {
+        return hasMoreOrders;
+    }
+
+    public void setHasMoreOrders(boolean hasMoreOrders) {
+        this.hasMoreOrders = hasMoreOrders;
     }
 
     public Map<String, Object> getMetadata() {

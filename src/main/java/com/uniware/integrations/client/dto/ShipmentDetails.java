@@ -1,6 +1,7 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import java.util.Objects;
 
 public class ShipmentDetails {
@@ -16,10 +17,7 @@ public class ShipmentDetails {
 
     @JsonProperty("shipmentId")
     private String shipmentId = null;
-
-    @JsonProperty("courierDetails")
-    private Courier courierDetails = null;
-
+    private List<SubShipments> subShipments;
     @JsonProperty("billingAddress")
     private Address billingAddress = null;
 
@@ -30,7 +28,7 @@ public class ShipmentDetails {
     private Address sellerAddress = null;
 
     @JsonProperty("orderItems")
-    private java.util.List<OrderItem> orderItems = null;
+    private List<OrderItem> orderItems = null;
 
     @JsonProperty("weighingRequired")
     private Boolean weighingRequired = null;
@@ -107,22 +105,12 @@ public class ShipmentDetails {
         this.shipmentId = shipmentId;
     }
 
-    public ShipmentDetails courierDetails(Courier courierDetails) {
-        this.courierDetails = courierDetails;
-        return this;
+    public List<SubShipments> getSubShipments() {
+        return subShipments;
     }
 
-    /**
-     * Get courierDetails
-     * @return courierDetails
-     **/
-    
-    public Courier getCourierDetails() {
-        return courierDetails;
-    }
-
-    public void setCourierDetails(Courier courierDetails) {
-        this.courierDetails = courierDetails;
+    public void setSubShipments(List<SubShipments> subShipments) {
+        this.subShipments = subShipments;
     }
 
     public ShipmentDetails billingAddress(Address billingAddress) {
@@ -179,7 +167,7 @@ public class ShipmentDetails {
         this.sellerAddress = sellerAddress;
     }
 
-    public ShipmentDetails orderItems(java.util.List<OrderItem> orderItems) {
+    public ShipmentDetails orderItems(List<OrderItem> orderItems) {
         this.orderItems = orderItems;
         return this;
     }
@@ -197,11 +185,11 @@ public class ShipmentDetails {
      * @return orderItems
      **/
     
-    public java.util.List<OrderItem> getOrderItems() {
+    public List<OrderItem> getOrderItems() {
         return orderItems;
     }
 
-    public void setOrderItems(java.util.List<OrderItem> orderItems) {
+    public void setOrderItems(List<OrderItem> orderItems) {
         this.orderItems = orderItems;
     }
 
@@ -237,7 +225,7 @@ public class ShipmentDetails {
                 Objects.equals(this.returnAddress, shipmentDetails.returnAddress) &&
                 Objects.equals(this.buyerDetails, shipmentDetails.buyerDetails) &&
                 Objects.equals(this.shipmentId, shipmentDetails.shipmentId) &&
-                Objects.equals(this.courierDetails, shipmentDetails.courierDetails) &&
+                Objects.equals(this.subShipments, shipmentDetails.subShipments) &&
                 Objects.equals(this.billingAddress, shipmentDetails.billingAddress) &&
                 Objects.equals(this.deliveryAddress, shipmentDetails.deliveryAddress) &&
                 Objects.equals(this.sellerAddress, shipmentDetails.sellerAddress) &&
@@ -247,7 +235,7 @@ public class ShipmentDetails {
 
     @Override
     public int hashCode() {
-        return Objects.hash(orderId, returnAddress, buyerDetails, shipmentId, courierDetails, billingAddress, deliveryAddress, sellerAddress, orderItems, weighingRequired);
+        return Objects.hash(orderId, returnAddress, buyerDetails, shipmentId, subShipments, billingAddress, deliveryAddress, sellerAddress, orderItems, weighingRequired);
     }
 
 
@@ -260,7 +248,7 @@ public class ShipmentDetails {
         sb.append("    returnAddress: ").append(toIndentedString(returnAddress)).append("\n");
         sb.append("    buyerDetails: ").append(toIndentedString(buyerDetails)).append("\n");
         sb.append("    shipmentId: ").append(toIndentedString(shipmentId)).append("\n");
-        sb.append("    courierDetails: ").append(toIndentedString(courierDetails)).append("\n");
+        sb.append("    courierDetails: ").append(toIndentedString(subShipments)).append("\n");
         sb.append("    billingAddress: ").append(toIndentedString(billingAddress)).append("\n");
         sb.append("    deliveryAddress: ").append(toIndentedString(deliveryAddress)).append("\n");
         sb.append("    sellerAddress: ").append(toIndentedString(sellerAddress)).append("\n");

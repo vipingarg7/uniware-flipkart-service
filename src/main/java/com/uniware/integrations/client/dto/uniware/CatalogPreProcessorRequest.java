@@ -2,13 +2,13 @@ package com.uniware.integrations.client.dto.uniware;
 
 public class CatalogPreProcessorRequest {
 
-    private boolean isAsync = false;
+    private boolean isAsyncRun = false;
 
-    public boolean isAsync() {
-        return isAsync;
+    public boolean isAsyncRun() {
+        return isAsyncRun;
     }
 
-    public void setAsync(boolean async) {
-        isAsync = async;
+    public void setAsyncRun(boolean asyncRun) {
+        isAsyncRun = asyncRun;
     }
 }

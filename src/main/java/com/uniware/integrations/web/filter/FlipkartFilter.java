@@ -29,9 +29,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Order(2)
 public class FlipkartFilter extends OncePerRequestFilter {
 
-
     private static final Logger LOGGER = LoggerFactory.getLogger(FlipkartFilter.class);
-
     public static final String API_VERSION = "ApiVersion";
 
     @Autowired
@@ -59,22 +57,14 @@ public class FlipkartFilter extends OncePerRequestFilter {
             FlipkartRequestContext.current().setApiVersion(apiVersion);
             ThreadContextUtils.setThreadMetadata("HTTP");
 
-            String authToken = request.getHeader("AuthToken");
-            String location = request.getHeader("Location");
-            String userName = request.getHeader("UserName");
-            String password = request.getHeader("Password");
-
-            FlipkartRequestContext.current().setAuthToken(authToken);
-            FlipkartRequestContext.current().setLocationId(location);
-            FlipkartRequestContext.current().setUserName(userName);
-            FlipkartRequestContext.current().setPassword(password);
-//
-//            FlipkartRequestContext.current().getApiHeaders().put("Content-Type", "application/json");
-//            FlipkartRequestContext.current().getApiHeaders().put("Authorization", "Bearer" + authToken);
+            FlipkartRequestContext.current().setAuthToken(request.getHeader("AuthToken"));
+            FlipkartRequestContext.current().setLocationId(request.getHeader("Location"));
+            FlipkartRequestContext.current().setUserName(request.getHeader("UserName"));
+            FlipkartRequestContext.current().setPassword(request.getHeader("Password"));
 
             if (!FlipkartRequestContext.current().validate()) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                LOGGER.error("Mandatory Flipkart header missing");
+                LOGGER.error("Mandatory headers are missing");
                 return;
             }
 

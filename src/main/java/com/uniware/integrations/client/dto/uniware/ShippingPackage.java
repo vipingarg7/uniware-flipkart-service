@@ -22,6 +22,7 @@ public class ShippingPackage {
     private BigDecimal height;
 
     private BigDecimal weight;
+    private String shippingManager;
 
     public String getFacilityCode() {
         return facilityCode;
@@ -95,14 +96,19 @@ public class ShippingPackage {
         this.weight = weight;
     }
 
+    public String getShippingManager() {
+        return shippingManager;
+    }
+
+    public void setShippingManager(String shippingManager) {
+        this.shippingManager = shippingManager;
+    }
+
     public static class SaleOrderItem {
 
         private String code;
 
         private String combinationIdentifier;
-
-        private String statusCode;
-
         private String channelSaleOrderItemCode;
 
         private String bundleSkuCode;
@@ -125,14 +131,6 @@ public class ShippingPackage {
 
         public void setCombinationIdentifier(String combinationIdentifier) {
             this.combinationIdentifier = combinationIdentifier;
-        }
-
-        public String getStatusCode() {
-            return statusCode;
-        }
-
-        public void setStatusCode(String statusCode) {
-            this.statusCode = statusCode;
         }
 
         public String getChannelSaleOrderItemCode() {

@@ -2,14 +2,15 @@ package com.uniware.integrations.client.dto.api.responseDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.uniware.integrations.client.dto.Invoice;
+import java.util.List;
 import java.util.Objects;
 
 public class InvoiceDetailsResponseV3 {
 
     @JsonProperty("invoices")
-    private java.util.List<Invoice> invoices = null;
+    private List<Invoice> invoices = null;
 
-    public InvoiceDetailsResponseV3 invoices(java.util.List<Invoice> invoices) {
+    public InvoiceDetailsResponseV3 invoices(List<Invoice> invoices) {
         this.invoices = invoices;
         return this;
     }
@@ -26,11 +27,11 @@ public class InvoiceDetailsResponseV3 {
      * Get invoices
      * @return invoices
      **/
-    public java.util.List<Invoice> getInvoices() {
+    public List<Invoice> getInvoices() {
         return invoices;
     }
 
-    public void setInvoices(java.util.List<Invoice> invoices) {
+    public void setInvoices(List<Invoice> invoices) {
         this.invoices = invoices;
     }
 

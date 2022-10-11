@@ -8,6 +8,8 @@ public class SubShipments {
     @JsonProperty("dimensions")
     private Dimensions dimensions = null;
 
+    @JsonProperty("courierDetails")
+    private Courier courierDetails = null;
     @JsonProperty("subShipmentId")
     private String subShipmentId = null;
 
@@ -27,6 +29,14 @@ public class SubShipments {
 
     public void setDimensions(Dimensions dimensions) {
         this.dimensions = dimensions;
+    }
+
+    public Courier getCourierDetails() {
+        return courierDetails;
+    }
+
+    public void setCourierDetails(Courier courierDetails) {
+        this.courierDetails = courierDetails;
     }
 
     public SubShipments subShipmentId(String subShipmentId) {
