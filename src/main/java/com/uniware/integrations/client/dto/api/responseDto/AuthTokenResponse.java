@@ -1,14 +1,22 @@
 package com.uniware.integrations.client.dto.api.responseDto;
 
+import com.google.gson.annotations.SerializedName;
+import com.uniware.integrations.client.dto.BaseResponse;
+
 /**
  * Created by vipin on 26/05/22.
  */
-public class AuthTokenResponse {
+public class AuthTokenResponse extends BaseResponse {
 
+    @SerializedName("accessToken")
     private String accessToken;
+    @SerializedName("tokenType")
     private String tokenType;
+    @SerializedName("refreshToken")
     private String refreshToken;
+    @SerializedName("expiresIn")
     private Long expiresIn;
+    @SerializedName("scope")
     private String scope;
 
     public String getAccessToken() {
@@ -50,4 +58,11 @@ public class AuthTokenResponse {
     public void setScope(String scope) {
         this.scope = scope;
     }
+
+    @Override public String toString() {
+        return "AuthTokenResponse{" + "accessToken='" + accessToken + '\'' + ", tokenType='" + tokenType + '\''
+                + ", refreshToken='" + refreshToken + '\'' + ", expiresIn=" + expiresIn + ", scope='" + scope + '\''
+                + '}';
+    }
+
 }

@@ -10,7 +10,7 @@ public class CatalogSyncResponse {
     private int totalPages;
 
     public CatalogSyncResponse addChannelItemType(ChannelItemType cit) {
-        if ( channelItemTypes == null) {
+        if ( this.channelItemTypes == null) {
             this.channelItemTypes = new ArrayList<>();
         }
         this.channelItemTypes.add(cit);

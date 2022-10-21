@@ -1,46 +1,45 @@
 package com.uniware.integrations.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
+import java.util.Date;
 import java.util.List;
-import java.util.Objects;
-import org.joda.time.DateTime;
 
 public class Shipment {
 
-    @JsonProperty("forms")
+    @SerializedName("forms")
     private List<Form> forms = null;
 
-    @JsonProperty("subShipments")
+    @SerializedName("subShipments")
     private List<SubShipment> subShipments = null;
 
-    @JsonProperty("dispatchByDate")
-    private DateTime dispatchByDate = null;
+    @SerializedName("dispatchByDate")
+    private Date dispatchByDate = null;
 
-    @JsonProperty("shipmentId")
+    @SerializedName("shipmentId")
     private String shipmentId = null;
 
-    @JsonProperty("packagingPolicy")
+    @SerializedName("packagingPolicy")
     private String packagingPolicy = null;
 
-    @JsonProperty("shipmentType")
+    @SerializedName("shipmentType")
     private String shipmentType = null;
 
-    @JsonProperty("locationId")
+    @SerializedName("locationId")
     private String locationId = null;
 
-    @JsonProperty("dispatchAfterDate")
-    private DateTime dispatchAfterDate = null;
+    @SerializedName("dispatchAfterDate")
+    private Date dispatchAfterDate = null;
 
-    @JsonProperty("updatedAt")
-    private DateTime updatedAt = null;
+    @SerializedName("updatedAt")
+    private Date updatedAt = null;
 
-    @JsonProperty("hold")
+    @SerializedName("hold")
     private Boolean hold = null;
 
-    @JsonProperty("orderItems")
+    @SerializedName("orderItems")
     private List<OrderItem> orderItems = null;
 
-    @JsonProperty("mps")
+    @SerializedName("mps")
     private Boolean mps = null;
 
     public Shipment forms(List<Form> forms) {
@@ -95,7 +94,7 @@ public class Shipment {
         this.subShipments = subShipments;
     }
 
-    public Shipment dispatchByDate(DateTime dispatchByDate) {
+    public Shipment dispatchByDate(Date dispatchByDate) {
         this.dispatchByDate = dispatchByDate;
         return this;
     }
@@ -105,11 +104,11 @@ public class Shipment {
      * @return dispatchByDate
      **/
     
-    public DateTime getDispatchByDate() {
+    public Date getDispatchByDate() {
         return dispatchByDate;
     }
 
-    public void setDispatchByDate(DateTime dispatchByDate) {
+    public void setDispatchByDate(Date dispatchByDate) {
         this.dispatchByDate = dispatchByDate;
     }
 
@@ -185,7 +184,7 @@ public class Shipment {
         this.locationId = locationId;
     }
 
-    public Shipment dispatchAfterDate(DateTime dispatchAfterDate) {
+    public Shipment dispatchAfterDate(Date dispatchAfterDate) {
         this.dispatchAfterDate = dispatchAfterDate;
         return this;
     }
@@ -195,15 +194,15 @@ public class Shipment {
      * @return dispatchAfterDate
      **/
     
-    public DateTime getDispatchAfterDate() {
+    public Date getDispatchAfterDate() {
         return dispatchAfterDate;
     }
 
-    public void setDispatchAfterDate(DateTime dispatchAfterDate) {
+    public void setDispatchAfterDate(Date dispatchAfterDate) {
         this.dispatchAfterDate = dispatchAfterDate;
     }
 
-    public Shipment updatedAt(DateTime updatedAt) {
+    public Shipment updatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
         return this;
     }
@@ -213,11 +212,11 @@ public class Shipment {
      * @return updatedAt
      **/
     
-    public DateTime getUpdatedAt() {
+    public Date getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(DateTime updatedAt) {
+    public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
     }
 
@@ -283,66 +282,11 @@ public class Shipment {
         this.mps = mps;
     }
 
-
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Shipment shipment = (Shipment) o;
-        return Objects.equals(this.forms, shipment.forms) &&
-                Objects.equals(this.subShipments, shipment.subShipments) &&
-                Objects.equals(this.dispatchByDate, shipment.dispatchByDate) &&
-                Objects.equals(this.shipmentId, shipment.shipmentId) &&
-                Objects.equals(this.packagingPolicy, shipment.packagingPolicy) &&
-                Objects.equals(this.shipmentType, shipment.shipmentType) &&
-                Objects.equals(this.locationId, shipment.locationId) &&
-                Objects.equals(this.dispatchAfterDate, shipment.dispatchAfterDate) &&
-                Objects.equals(this.updatedAt, shipment.updatedAt) &&
-                Objects.equals(this.hold, shipment.hold) &&
-                Objects.equals(this.orderItems, shipment.orderItems) &&
-                Objects.equals(this.mps, shipment.mps);
+    @Override public String toString() {
+        return "Shipment{" + "forms=" + forms + ", subShipments=" + subShipments + ", dispatchByDate=" + dispatchByDate
+                + ", shipmentId='" + shipmentId + '\'' + ", packagingPolicy='" + packagingPolicy + '\''
+                + ", shipmentType='" + shipmentType + '\'' + ", locationId='" + locationId + '\''
+                + ", dispatchAfterDate=" + dispatchAfterDate + ", updatedAt=" + updatedAt + ", hold=" + hold
+                + ", orderItems=" + orderItems + ", mps=" + mps + '}';
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(forms, subShipments, dispatchByDate, shipmentId, packagingPolicy, shipmentType, locationId, dispatchAfterDate, updatedAt, hold, orderItems, mps);
-    }
-
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class Shipment {\n");
-
-        sb.append("    forms: ").append(toIndentedString(forms)).append("\n");
-        sb.append("    subShipments: ").append(toIndentedString(subShipments)).append("\n");
-        sb.append("    dispatchByDate: ").append(toIndentedString(dispatchByDate)).append("\n");
-        sb.append("    shipmentId: ").append(toIndentedString(shipmentId)).append("\n");
-        sb.append("    packagingPolicy: ").append(toIndentedString(packagingPolicy)).append("\n");
-        sb.append("    shipmentType: ").append(toIndentedString(shipmentType)).append("\n");
-        sb.append("    locationId: ").append(toIndentedString(locationId)).append("\n");
-        sb.append("    dispatchAfterDate: ").append(toIndentedString(dispatchAfterDate)).append("\n");
-        sb.append("    updatedAt: ").append(toIndentedString(updatedAt)).append("\n");
-        sb.append("    hold: ").append(toIndentedString(hold)).append("\n");
-        sb.append("    orderItems: ").append(toIndentedString(orderItems)).append("\n");
-        sb.append("    mps: ").append(toIndentedString(mps)).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
-
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(java.lang.Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
-    }
-
 }

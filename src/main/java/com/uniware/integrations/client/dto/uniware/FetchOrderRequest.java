@@ -9,7 +9,7 @@ public class FetchOrderRequest {
     private int           pageNumber;
     private String         nextToken;
     private List<String>   statuses;
-    private Map<String,Object> metdata;
+    private Map<String,Object> metadata;
 
     public int getOrderWindow() {
         return orderWindow;
@@ -43,11 +43,11 @@ public class FetchOrderRequest {
         this.statuses = statuses;
     }
 
-    public Map<String, Object> getMetdata() {
-        return metdata;
+    public Map<String, Object> getMetadata() {
+        return metadata;
     }
 
-    public void setMetdata(Map<String, Object> metdata) {
-        this.metdata = metdata;
+    public void setMetadata(Map<String, Object> metadata) {
+        this.metadata = metadata;
     }
 }

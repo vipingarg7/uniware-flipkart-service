@@ -1,20 +1,20 @@
 package com.uniware.integrations.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.util.Objects;
 
 public class ModelPackage {
 
-    @JsonProperty("packageSku")
+    @SerializedName("packageSku")
     private String packageSku = null;
 
-    @JsonProperty("packageTitle")
+    @SerializedName("packageTitle")
     private String packageTitle = null;
 
-    @JsonProperty("packageId")
+    @SerializedName("packageId")
     private String packageId = null;
 
-    @JsonProperty("dimensions")
+    @SerializedName("dimensions")
     private Dimensions dimensions = null;
 
     public ModelPackage packageSku(String packageSku) {
@@ -89,50 +89,9 @@ public class ModelPackage {
         this.dimensions = dimensions;
     }
 
-
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ModelPackage _package = (ModelPackage) o;
-        return Objects.equals(this.packageSku, _package.packageSku) &&
-                Objects.equals(this.packageTitle, _package.packageTitle) &&
-                Objects.equals(this.packageId, _package.packageId) &&
-                Objects.equals(this.dimensions, _package.dimensions);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(packageSku, packageTitle, packageId, dimensions);
-    }
-
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class ModelPackage {\n");
-
-        sb.append("    packageSku: ").append(toIndentedString(packageSku)).append("\n");
-        sb.append("    packageTitle: ").append(toIndentedString(packageTitle)).append("\n");
-        sb.append("    packageId: ").append(toIndentedString(packageId)).append("\n");
-        sb.append("    dimensions: ").append(toIndentedString(dimensions)).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
-
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(java.lang.Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
+    @Override public String toString() {
+        return "ModelPackage{" + "packageSku='" + packageSku + '\'' + ", packageTitle='" + packageTitle + '\''
+                + ", packageId='" + packageId + '\'' + ", dimensions=" + dimensions + '}';
     }
 
 }

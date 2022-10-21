@@ -1,17 +1,17 @@
 package com.uniware.integrations.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
+import com.google.gson.annotations.SerializedName;
+import java.util.List;
 
 public class SubShipment {
 
-    @JsonProperty("packages")
-    private java.util.List<ModelPackage> packages = null;
+    @SerializedName("packages")
+    private List<ModelPackage> packages = null;
 
-    @JsonProperty("subShipmentId")
+    @SerializedName("subShipmentId")
     private String subShipmentId = null;
 
-    public SubShipment packages(java.util.List<ModelPackage> packages) {
+    public SubShipment packages(List<ModelPackage> packages) {
         this.packages = packages;
         return this;
     }
@@ -29,11 +29,11 @@ public class SubShipment {
      * @return packages
      **/
     
-    public java.util.List<ModelPackage> getPackages() {
+    public List<ModelPackage> getPackages() {
         return packages;
     }
 
-    public void setPackages(java.util.List<ModelPackage> packages) {
+    public void setPackages(List<ModelPackage> packages) {
         this.packages = packages;
     }
 
@@ -55,47 +55,7 @@ public class SubShipment {
         this.subShipmentId = subShipmentId;
     }
 
-
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        SubShipment subShipment = (SubShipment) o;
-        return Objects.equals(this.packages, subShipment.packages) &&
-                Objects.equals(this.subShipmentId, subShipment.subShipmentId);
+    @Override public String toString() {
+        return "SubShipment{" + "packages=" + packages + ", subShipmentId='" + subShipmentId + '\'' + '}';
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(packages, subShipmentId);
-    }
-
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class SubShipment {\n");
-
-        sb.append("    packages: ").append(toIndentedString(packages)).append("\n");
-        sb.append("    subShipmentId: ").append(toIndentedString(subShipmentId)).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
-
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(java.lang.Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
-    }
-
-
 }

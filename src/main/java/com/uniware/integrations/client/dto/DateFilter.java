@@ -1,18 +1,18 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Date;
 import java.util.Objects;
-import org.joda.time.DateTime;
 
 public class DateFilter {
 
     @JsonProperty("to")
-    private DateTime to = null;
+    private String to = null;
 
     @JsonProperty("from")
-    private DateTime from = null;
+    private String from = null;
 
-    public DateFilter to(DateTime to) {
+    public DateFilter to(String to) {
         this.to = to;
         return this;
     }
@@ -22,15 +22,15 @@ public class DateFilter {
      * @return to
      **/
     
-    public DateTime getTo() {
+    public String getTo() {
         return to;
     }
 
-    public void setTo(DateTime to) {
+    public void setTo(String to) {
         this.to = to;
     }
 
-    public DateFilter from(DateTime from) {
+    public DateFilter from(String from) {
         this.from = from;
         return this;
     }
@@ -40,11 +40,11 @@ public class DateFilter {
      * @return from
      **/
     
-    public DateTime getFrom() {
+    public String getFrom() {
         return from;
     }
 
-    public void setFrom(DateTime from) {
+    public void setFrom(String from) {
         this.from = from;
     }
 

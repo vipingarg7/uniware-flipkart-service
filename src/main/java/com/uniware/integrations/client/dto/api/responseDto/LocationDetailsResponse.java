@@ -1,11 +1,12 @@
 package com.uniware.integrations.client.dto.api.responseDto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
+import com.uniware.integrations.client.dto.BaseResponse;
 import java.util.List;
 
-public class LocationDetailsResponse {
+public class LocationDetailsResponse extends BaseResponse {
 
-    @JsonProperty("locations")
+    @SerializedName("locations")
     private List<Location> locations;
 
     public List<Location> getLocations() {
@@ -16,10 +17,14 @@ public class LocationDetailsResponse {
         this.locations = locations;
     }
 
+    @Override public String toString() {
+        return "LocationDetailsResponse{" + "locations=" + locations + '}';
+    }
+
     public static class Location {
-        @JsonProperty("locationId")
+        @SerializedName("locationId")
         private String locationId;
-        @JsonProperty("locationName")
+        @SerializedName("locationName")
         private String locationName;
 
         public String getLocationId() {
@@ -37,5 +42,10 @@ public class LocationDetailsResponse {
         public void setLocationName(String locationName) {
             this.locationName = locationName;
         }
+
+        @Override public String toString() {
+            return "Location{" + "locationId='" + locationId + '\'' + ", locationName='" + locationName + '\'' + '}';
+        }
     }
+
 }

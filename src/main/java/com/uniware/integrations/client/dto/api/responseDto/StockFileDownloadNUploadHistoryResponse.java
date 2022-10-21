@@ -1,12 +1,13 @@
 package com.uniware.integrations.client.dto.api.responseDto;
 
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
+import com.uniware.integrations.client.dto.BaseResponse;
 import java.util.List;
 
-public class StockFileDownloadNUploadHistoryResponse {
+public class StockFileDownloadNUploadHistoryResponse extends BaseResponse {
 
-    @JsonProperty("stockFileResponseList")
+    @SerializedName("stock_file_response_list")
     private List<StockFileResponseList> stockFileResponseList;
 
     public StockFileDownloadNUploadHistoryResponse(){}
@@ -22,33 +23,37 @@ public class StockFileDownloadNUploadHistoryResponse {
         return this.stockFileResponseList;
     }
 
+    @Override public String toString() {
+        return "StockFileDownloadNUploadHistoryResponse{" + "stockFileResponseList=" + stockFileResponseList + '}';
+    }
+
     public class StockFileResponseList {
         
-        @JsonProperty("file_link")
+        @SerializedName("file_link")
         private String fileLink;
 
-        @JsonProperty("file_operation_type")
+        @SerializedName("file_operation_type")
         private String fileOperationType;
 
-        @JsonProperty("file_name")
+        @SerializedName("file_name")
         private String fileName;
 
-        @JsonProperty("error_count")
+        @SerializedName("error_count")
         private int errorCount;
 
-        @JsonProperty("total_count")
+        @SerializedName("total_count")
         private int totalCount;
 
-        @JsonProperty("file_format")
+        @SerializedName("file_format")
         private String fileFormat;
 
-        @JsonProperty("uploaded_on")
-        private int uploadedOn;
+        @SerializedName("uploaded_on")
+        private long uploadedOn;
 
-        @JsonProperty("feed_state")
+        @SerializedName("feed_state")
         private String feedState;
 
-        @JsonProperty("error_rows_exists")
+        @SerializedName("error_rows_exists")
         private boolean errorRowsExists;
 
         public StockFileResponseList(){}
@@ -113,11 +118,11 @@ public class StockFileDownloadNUploadHistoryResponse {
             return this.fileFormat;
         }
 
-        public void setUploadedOn(int uploadedOn){
+        public void setUploadedOn(long uploadedOn){
             this.uploadedOn = uploadedOn;
         }
 
-        public int getUploadedOn(){
+        public long getUploadedOn(){
             return this.uploadedOn;
         }
 
@@ -135,6 +140,13 @@ public class StockFileDownloadNUploadHistoryResponse {
 
         public boolean getErrorRowsExists(){
             return this.errorRowsExists;
+        }
+
+        @Override public String toString() {
+            return "StockFileResponseList{" + "fileLink='" + fileLink + '\'' + ", fileOperationType='"
+                    + fileOperationType + '\'' + ", fileName='" + fileName + '\'' + ", errorCount=" + errorCount
+                    + ", totalCount=" + totalCount + ", fileFormat='" + fileFormat + '\'' + ", uploadedOn=" + uploadedOn
+                    + ", feedState='" + feedState + '\'' + ", errorRowsExists=" + errorRowsExists + '}';
         }
     }
 }

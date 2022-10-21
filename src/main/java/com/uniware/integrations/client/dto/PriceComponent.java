@@ -1,24 +1,23 @@
 package com.uniware.integrations.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.math.BigDecimal;
-import java.util.Objects;
 
 public class PriceComponent {
 
-    @JsonProperty("shippingCharge")
+    @SerializedName("shippingCharge")
     private BigDecimal shippingCharge = null;
 
-    @JsonProperty("customerPrice")
+    @SerializedName("customerPrice")
     private BigDecimal customerPrice = null;
 
-    @JsonProperty("totalPrice")
+    @SerializedName("totalPrice")
     private BigDecimal totalPrice = null;
 
-    @JsonProperty("flipkartDiscount")
+    @SerializedName("flipkartDiscount")
     private BigDecimal flipkartDiscount = null;
 
-    @JsonProperty("sellingPrice")
+    @SerializedName("sellingPrice")
     private BigDecimal sellingPrice = null;
 
     public PriceComponent shippingCharge(BigDecimal shippingCharge) {
@@ -111,52 +110,9 @@ public class PriceComponent {
         this.sellingPrice = sellingPrice;
     }
 
-
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        PriceComponent priceComponent = (PriceComponent) o;
-        return Objects.equals(this.shippingCharge, priceComponent.shippingCharge) &&
-                Objects.equals(this.customerPrice, priceComponent.customerPrice) &&
-                Objects.equals(this.totalPrice, priceComponent.totalPrice) &&
-                Objects.equals(this.flipkartDiscount, priceComponent.flipkartDiscount) &&
-                Objects.equals(this.sellingPrice, priceComponent.sellingPrice);
+    @Override public String toString() {
+        return "PriceComponent{" + "shippingCharge=" + shippingCharge + ", customerPrice=" + customerPrice
+                + ", totalPrice=" + totalPrice + ", flipkartDiscount=" + flipkartDiscount + ", sellingPrice="
+                + sellingPrice + '}';
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(shippingCharge, customerPrice, totalPrice, flipkartDiscount, sellingPrice);
-    }
-
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class PriceComponent {\n");
-
-        sb.append("    shippingCharge: ").append(toIndentedString(shippingCharge)).append("\n");
-        sb.append("    customerPrice: ").append(toIndentedString(customerPrice)).append("\n");
-        sb.append("    totalPrice: ").append(toIndentedString(totalPrice)).append("\n");
-        sb.append("    flipkartDiscount: ").append(toIndentedString(flipkartDiscount)).append("\n");
-        sb.append("    sellingPrice: ").append(toIndentedString(sellingPrice)).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
-
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(java.lang.Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
-    }
-
 }

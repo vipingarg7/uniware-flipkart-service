@@ -1,12 +1,19 @@
 package com.uniware.integrations.client.dto.api.responseDto;
 
+import com.google.gson.annotations.SerializedName;
+import com.uniware.integrations.client.dto.BaseResponse;
 
-public class StockFileDownloadRequestStatusResponse{
+public class StockFileDownloadRequestStatusResponse extends BaseResponse {
 
+    @SerializedName("sellerId")
     private String sellerId;
+    @SerializedName("lastDownloadTimestamp")
     private String lastDownloadTimestamp;
+    @SerializedName("downloadState")
     private String downloadState;
+    @SerializedName("processed_count")
     private int processed_count;
+    @SerializedName("totalCount")
     private int totalCount;
 
 
@@ -60,4 +67,9 @@ public class StockFileDownloadRequestStatusResponse{
         return this.totalCount;
     }
 
+    @Override public String toString() {
+        return "StockFileDownloadRequestStatusResponse{" + "sellerId='" + sellerId + '\'' + ", lastDownloadTimestamp='"
+                + lastDownloadTimestamp + '\'' + ", downloadState='" + downloadState + '\'' + ", processed_count="
+                + processed_count + ", totalCount=" + totalCount + '}';
+    }
 }

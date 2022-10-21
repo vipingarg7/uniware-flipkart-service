@@ -1,6 +1,6 @@
 package com.uniware.integrations.client.dto.api.responseDto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import com.uniware.integrations.client.dto.AttributeError;
 import com.uniware.integrations.client.dto.BaseResponse;
 import com.uniware.integrations.client.dto.Error;
@@ -9,10 +9,10 @@ import java.util.Map;
 
 public class UpdateInventoryV3Response extends BaseResponse {
 
-    @JsonProperty("sku")
+    @SerializedName("sku")
     private Map<String, InventoryUpdateStatus> skus;
 
-    @JsonProperty("errors")
+    @SerializedName("errors")
     private List<Error> errors;
 
     public Map<String, InventoryUpdateStatus> getSkus() {
@@ -32,15 +32,19 @@ public class UpdateInventoryV3Response extends BaseResponse {
         this.errors = errors;
     }
 
+    @Override public String toString() {
+        return "UpdateInventoryV3Response{" + "skus=" + skus + ", errors=" + errors + '}';
+    }
+
     public static class InventoryUpdateStatus {
 
-        @JsonProperty("status")
+        @SerializedName("status")
         private String status;
 
-        @JsonProperty("errors")
+        @SerializedName("errors")
         private List<Error> errors;
 
-        @JsonProperty("attribute_errors")
+        @SerializedName("attribute_errors")
         private List<AttributeError> attributeErrors;
 
         public String getStatus() { return status;  }
@@ -62,5 +66,11 @@ public class UpdateInventoryV3Response extends BaseResponse {
         public void setAttributeErrors(List<AttributeError> attributeErrors) {
             this.attributeErrors = attributeErrors;
         }
+
+        @Override public String toString() {
+            return "InventoryUpdateStatus{" + "status='" + status + '\'' + ", errors=" + errors + ", attributeErrors="
+                    + attributeErrors + '}';
+        }
+
     }
 }

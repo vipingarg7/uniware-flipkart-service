@@ -1,38 +1,37 @@
 package com.uniware.integrations.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
+import com.google.gson.annotations.SerializedName;
 
 public class Address {
 
-    @JsonProperty("city")
+    @SerializedName("city")
     private String city = null;
 
-    @JsonProperty("contactNumber")
+    @SerializedName("contactNumber")
     private String contactNumber = null;
 
-    @JsonProperty("firstName")
+    @SerializedName("firstName")
     private String firstName = null;
 
-    @JsonProperty("lastName")
+    @SerializedName("lastName")
     private String lastName = null;
 
-    @JsonProperty("pinCode")
+    @SerializedName("pinCode")
     private String pinCode = null;
 
-    @JsonProperty("state")
+    @SerializedName("state")
     private String state = null;
 
-    @JsonProperty("addressLine2")
+    @SerializedName("addressLine2")
     private String addressLine2 = null;
 
-    @JsonProperty("stateCode")
+    @SerializedName("stateCode")
     private String stateCode = null;
 
-    @JsonProperty("addressLine1")
+    @SerializedName("addressLine1")
     private String addressLine1 = null;
 
-    @JsonProperty("landmark")
+    @SerializedName("landmark")
     private String landmark = null;
 
     public Address city(String city) {
@@ -215,62 +214,10 @@ public class Address {
         this.landmark = landmark;
     }
 
-
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Address address = (Address) o;
-        return Objects.equals(this.city, address.city) &&
-                Objects.equals(this.contactNumber, address.contactNumber) &&
-                Objects.equals(this.firstName, address.firstName) &&
-                Objects.equals(this.lastName, address.lastName) &&
-                Objects.equals(this.pinCode, address.pinCode) &&
-                Objects.equals(this.state, address.state) &&
-                Objects.equals(this.addressLine2, address.addressLine2) &&
-                Objects.equals(this.stateCode, address.stateCode) &&
-                Objects.equals(this.addressLine1, address.addressLine1) &&
-                Objects.equals(this.landmark, address.landmark);
+    @Override public String toString() {
+        return "Address{" + "city='" + city + '\'' + ", contactNumber='" + contactNumber + '\'' + ", firstName='"
+                + firstName + '\'' + ", lastName='" + lastName + '\'' + ", pinCode='" + pinCode + '\'' + ", state='"
+                + state + '\'' + ", addressLine2='" + addressLine2 + '\'' + ", stateCode='" + stateCode + '\''
+                + ", addressLine1='" + addressLine1 + '\'' + ", landmark='" + landmark + '\'' + '}';
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(city, contactNumber, firstName, lastName, pinCode, state, addressLine2, stateCode, addressLine1, landmark);
-    }
-
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class Address {\n");
-
-        sb.append("    city: ").append(toIndentedString(city)).append("\n");
-        sb.append("    contactNumber: ").append(toIndentedString(contactNumber)).append("\n");
-        sb.append("    firstName: ").append(toIndentedString(firstName)).append("\n");
-        sb.append("    lastName: ").append(toIndentedString(lastName)).append("\n");
-        sb.append("    pinCode: ").append(toIndentedString(pinCode)).append("\n");
-        sb.append("    state: ").append(toIndentedString(state)).append("\n");
-        sb.append("    addressLine2: ").append(toIndentedString(addressLine2)).append("\n");
-        sb.append("    stateCode: ").append(toIndentedString(stateCode)).append("\n");
-        sb.append("    addressLine1: ").append(toIndentedString(addressLine1)).append("\n");
-        sb.append("    landmark: ").append(toIndentedString(landmark)).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
-
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(java.lang.Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
-    }
-
 }

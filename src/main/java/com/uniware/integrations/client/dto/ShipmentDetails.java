@@ -1,37 +1,38 @@
 package com.uniware.integrations.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.util.List;
-import java.util.Objects;
 
 public class ShipmentDetails {
 
-    @JsonProperty("orderId")
+    @SerializedName("orderId")
     private String orderId = null;
 
-    @JsonProperty("returnAddress")
+    @SerializedName("returnAddress")
     private Address returnAddress = null;
 
-    @JsonProperty("buyerDetails")
+    @SerializedName("buyerDetails")
     private BuyerDetails buyerDetails = null;
 
-    @JsonProperty("shipmentId")
+    @SerializedName("shipmentId")
     private String shipmentId = null;
-    private List<SubShipments> subShipments;
-    @JsonProperty("billingAddress")
+
+    @SerializedName("subShipments")
+    private List<SubShipment> subShipments;
+    @SerializedName("billingAddress")
     private Address billingAddress = null;
 
-    @JsonProperty("deliveryAddress")
+    @SerializedName("deliveryAddress")
     private Address deliveryAddress = null;
 
-    @JsonProperty("sellerAddress")
+    @SerializedName("sellerAddress")
     private Address sellerAddress = null;
 
-    @JsonProperty("orderItems")
+    @SerializedName("orderItems")
     private List<OrderItem> orderItems = null;
 
-    @JsonProperty("weighingRequired")
-    private Boolean weighingRequired = null;
+    @SerializedName("locationId")
+    private String locationId;
 
     public ShipmentDetails orderId(String orderId) {
         this.orderId = orderId;
@@ -105,11 +106,11 @@ public class ShipmentDetails {
         this.shipmentId = shipmentId;
     }
 
-    public List<SubShipments> getSubShipments() {
+    public List<SubShipment> getSubShipments() {
         return subShipments;
     }
 
-    public void setSubShipments(List<SubShipments> subShipments) {
+    public void setSubShipments(List<SubShipment> subShipments) {
         this.subShipments = subShipments;
     }
 
@@ -193,80 +194,124 @@ public class ShipmentDetails {
         this.orderItems = orderItems;
     }
 
-    public ShipmentDetails weighingRequired(Boolean weighingRequired) {
-        this.weighingRequired = weighingRequired;
+    public ShipmentDetails locationId(String locationId) {
+        this.locationId = locationId;
         return this;
     }
 
-    /**
-     * Get weighingRequired
-     * @return weighingRequired
-     **/
-    
-    public Boolean isWeighingRequired() {
-        return weighingRequired;
+    public String getLocationId() {
+        return locationId;
     }
 
-    public void setWeighingRequired(Boolean weighingRequired) {
-        this.weighingRequired = weighingRequired;
+    public void setLocationId(String locationId) {
+        this.locationId = locationId;
     }
 
+    @Override public String toString() {
+        return "ShipmentDetails{" + "orderId='" + orderId + '\'' + ", returnAddress=" + returnAddress
+                + ", buyerDetails=" + buyerDetails + ", shipmentId='" + shipmentId + '\'' + ", subShipments="
+                + subShipments + ", billingAddress=" + billingAddress + ", deliveryAddress=" + deliveryAddress
+                + ", sellerAddress=" + sellerAddress + ", orderItems=" + orderItems + ", locationId='" + locationId
+                + '\'' + '}';
+    }
 
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
+    public static class OrderItem {
+
+        @SerializedName("id")
+        private String orderItemId;
+        @SerializedName("fragile")
+        private boolean fragile;
+        @SerializedName("large")
+        private boolean large;
+        @SerializedName("dangerous")
+        private boolean dangerous;
+
+        public String getOrderItemId() {
+            return orderItemId;
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+
+        public void setOrderItemId(String orderItemId) {
+            this.orderItemId = orderItemId;
         }
-        ShipmentDetails shipmentDetails = (ShipmentDetails) o;
-        return Objects.equals(this.orderId, shipmentDetails.orderId) &&
-                Objects.equals(this.returnAddress, shipmentDetails.returnAddress) &&
-                Objects.equals(this.buyerDetails, shipmentDetails.buyerDetails) &&
-                Objects.equals(this.shipmentId, shipmentDetails.shipmentId) &&
-                Objects.equals(this.subShipments, shipmentDetails.subShipments) &&
-                Objects.equals(this.billingAddress, shipmentDetails.billingAddress) &&
-                Objects.equals(this.deliveryAddress, shipmentDetails.deliveryAddress) &&
-                Objects.equals(this.sellerAddress, shipmentDetails.sellerAddress) &&
-                Objects.equals(this.orderItems, shipmentDetails.orderItems) &&
-                Objects.equals(this.weighingRequired, shipmentDetails.weighingRequired);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(orderId, returnAddress, buyerDetails, shipmentId, subShipments, billingAddress, deliveryAddress, sellerAddress, orderItems, weighingRequired);
-    }
-
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class ShipmentDetails {\n");
-
-        sb.append("    orderId: ").append(toIndentedString(orderId)).append("\n");
-        sb.append("    returnAddress: ").append(toIndentedString(returnAddress)).append("\n");
-        sb.append("    buyerDetails: ").append(toIndentedString(buyerDetails)).append("\n");
-        sb.append("    shipmentId: ").append(toIndentedString(shipmentId)).append("\n");
-        sb.append("    courierDetails: ").append(toIndentedString(subShipments)).append("\n");
-        sb.append("    billingAddress: ").append(toIndentedString(billingAddress)).append("\n");
-        sb.append("    deliveryAddress: ").append(toIndentedString(deliveryAddress)).append("\n");
-        sb.append("    sellerAddress: ").append(toIndentedString(sellerAddress)).append("\n");
-        sb.append("    orderItems: ").append(toIndentedString(orderItems)).append("\n");
-        sb.append("    weighingRequired: ").append(toIndentedString(weighingRequired)).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
-
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(java.lang.Object o) {
-        if (o == null) {
-            return "null";
+        public boolean isFragile() {
+            return fragile;
         }
-        return o.toString().replace("\n", "\n    ");
+
+        public void setFragile(boolean fragile) {
+            this.fragile = fragile;
+        }
+
+        public boolean isLarge() {
+            return large;
+        }
+
+        public void setLarge(boolean large) {
+            this.large = large;
+        }
+
+        public boolean isDangerous() {
+            return dangerous;
+        }
+
+        public void setDangerous(boolean dangerous) {
+            this.dangerous = dangerous;
+        }
+
+        @Override public String toString() {
+            return "OrderItem{" + "orderItemId='" + orderItemId + '\'' + ", fragile=" + fragile + ", large=" + large
+                    + ", dangerous=" + dangerous + '}';
+        }
     }
 
+    public static class SubShipment {
+
+        @SerializedName("shipmentDimensions")
+        private Dimensions dimensions = null;
+
+        @SerializedName("courierDetails")
+        private Courier courierDetails = null;
+        @SerializedName("subShipmentId")
+        private String subShipmentId = null;
+        
+        /**
+         * Get dimensions
+         * @return dimensions
+         **/
+
+        public Dimensions getDimensions() {
+            return dimensions;
+        }
+
+        public void setDimensions(Dimensions dimensions) {
+            this.dimensions = dimensions;
+        }
+
+        public Courier getCourierDetails() {
+            return courierDetails;
+        }
+
+        public void setCourierDetails(Courier courierDetails) {
+            this.courierDetails = courierDetails;
+        }
+        
+        /**
+         * Get subShipmentId
+         * @return subShipmentId
+         **/
+
+        public String getSubShipmentId() {
+            return subShipmentId;
+        }
+
+        public void setSubShipmentId(String subShipmentId) {
+            this.subShipmentId = subShipmentId;
+        }
+
+        @Override public String toString() {
+            return "SubShipment{" + "dimensions=" + dimensions + ", courierDetails=" + courierDetails
+                    + ", subShipmentId='" + subShipmentId + '\'' + '}';
+        }
+
+    }
 }

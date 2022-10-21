@@ -1,11 +1,12 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.uniware.integrations.client.dto.BaseRequest;
 import com.uniware.integrations.client.dto.PackRequest;
 import java.util.List;
 import java.util.Objects;
 
-public class ShipmentPackV3Request {
+public class ShipmentPackV3Request extends BaseRequest {
 
     @JsonProperty("shipments")
     private List<PackRequest> shipments = null;

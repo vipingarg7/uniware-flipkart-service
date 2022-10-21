@@ -71,7 +71,6 @@ public class Courier {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("class Courier {\n");
-
         sb.append("    pickupDetails: ").append(toIndentedString(pickupDetails)).append("\n");
         sb.append("    deliveryDetails: ").append(toIndentedString(deliveryDetails)).append("\n");
         sb.append("}");

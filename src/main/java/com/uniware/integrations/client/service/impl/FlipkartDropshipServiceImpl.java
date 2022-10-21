@@ -46,9 +46,10 @@ import com.uniware.integrations.client.dto.api.requestDto.GetManifestRequest;
 import com.uniware.integrations.client.dto.api.requestDto.SearchShipmentRequest;
 import com.uniware.integrations.client.dto.api.requestDto.UpdateInventoryV3Request;
 import com.uniware.integrations.client.dto.api.responseDto.DispatchShipmentV3Response;
-import com.uniware.integrations.client.dto.api.responseDto.InvoiceDetailsResponseV3;
+import com.uniware.integrations.client.dto.api.responseDto.InvoiceDetailsV3Response;
 import com.uniware.integrations.client.dto.api.responseDto.LocationDetailsResponse;
-import com.uniware.integrations.client.dto.api.responseDto.ShipmentDetailsWithSubPackages;
+import com.uniware.integrations.client.dto.api.responseDto.SearchShipmentV3Response;
+import com.uniware.integrations.client.dto.api.responseDto.ShipmentDetailsV3WithSubPackages;
 import com.uniware.integrations.client.dto.api.responseDto.ShipmentPackV3Response;
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadNUploadHistoryResponse;
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadRequestStatusResponse;
@@ -66,8 +67,7 @@ import com.uniware.integrations.client.dto.uniware.FetchCurrentChannelManifestRe
 import com.uniware.integrations.client.dto.uniware.FetchOrderRequest;
 import com.uniware.integrations.client.dto.api.requestDto.ShipmentPackV3Request;
 import com.uniware.integrations.client.dto.api.responseDto.AuthTokenResponse;
-import com.uniware.integrations.client.dto.api.responseDto.SearchShipmentResponse;
-import com.uniware.integrations.client.dto.api.responseDto.ShipmentDetailsWithAddressResponseV3;
+import com.uniware.integrations.client.dto.api.responseDto.ShipmentDetailsV3WithAddressResponse;
 import com.uniware.integrations.client.dto.uniware.AddressDetail;
 import com.uniware.integrations.client.dto.uniware.AddressRef;
 import com.uniware.integrations.client.dto.uniware.FetchOrderResponse;
@@ -91,6 +91,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -102,8 +104,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -117,7 +117,7 @@ import org.springframework.stereotype.Service;
  */
 
 @Service(value = "flipkartDropshipServiceImpl")
-@FlipkartClient(version = "v1",channelSource = { ChannelSource.FLIPKART_DROPSHIP})
+@FlipkartClient(version = "v1",channelSource = { ChannelSource.FLIPKART})
 public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
     public static final String AUTH_TOKEN_EXPIRES_IN = "authTokenExpiresIn";
@@ -134,6 +134,35 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS+05:30";
     private static final String DEFAULT_PHONE_NUMBER = "9999999999";
     private static final String UNIWARE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssXXX";
+    private static Map<String,List<String>> sourceCodeToFulfilmentModeList= new HashMap();
+
+    static  {
+        for ( ChannelSource channelSource: ChannelSource.values() ) {
+
+            if ( StringUtils.equalsIngoreCaseAny(channelSource.getChannelSourceCode(),"FLIPKART","2GUD","FLIPKART_OMNI")){
+                List<String> fullfilmentByList = new ArrayList<>();
+                fullfilmentByList.add("seller");
+                sourceCodeToFulfilmentModeList.put(channelSource.getChannelSourceCode(),fullfilmentByList);
+            }
+            else if ( StringUtils.equalsIngoreCaseAny(channelSource.getChannelSourceCode(),"FLIPKART_LITE","FLIPKART_SMART")) {
+                List<String> fullfilmentByList = new ArrayList<>();
+                fullfilmentByList.add("SellerSmart");
+                fullfilmentByList.add("Seller Smart");
+                fullfilmentByList.add("FA & SellerSmart");
+                fullfilmentByList.add("Flipkart and Seller Smart");
+                sourceCodeToFulfilmentModeList.put(channelSource.getChannelSourceCode(),fullfilmentByList);
+            }
+            else if ( StringUtils.equalsIngoreCaseAny(channelSource.getChannelSourceCode(),"FLIPKART_FA") ) {
+                List<String> fullfilmentByList = new ArrayList<>();
+                fullfilmentByList.add("FA");
+                fullfilmentByList.add("Flipkart");
+                fullfilmentByList.add("FA & SellerSmart");
+                fullfilmentByList.add("Flipkart and Seller Smart");
+                fullfilmentByList.add("Flipkart and Seller");
+                sourceCodeToFulfilmentModeList.put(channelSource.getChannelSourceCode(),fullfilmentByList);
+            }
+        }
+    }
 
     @Override public Response preConfiguration(Map<String, String> headers, String payload, String connectorName) {
         PreConfigurationResponse channelPreConfigurationResponse = new PreConfigurationResponse();
@@ -222,33 +251,80 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         return ResponseUtil.failure("Unable to verify connector");
     }
 
+//    @Override public Response fetchCatalog(Map<String, String> headers, CatalogSyncRequest catalogSyncRequest) {
+//
+//        CatalogSyncResponse catalogSyncResponse = new CatalogSyncResponse();
+//
+//        String stockFilePath = catalogSyncRequest.getStockFilePath();
+//        String fileFormat = stockFilePath.substring(stockFilePath.lastIndexOf('.')+1);
+//        int skipIntialLines = (catalogSyncRequest.getPageNumber()-1) * catalogSyncRequest.getPageSize();
+//        Iterator<Row> rows = null;
+//        if ( ("CSV").equalsIgnoreCase(fileFormat)){
+//            rows = new DelimitedFileParser(stockFilePath).parse(skipIntialLines,true);
+//        }
+//        else if (("XLS").equalsIgnoreCase(fileFormat)) {
+//            rows = new ExcelSheetParser(stockFilePath).parse(skipIntialLines,false);
+//        } else {
+//            LOGGER.error("file format not supported {}",fileFormat);
+//        }
+//
+//        catalogSyncResponse.setTotalPages((Iterators.size(rows) + skipIntialLines)/catalogSyncRequest.getPageSize());
+//
+//        if (rows != null) {
+//            if ( catalogSyncRequest.getPageNumber() == 1) {
+//                rows.next();
+//            }
+//            catalogSyncResponse = fetchCatalogInternal(rows, catalogSyncRequest.getPageSize());
+//
+//        } else {
+//            return ResponseUtil.failure("Unable to parse listing report");
+//        }
+//
+//        return ResponseUtil.success("Catalog fetched successfully", catalogSyncResponse);
+//
+//    }
+
     @Override public Response fetchCatalog(Map<String, String> headers, CatalogSyncRequest catalogSyncRequest) {
 
-        CatalogSyncResponse catalogSyncResponse = null;
+        CatalogSyncResponse catalogSyncResponse;
 
         String stockFilePath = catalogSyncRequest.getStockFilePath();
-        String fileFormat = stockFilePath.substring(stockFilePath.lastIndexOf('.'));
-        int skipIntialLines = catalogSyncRequest.getPageNumber() * catalogSyncRequest.getPageSize();
+        if ( StringUtils.isBlank(stockFilePath) ) {
+            LOGGER.error("stockFilePath is either blank or null");
+            return ResponseUtil.failure("stock filePath is either blank or null");
+        }
+        
+        String fileFormat = stockFilePath.substring(stockFilePath.lastIndexOf('.')+1);
+
         Iterator<Row> rows = null;
-        if ( ("CSV").equalsIgnoreCase(fileFormat)){
-            rows = new DelimitedFileParser("stockFilePath").parse(skipIntialLines,true);
+        try {
+            if ( ("CSV").equalsIgnoreCase(fileFormat)){
+                rows = new DelimitedFileParser(stockFilePath).parse(true);
+            }
+            else if (("XLS").equalsIgnoreCase(fileFormat)) {
+                rows = new ExcelSheetParser(stockFilePath).parse(true);
+            } else {
+                LOGGER.error("file format not supported {}",fileFormat);
+                return ResponseUtil.failure("file format not supported, fileFormat : " +fileFormat);
+            }
+        } catch ( Exception ex ) {
+            LOGGER.error("Exception occur while parsing stock file, exception : {}", ex);
+            return ResponseUtil.failure("Exception occur while parsing stock file " + ex.getMessage());
         }
-        else if (("XLS").equalsIgnoreCase(fileFormat)) {
-            rows = new ExcelSheetParser("stockFilePath").parse(skipIntialLines,true);
+        
+        if ( rows.hasNext() ) {
+            // Skipping second row as it's containing header description.
+            rows.next();
+            catalogSyncResponse = fetchCatalogInternal(rows);
+            catalogSyncResponse.setTotalPages(catalogSyncRequest.getPageNumber());
+        }
+        else {
+            return ResponseUtil.failure("Invalid Listing report found, path : " + stockFilePath);
         }
 
-        if (rows != null) {
-            catalogSyncResponse = fetchCatalogInternal(rows, catalogSyncRequest.getPageSize());
-        } else {
-            ResponseUtil.failure("Unable to parse listing report");
-        }
-
-
-        if ( catalogSyncResponse != null )
-            ResponseUtil.success("Catalog fetched successfully", catalogSyncResponse);
-
-        return null;
+        return ResponseUtil.success("Catalog fetched successfully", catalogSyncResponse);
     }
+
 
     @Override public Response catalogSyncPreProcessor(Map<String, String> headers, CatalogPreProcessorRequest catalogPreProcessorRequest) {
 
@@ -262,14 +338,18 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
         // check if already a file is under generation process or not.
         StockFileDownloadRequestStatusResponse stockFileDownloadRequestStatusResponse = flipkartSellerPanelService.getStockFileDownloadRequestStatus();
-        if ( "PROCESSING".equalsIgnoreCase(stockFileDownloadRequestStatusResponse.getDownloadState())){
-            LOGGER.info("File generation is in PROCESSING state. Will retry after sometime...");
+        if ( "DOWNLOADING".equalsIgnoreCase(stockFileDownloadRequestStatusResponse.getDownloadState())){
+            LOGGER.info("File generation is in DOWNLOADING state. Will retry after sometime...");
             fillAsyncDetails(stockFileDownloadRequestStatusResponse, catalogPreProcessorResponse, catalogPreProcessorRequest.isAsyncRun());
-            ResponseUtil.success("File generation is in PROCESSING state. Wait for sometime...", catalogPreProcessorResponse);
+            return ResponseUtil.success("File generation is in PROCESSING state. Wait for sometime...", catalogPreProcessorResponse);
         }
         else if ( "COMPLETED".equalsIgnoreCase(stockFileDownloadRequestStatusResponse.getDownloadState())) {
             catalogPreProcessorResponse.setReportStatus(CatalogPreProcessorResponse.Status.COMPLETE);
             LOGGER.info("Stock file generation completed.");
+        }
+        else if ( "FAILED".equalsIgnoreCase(stockFileDownloadRequestStatusResponse.getDownloadState())) {
+            catalogPreProcessorResponse.setReportStatus(CatalogPreProcessorResponse.Status.FAILED);
+            LOGGER.info("Status of Last file requested is FAILED, requesting a new file");
         }
         else {
             catalogPreProcessorResponse.setReportStatus(CatalogPreProcessorResponse.Status.FAILED);
@@ -284,12 +364,13 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             boolean isRequestStockFileSuccessful = flipkartSellerPanelService.requestStockFile();
             if (isRequestStockFileSuccessful) {
                 stockFileDownloadRequestStatusResponse = flipkartSellerPanelService.getStockFileDownloadRequestStatus();
+                catalogPreProcessorResponse.setReportStatus(CatalogPreProcessorResponse.Status.PROCESSING);
                 fillAsyncDetails(stockFileDownloadRequestStatusResponse, catalogPreProcessorResponse, catalogPreProcessorRequest.isAsyncRun());
-                ResponseUtil.success("Requested a new stock file. Wait for sometime...", catalogPreProcessorResponse);
+                return ResponseUtil.success("Requested a new stock file. Wait for sometime...", catalogPreProcessorResponse);
             } else {
                 return ResponseUtil.failure("Getting Error while requesting report...");
-            }
-        }
+    }
+}
 
         catalogPreProcessorResponse.setFilePath(stockfilePath);
         return ResponseUtil.success("File downloaded Successfully", catalogPreProcessorResponse);
@@ -320,23 +401,25 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         return ResponseUtil.success("Pendency Fetched Successfully",fetchPendencyResponse);
     }
 
-    // todo add dimensions map in additional info, shipping ProviderDetails, freebei items
     @Override  public Response fetchOrders(Map<String, String> headers, FetchOrderRequest fetchOrderRequest) {
 
         FetchOrderResponse fetchOrderResponse = new FetchOrderResponse();
 
-        if (fetchOrderRequest.getMetdata().get("hasMoreNormalShipments") == null || (boolean) fetchOrderRequest.getMetdata().get("hasMoreNormalShipments")) {
+        if ( fetchOrderRequest.getMetadata() == null || fetchOrderRequest.getMetadata().get("hasMoreNormalShipments") == null || (boolean) fetchOrderRequest.getMetadata().get("hasMoreNormalShipments")) {
             LOGGER.info("Fetching normal shipments, pageNumber: {}", fetchOrderRequest.getPageNumber());
             getNormalShipments(fetchOrderRequest, fetchOrderResponse);
         }
-        if (fetchOrderRequest.getMetdata().get("hasMoreSelfShipments") == null || (boolean) fetchOrderRequest.getMetdata().get("hasMoreSelfShipments")) {
-            LOGGER.info("Fetching normal shipments, pageNumber: {}", fetchOrderRequest.getPageNumber());
+        if ( fetchOrderRequest.getMetadata() == null || fetchOrderRequest.getMetadata().get("hasMoreSelfShipments") == null || (boolean) fetchOrderRequest.getMetadata().get("hasMoreSelfShipments")) {
+            LOGGER.info("Fetching self shipments, pageNumber: {}", fetchOrderRequest.getPageNumber());
             getSelfShipments(fetchOrderRequest, fetchOrderResponse);
         }
-        if (fetchOrderRequest.getMetdata().get("hasMoreExpressShipments") == null || (boolean) fetchOrderRequest.getMetdata().get("hasMoreExpressShipments")) {
-            LOGGER.info("Fetching normal shipments, pageNumber: {}", fetchOrderRequest.getPageNumber());
+        if ( fetchOrderRequest.getMetadata() == null || fetchOrderRequest.getMetadata().get("hasMoreExpressShipments") == null || (boolean) fetchOrderRequest.getMetadata().get("hasMoreExpressShipments")) {
+            LOGGER.info("Fetching express shipments, pageNumber: {}", fetchOrderRequest.getPageNumber());
             getExpressShipments(fetchOrderRequest, fetchOrderResponse);
         }
+
+        if (fetchOrderResponse.isHasMoreOrders())
+            fetchOrderResponse.setTotalPages(fetchOrderRequest.getPageNumber() + 1);
 
         return ResponseUtil.success("ORDERS LIST FETCHED SUCCESSFULLY!", fetchOrderResponse);
     }
@@ -350,7 +433,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         }
 
         ShippingPackage shippingPackage = generateInvoiceRequest.getShippingPackage();
-        ShipmentDetailsWithSubPackages shipmentDetails = flipkartSellerApiService.getShipmentDetailsWithSubPackages(shippingPackage.getSaleOrder().getCode());
+        ShipmentDetailsV3WithSubPackages shipmentDetails = flipkartSellerApiService.getShipmentDetailsWithSubPackages(shippingPackage.getSaleOrder().getCode());
         if (shipmentDetails.getShipments() == null) {
             ResponseUtil.failure("Unable to fetch shipment details");
         }
@@ -410,7 +493,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     }
 
     private boolean getCourierInfo(ShippingPackage shippingPackage,CreateInvoiceResponse createInvoiceResponse) {
-        ShipmentDetailsWithAddressResponseV3 shipmentDetailsWithAddress = flipkartSellerApiService.getShipmentDetailsWithAddress(shippingPackage.getSaleOrder().getCode());
+        ShipmentDetailsV3WithAddressResponse shipmentDetailsWithAddress = flipkartSellerApiService.getShipmentDetailsWithAddress(shippingPackage.getSaleOrder().getCode());
         if (shipmentDetailsWithAddress.getShipments() == null) {
             LOGGER.info("Unable to fetch shipment details");
         }
@@ -429,17 +512,17 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         Map<String,String> channelSaleOrderItemCodeToChannelProductId = new HashMap<>();
         shippingPackage.getSaleOrderItems().forEach(entry -> channelSaleOrderItemCodeToChannelProductId.put(entry.getChannelSaleOrderItemCode(),entry.getChannelProductId()));
 
-        InvoiceDetailsResponseV3 invoiceDetailsResponseV3 = flipkartSellerApiService.getInvoicesInfo(shippingPackage.getSaleOrder().getCode());
+        InvoiceDetailsV3Response invoiceDetailsV3Response = flipkartSellerApiService.getInvoicesInfo(shippingPackage.getSaleOrder().getCode());
 
         if (StringUtils.isNotBlank(shippingPackage.getInvoiceCode()))
             createInvoiceResponse.setInvoiceCode(shippingPackage.getInvoiceCode());
         else
-            createInvoiceResponse.setInvoiceCode(invoiceDetailsResponseV3.getInvoices().get(0).getInvoiceNumber());
+            createInvoiceResponse.setInvoiceCode(invoiceDetailsV3Response.getInvoices().get(0).getInvoiceNumber());
 
-        createInvoiceResponse.setDisplayCode(invoiceDetailsResponseV3.getInvoices().get(0).getInvoiceNumber());
-        createInvoiceResponse.setChannelCreatedTime(invoiceDetailsResponseV3.getInvoices().get(0).getInvoiceDate().toDate());
+        createInvoiceResponse.setDisplayCode(invoiceDetailsV3Response.getInvoices().get(0).getInvoiceNumber());
+        createInvoiceResponse.setChannelCreatedTime(invoiceDetailsV3Response.getInvoices().get(0).getInvoiceDate());
         CreateInvoiceResponse.TaxInformation taxInformation = new CreateInvoiceResponse.TaxInformation();
-        for ( Invoice.OrderItem orderItem : invoiceDetailsResponseV3.getInvoices().get(0).getOrderItems()) {
+        for ( Invoice.OrderItem orderItem : invoiceDetailsV3Response.getInvoices().get(0).getOrderItems()) {
             CreateInvoiceResponse.ProductTax productTax = new CreateInvoiceResponse.ProductTax();
             productTax.setChannelProductId(channelSaleOrderItemCodeToChannelProductId.get(orderItem.getOrderItemId().replaceAll("\n","")));
             productTax.setCentralGst(orderItem.getTaxDetails().getCgstRate() != null ? orderItem.getTaxDetails().getCgstRate() : BigDecimal.ZERO);
@@ -633,18 +716,18 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         }
     }
 
-    private SearchShipmentRequest prepareSearchShimentRequest(Filter.ShipmentTypesEnum shipmentType, int orderWindow, DateTime orderDateOfLastOrderOfLastPage) {
+    private SearchShipmentRequest prepareSearchShimentRequest(Filter.ShipmentTypesEnum shipmentType, int orderWindow, Date orderDateOfLastOrderOfLastPage) {
 
         DateFilter DispatchAfterDateFilter = new DateFilter();
-        //        DispatchAfterDateFilter.from((new DateTime(DateUtils.addToDate(DateUtils.getCurrentDate(), Calendar.DATE, -orderWindow))));
-        DispatchAfterDateFilter.to(new DateTime(DateUtils.dateToString(DateUtils.getCurrentTime(),DATE_PATTERN)));
+        DispatchAfterDateFilter.from(DateUtils.dateToString((DateUtils.addToDate(DateUtils.getCurrentDate(), Calendar.DATE, -5)),DATE_PATTERN));
+        DispatchAfterDateFilter.to(DateUtils.dateToString(DateUtils.getCurrentTime(),DATE_PATTERN));
 
         DateFilter orderDateFilter = new DateFilter();
-        orderDateFilter.from((new DateTime(DateUtils.addToDate(DateUtils.getCurrentDate(), Calendar.DATE, -orderWindow))));
+        orderDateFilter.from(DateUtils.dateToString(DateUtils.addToDate(DateUtils.getCurrentDate(), Calendar.DATE, -orderWindow),DATE_PATTERN));
         if (orderDateOfLastOrderOfLastPage != null )
-            orderDateFilter.to((new DateTime(DateUtils.dateToString(orderDateOfLastOrderOfLastPage.toDate(),DATE_PATTERN))));
+            orderDateFilter.to((DateUtils.dateToString(orderDateOfLastOrderOfLastPage,DATE_PATTERN)));
         else
-            orderDateFilter.to((new DateTime(DateUtils.dateToString(DateUtils.getCurrentTime(),DATE_PATTERN))));
+            orderDateFilter.to((DateUtils.dateToString(DateUtils.getCurrentTime(),DATE_PATTERN)));
 
         Filter filter = new Filter();
         filter.type(Filter.TypeEnum.PREDISPATCH);
@@ -670,122 +753,143 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
     private void getNormalShipments(FetchOrderRequest fetchOrderRequest, FetchOrderResponse fetchOrderResponse) {
 
-        SearchShipmentResponse searchShipmentResponse ;
+        SearchShipmentV3Response searchShipmentV3Response = new SearchShipmentV3Response();
 
         int pageNumber = fetchOrderRequest.getPageNumber();
-        String nextPageUrl = (String) fetchOrderRequest.getMetdata().get("nextPageUrlForNormalShipments");
-        DateTime orderDateOfLastOrderOfLastPage = (DateTime) fetchOrderRequest.getMetdata().get("orderDateOfLastOrderOfLastPageOfNormalShipments");
-        if ( orderDateOfLastOrderOfLastPage == null && (pageNumber % 249) == 1 ){
-            LOGGER.info("orderDateOfLastOrderOfLastPage can't be null for page number more than 1, pageNumber : {}",pageNumber);
-            return;
-        }
+        Date orderDateOfLastOrderOfLastPage = null;
 
-        if ( (pageNumber % 249) == 1 && pageNumber > 1 ) {
+        if ( (pageNumber % 249) == 1 ) {
+
+            if (pageNumber != 1) {
+                orderDateOfLastOrderOfLastPage = new Date((Long) fetchOrderRequest.getMetadata().get("orderDateOfLastOrderOfLastPageOfNormalShipments"));
+                if ( orderDateOfLastOrderOfLastPage == null ) {
+                    LOGGER.info("orderDateOfLastOrderOfLastPage can't be null for page number more than 1, pageNumber : {}",pageNumber);
+                    return;
+                }
+            }
+
             SearchShipmentRequest searchShipmentRequest = prepareSearchShimentRequest(Filter.ShipmentTypesEnum.NORMAL,fetchOrderRequest.getOrderWindow(), orderDateOfLastOrderOfLastPage);
-            searchShipmentResponse = flipkartSellerApiService.searchPreDispatchShipmentPost(searchShipmentRequest);
+            searchShipmentV3Response = flipkartSellerApiService.searchPreDispatchShipmentPost(searchShipmentRequest);
         }
         else {
-            searchShipmentResponse = flipkartSellerApiService.searchPreDispatchShipmentGet(nextPageUrl);
+            String nextPageUrl = (String) fetchOrderRequest.getMetadata().get("nextPageUrlForNormalShipments");
+            searchShipmentV3Response = flipkartSellerApiService.searchPreDispatchShipmentGet(nextPageUrl);
         }
 
-        if (searchShipmentResponse != null ){
-            List<SaleOrder> saleOrderList = createSaleOrder(searchShipmentResponse, false);
-            fetchOrderResponse = fetchOrderResponse.addOrders(saleOrderList);
-            if ( searchShipmentResponse.isHasMore()){
-                fetchOrderResponse.getMetadata().put("nextPageUrlForNormalShipments",searchShipmentResponse.getNextPageUrl());
+        if (searchShipmentV3Response != null ){
+            if ( searchShipmentV3Response.getShipments().size() > 0 ) {
+                List<SaleOrder> saleOrderList = createSaleOrder(searchShipmentV3Response, false);
+                fetchOrderResponse = fetchOrderResponse.addOrders(saleOrderList);
+
+                if ( (pageNumber % 249) == 0){
+                    SaleOrder saleOrder = Collections.min(saleOrderList, Comparator.comparing(c -> c.getDisplayOrderDateTime()));
+                    fetchOrderResponse.getMetadata().put("orderDateOfLastOrderOfLastPageOfNormalShipments",DateUtils.addToDate(saleOrder.getDisplayOrderDateTime(),Calendar.MINUTE,-10));
+                }
+            }
+
+            if ( searchShipmentV3Response.isHasMore()){
+                fetchOrderResponse.getMetadata().put("nextPageUrlForNormalShipments", searchShipmentV3Response.getNextPageUrl());
                 fetchOrderResponse.getMetadata().put("hasMoreNormalShipments",true);
                 fetchOrderResponse.setHasMoreOrders(true);
             } else{
                 fetchOrderResponse.getMetadata().put("hasMoreNormalShipments",false);
-            }
-            if ( (pageNumber % 249) == 1){
-                orderDateOfLastOrderOfLastPage = searchShipmentResponse.getShipments().get(searchShipmentResponse.getShipments().size()-1).getOrderItems().get(0).getOrderDate();
-                DateTime modifiedOrderDateOfLastOrderOfLastPage = new DateTime(DateUtils.addToDate(orderDateOfLastOrderOfLastPage.toDate(),Calendar.MINUTE,-30).getTime());
-                fetchOrderResponse.getMetadata().put("orderDateOfLastOrderOfLastPageOfNormalShipments",modifiedOrderDateOfLastOrderOfLastPage);
             }
         }
     }
 
     private void getSelfShipments(FetchOrderRequest fetchOrderRequest, FetchOrderResponse fetchOrderResponse) {
 
-        SearchShipmentResponse searchShipmentResponse;
+        SearchShipmentV3Response searchShipmentV3Response;
 
         int pageNumber = fetchOrderRequest.getPageNumber();
-        String nextPageUrl = (String) fetchOrderRequest.getMetdata().get("nextPageUrlForSelfShipments");
-        DateTime orderDateOfLastOrderOfLastPage = (DateTime) fetchOrderRequest.getMetdata().get("orderDateOfLastOrderOfLastPageOfSelfShipments");
-        if ( orderDateOfLastOrderOfLastPage == null && pageNumber > 1){
-            LOGGER.info("orderDateOfLastOrderOfLastPage can't be null for page number more than 1, pageNumber : {}",pageNumber);
-            return;
-        }
+        Date orderDateOfLastOrderOfLastPage = null;
 
-        if ( pageNumber % 249 == 1 && pageNumber > 1) {
+        if ( (pageNumber % 249) == 1 ) {
+
+            if (pageNumber != 1) {
+                orderDateOfLastOrderOfLastPage = new Date((Long) fetchOrderRequest.getMetadata().get("orderDateOfLastOrderOfLastPageOfSelfShipments"));
+                if ( orderDateOfLastOrderOfLastPage == null ) {
+                    LOGGER.info("orderDateOfLastOrderOfLastPage can't be null for page number more than 1, pageNumber : {}",pageNumber);
+                    return;
+                }
+            }
+
             SearchShipmentRequest searchShipmentRequest = prepareSearchShimentRequest(Filter.ShipmentTypesEnum.SELF,fetchOrderRequest.getOrderWindow(), orderDateOfLastOrderOfLastPage);
-            searchShipmentResponse = flipkartSellerApiService.searchPreDispatchShipmentPost(searchShipmentRequest);
+            searchShipmentV3Response = flipkartSellerApiService.searchPreDispatchShipmentPost(searchShipmentRequest);
         }
         else {
-            searchShipmentResponse = flipkartSellerApiService.searchPreDispatchShipmentGet(nextPageUrl);
+            String nextPageUrl = (String) fetchOrderRequest.getMetadata().get("nextPageUrlForSelfShipments");
+            searchShipmentV3Response = flipkartSellerApiService.searchPreDispatchShipmentGet(nextPageUrl);
         }
 
-        if (searchShipmentResponse != null ){
-            List<SaleOrder> saleOrderList = createSaleOrder(searchShipmentResponse, false);
-            fetchOrderResponse = fetchOrderResponse.addOrders(saleOrderList);
-            if ( searchShipmentResponse.isHasMore()){
-                fetchOrderResponse.getMetadata().put("nextPageUrlForSelfShipments",searchShipmentResponse.getNextPageUrl());
+        if (searchShipmentV3Response != null ){
+            if ( searchShipmentV3Response.getShipments().size() > 0 ) {
+                List<SaleOrder> saleOrderList = createSaleOrder(searchShipmentV3Response, false);
+                fetchOrderResponse = fetchOrderResponse.addOrders(saleOrderList);
+
+                if ( (pageNumber % 249) == 0 ){
+                    SaleOrder saleOrder = Collections.min(saleOrderList, Comparator.comparing(c -> c.getDisplayOrderDateTime()));
+                    fetchOrderResponse.getMetadata().put("orderDateOfLastOrderOfLastPageOfSelfShipments",DateUtils.addToDate(saleOrder.getDisplayOrderDateTime(),Calendar.MINUTE,-10));
+                }
+            }
+
+            if ( searchShipmentV3Response.isHasMore()){
+                fetchOrderResponse.getMetadata().put("nextPageUrlForSelfShipments", searchShipmentV3Response.getNextPageUrl());
                 fetchOrderResponse.getMetadata().put("hasMoreSelfShipments",true);
                 fetchOrderResponse.setHasMoreOrders(true);
             } else{
                 fetchOrderResponse.getMetadata().put("hasMoreSelfShipments",false);
             }
-            if ( pageNumber == 249){
-                orderDateOfLastOrderOfLastPage = searchShipmentResponse.getShipments().get(searchShipmentResponse.getShipments().size()-1).getOrderItems().get(0).getOrderDate();
-                DateTime modifiedOrderDateOfLastOrderOfLastPage = new DateTime(DateUtils.addToDate(orderDateOfLastOrderOfLastPage.toDate(),Calendar.MINUTE,-30).getTime());
-                fetchOrderResponse.getMetadata().put("orderDateOfLastOrderOfLastPageOfSelfShipments",modifiedOrderDateOfLastOrderOfLastPage);
-            }
-
         }
     }
 
     private void getExpressShipments(FetchOrderRequest fetchOrderRequest, FetchOrderResponse fetchOrderResponse) {
 
-        SearchShipmentResponse searchShipmentResponse;
+        SearchShipmentV3Response searchShipmentV3Response;
 
         int pageNumber = fetchOrderRequest.getPageNumber();
-        String nextPageUrl = (String) fetchOrderRequest.getMetdata().get("nextPageUrlForExpressShipments");
-        DateTime orderDateOfLastOrderOfLastPage = (DateTime) fetchOrderRequest.getMetdata().get("orderDateOfLastOrderOfLastPageOfExpressShipments");
-        if ( orderDateOfLastOrderOfLastPage == null && pageNumber > 1){
-            LOGGER.info("orderDateOfLastOrderOfLastPage can't be null for page number more than 1, pageNumber : {}",pageNumber);
-            return;
-        }
+        Date orderDateOfLastOrderOfLastPage = null;
 
-        if ( pageNumber % 249 == 1 && pageNumber > 1 ) {
+        if ( pageNumber % 249 == 1 ) {
+
+            if (pageNumber != 1) {
+                orderDateOfLastOrderOfLastPage = new Date((Long) fetchOrderRequest.getMetadata().get("orderDateOfLastOrderOfLastPageOfExpressShipments"));
+                if ( orderDateOfLastOrderOfLastPage == null ) {
+                    LOGGER.info("orderDateOfLastOrderOfLastPage can't be null for page number more than 1, pageNumber : {}",pageNumber);
+                    return;
+                }
+            }
+
             SearchShipmentRequest searchShipmentRequest = prepareSearchShimentRequest(Filter.ShipmentTypesEnum.EXPRESS,fetchOrderRequest.getOrderWindow(), orderDateOfLastOrderOfLastPage);
-            searchShipmentResponse = flipkartSellerApiService.searchPreDispatchShipmentPost(searchShipmentRequest);
+            searchShipmentV3Response = flipkartSellerApiService.searchPreDispatchShipmentPost(searchShipmentRequest);
         }
         else {
-            searchShipmentResponse = flipkartSellerApiService.searchPreDispatchShipmentGet(nextPageUrl);
+            String nextPageUrl = (String) fetchOrderRequest.getMetadata().get("nextPageUrlForExpressShipments");
+            searchShipmentV3Response = flipkartSellerApiService.searchPreDispatchShipmentGet(nextPageUrl);
         }
 
-        if (searchShipmentResponse != null ){
-            List<SaleOrder> saleOrderList = createSaleOrder(searchShipmentResponse,true);
-            fetchOrderResponse = fetchOrderResponse.addOrders(saleOrderList);
-            if ( searchShipmentResponse.isHasMore()){
-                fetchOrderResponse.getMetadata().put("nextPageUrlForExpressShipments",searchShipmentResponse.getNextPageUrl());
+        if (searchShipmentV3Response != null ){
+            if ( searchShipmentV3Response.getShipments().size() > 0 ) {
+                List<SaleOrder> saleOrderList = createSaleOrder(searchShipmentV3Response, true);
+                fetchOrderResponse = fetchOrderResponse.addOrders(saleOrderList);
+
+                if ( (pageNumber % 249) == 0 ){
+                    SaleOrder saleOrder = Collections.min(saleOrderList, Comparator.comparing(c -> c.getDisplayOrderDateTime()));
+                    fetchOrderResponse.getMetadata().put("orderDateOfLastOrderOfLastPageOfExpressShipments",DateUtils.addToDate(saleOrder.getDisplayOrderDateTime(),Calendar.MINUTE,-10));
+                }
+            }
+
+            if ( searchShipmentV3Response.isHasMore()){
+                fetchOrderResponse.getMetadata().put("nextPageUrlForExpressShipments", searchShipmentV3Response.getNextPageUrl());
                 fetchOrderResponse.getMetadata().put("hasMoreExpressShipments",true);
                 fetchOrderResponse.setHasMoreOrders(true);
             } else{
                 fetchOrderResponse.getMetadata().put("hasMoreExpressShipments",false);
             }
-            if ( pageNumber == 249){
-                orderDateOfLastOrderOfLastPage = searchShipmentResponse.getShipments().get(searchShipmentResponse.getShipments().size()-1).getOrderItems().get(0).getOrderDate();
-                DateTime modifiedOrderDateOfLastOrderOfLastPage = new DateTime(DateUtils.addToDate(orderDateOfLastOrderOfLastPage.toDate(),Calendar.MINUTE,-30).getTime());
-                fetchOrderResponse.getMetadata().put("orderDateOfLastOrderOfLastPageOfExpressShipments",modifiedOrderDateOfLastOrderOfLastPage);
-            }
-
         }
-
     }
 
-    private boolean packShipment(ShippingPackage shippingPackage, ShipmentDetailsWithSubPackages shipmentDetails) {
+    private boolean packShipment(ShippingPackage shippingPackage, ShipmentDetailsV3WithSubPackages shipmentDetails) {
 
         ShipmentPackV3Request shipmentPackV3Request = preparePackShipmentRequest(shippingPackage, shipmentDetails);
         ShipmentPackV3Response shipmentPackV3Response = flipkartSellerApiService.packShipment(shipmentPackV3Request);
@@ -804,7 +908,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            ShipmentDetailsWithSubPackages shipmentDetails = flipkartSellerApiService.getShipmentDetailsWithSubPackages(shipmentId);
+            ShipmentDetailsV3WithSubPackages shipmentDetails = flipkartSellerApiService.getShipmentDetailsWithSubPackages(shipmentId);
             if (shipmentDetails.getShipments() == null) {
                 return false;
             }
@@ -831,7 +935,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     }
 
     private ShipmentPackV3Request preparePackShipmentRequest(ShippingPackage shippingPackage,
-            ShipmentDetailsWithSubPackages shipmentDetails) {
+            ShipmentDetailsV3WithSubPackages shipmentDetails) {
 
         PackRequest packRequest = new PackRequest();
         Dimensions dimensions = null;
@@ -880,7 +984,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                 .orderId(shippingPackage.getSaleOrder()
                 .getDisplayOrderCode())
                 .invoiceNumber(shippingPackage.getInvoiceCode())
-                .invoiceDate(LocalDate.now());
+                .invoiceDate(DateUtils.getCurrentDate());
 
 
         packRequest.shipmentId(shippingPackage.getSaleOrder().getCode());
@@ -939,10 +1043,10 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         return null;
     }
 
-    private CatalogSyncResponse fetchCatalogInternal(Iterator<Row> rows, int pageSize) {
+    private CatalogSyncResponse fetchCatalogInternal(Iterator<Row> rows) {
 
         CatalogSyncResponse catalogSyncResponse = new CatalogSyncResponse();
-        while ( rows.hasNext() && pageSize-- > 0) {
+        while ( rows.hasNext() ) {
             Row row = rows.next();
             boolean isValid = validateRow(row);
             if (isValid) {
@@ -957,51 +1061,30 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                         .setCurrencyCode("INR")
                         .build();
 
-                if ("FLIPKART".equalsIgnoreCase(TenantRequestContext.current().getSourceCode())){
+                if ("FLIPKART_DROPSHIP".equalsIgnoreCase(TenantRequestContext.current().getSourceCode())){
                     channelItemType.addAttribute(new ChannelItemType.Attribute.Builder()
                             .setName("FSN")
                             .setValue(row.getColumnValue("Flipkart Serial Number"))
                             .build());
-
-                    catalogSyncResponse.addChannelItemType(channelItemType);
                 }
+                catalogSyncResponse.addChannelItemType(channelItemType);
             }
         }
-        if ( rows.hasNext())
-            catalogSyncResponse.setHasMore(true);
-
         return catalogSyncResponse;
     }
 
-    private List<String> getFullfimentByListSourceCode(String sourceCode) {
-        List<String> fullfilmentByList = new ArrayList<>();
-        if ( StringUtils.equalsIngoreCaseAny(sourceCode,"FLIPKART","2GUD","FLIPKART_OMNI")){
-            fullfilmentByList.add("seller");
-        }
-        else if ( StringUtils.equalsIngoreCaseAny(sourceCode,"FLIPKART_LITE","FLIPKART_SMART")) {
-            fullfilmentByList.add("SellerSmart");
-            fullfilmentByList.add("Seller Smart");
-            fullfilmentByList.add("FA & SellerSmart");
-            fullfilmentByList.add("Flipkart and Seller Smart");
-        }
-        else if ( StringUtils.equalsIngoreCaseAny(sourceCode,"FLIPKART_FA") ) {
-            fullfilmentByList.add("FA");
-            fullfilmentByList.add("FA & SellerSmart");
-        }
 
-        return  fullfilmentByList;
-    }
     private boolean validateRow(Row row) {
 
         if ( StringUtils.isNotBlank(row.getColumnValue("Inactive Reason"))){
-            LOGGER.info("Skipped row {}, due to {}",row,row.getColumnValue("Inactive Reason"));
+            LOGGER.info("Skipped row {}, due to inactive reason {}",row,row.getColumnValue("Inactive Reason"));
             return false;
-        }   else if ( row.getColumnValue("Listing Archival") != null
+        }   else if ( row.getColumnValue("Listing Archival") == null
                 || ("ARCHIVED").equalsIgnoreCase(row.getColumnValue("Listing Archival"))) {
             LOGGER.info("Skipped row {}, as either its  Listing Archival is null or has value ARCHIVED",row);
             return false;
-        }   else if ( row.getColumnValue("Fulfillment By") != null
-                || getFullfimentByListSourceCode(TenantRequestContext.current().getSourceCode()).contains(row.getColumnValue("Fulfillment By"))) {
+        }   else if ( row.getColumnValue("Fulfillment By") == null
+                || !sourceCodeToFulfilmentModeList.get(TenantRequestContext.current().getSourceCode()).stream().anyMatch(row.getColumnValue("Fulfillment By")::equalsIgnoreCase)) {
             LOGGER.info("Skipped row {}, Fulfiment mode not match",row);
             return false;
         }
@@ -1033,21 +1116,21 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         return row.getColumnValue("Listing ID");
     }
 
-    private SearchShipmentRequest prepareFetchPendencyRequestForApprovedShipments(int pendencyWindow, DateTime toOrderDate) {
+    private SearchShipmentRequest prepareFetchPendencyRequestForApprovedShipments(int pendencyWindow, Date toOrderDate) {
 
         Filter filter = new Filter();
         filter.addStatesItem(Filter.StatesEnum.APPROVED);
         filter.locationId(FlipkartRequestContext.current().getLocationId());
 
         DateFilter dispatchAfterDateFilter = new DateFilter();
-        dispatchAfterDateFilter.from(new DateTime(DateUtils.dateToString(DateUtils.getCurrentTime(),DATE_PATTERN)));
-        filter.dispatchAfterDate(dispatchAfterDateFilter);
-
-        if ( toOrderDate != null) {
-            DateFilter orderDateFilter = new DateFilter();
-            orderDateFilter.from(new DateTime(DateUtils.dateToString(DateUtils.addToDate(DateUtils.getCurrentTime(), Calendar.DATE, pendencyWindow),DATE_PATTERN)));
-            orderDateFilter.to(new DateTime(DateUtils.dateToString(DateUtils.addToDate(toOrderDate.toDate(), Calendar.HOUR, 1),DATE_PATTERN)));
-        }
+//        dispatchAfterDateFilter.from(new DateTime(DateUtils.dateToString(DateUtils.getCurrentTime(),DATE_PATTERN)));
+//        filter.dispatchAfterDate(dispatchAfterDateFilter);
+//
+//        if ( toOrderDate != null) {
+//            DateFilter orderDateFilter = new DateFilter();
+//            orderDateFilter.from(new DateTime(DateUtils.dateToString(DateUtils.addToDate(DateUtils.getCurrentTime(), Calendar.DATE, pendencyWindow),DATE_PATTERN)));
+//            orderDateFilter.to(new DateTime(DateUtils.dateToString(DateUtils.addToDate(toOrderDate.toDate(), Calendar.HOUR, 1),DATE_PATTERN)));
+//        }
 
         Sort sort = new Sort();
         sort.setField(Sort.FieldEnum.ORDERDATE);
@@ -1125,23 +1208,24 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
     private boolean getPendencyOfApprovedShipments(FetchPendencyRequest fetchPendencyRequest, Map<String, Pendency> channelProductIdToPendency) {
 
-        SearchShipmentResponse searchShipmentResponse = null;
+        SearchShipmentV3Response searchShipmentV3Response = null;
         Set<String> shipmentIdSet = new HashSet<>();
         int pageNumber = 1;
-        DateTime orderDateOfLastOrderOfLastDate = null;
+        Date orderDateOfLastOrderOfLastDate = null;
 
         boolean postApiCall = true;
 
         do {
             if (postApiCall) {
                 SearchShipmentRequest searchShipmentRequest = prepareFetchPendencyRequestForApprovedShipments(fetchPendencyRequest.getPendencyWindow(), orderDateOfLastOrderOfLastDate);
-                searchShipmentResponse = flipkartSellerApiService.searchPreDispatchShipmentPost(searchShipmentRequest);
+                searchShipmentV3Response = flipkartSellerApiService.searchPreDispatchShipmentPost(searchShipmentRequest);
             }
             else {
-                searchShipmentResponse = flipkartSellerApiService.searchPreDispatchShipmentGet(searchShipmentResponse.getNextPageUrl());
+                searchShipmentV3Response = flipkartSellerApiService.searchPreDispatchShipmentGet(
+                        searchShipmentV3Response.getNextPageUrl());
             }
-            if ( searchShipmentResponse != null ) {
-                for (Shipment shipment : searchShipmentResponse.getShipments()) {
+            if ( searchShipmentV3Response != null ) {
+                for (Shipment shipment : searchShipmentV3Response.getShipments()) {
                     if ( shipmentIdSet.add(shipment.getShipmentId())) {
                         for (OrderItem orderItem : shipment.getOrderItems()) {
                             String listingId = orderItem.getListingId();
@@ -1162,51 +1246,44 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             }
             if ( pageNumber != 1
                     && pageNumber % 249 == 1
-                    && DateUtils.diff(orderDateOfLastOrderOfLastDate.toDate(), DateUtils.addToDate(DateUtils.getCurrentTime(),Calendar.DATE,-fetchPendencyRequest.getPendencyWindow()), DateUtils.Resolution.MILLISECOND) > 0)
+                    && DateUtils.diff(orderDateOfLastOrderOfLastDate, DateUtils.addToDate(DateUtils.getCurrentTime(),Calendar.DATE,-fetchPendencyRequest.getPendencyWindow()), DateUtils.Resolution.MILLISECOND) > 0)
                 postApiCall = true;
             else
                 postApiCall = false;
 
-        } while (searchShipmentResponse.isHasMore());
+        } while (searchShipmentV3Response.isHasMore());
         LOGGER.info("Fetched pendency till page number :{}", pageNumber);
 
         return true;
     }
 
-    private List<SaleOrder> createSaleOrder(SearchShipmentResponse searchShipmentResponse, boolean ExpressShipment) {
+    private List<SaleOrder> createSaleOrder(SearchShipmentV3Response searchShipmentV3Response, boolean ExpressShipment) {
 
-        List<SaleOrder> saleOrderList = new ArrayList<>();
-        List<String> shipmentIds = searchShipmentResponse.getShipments().stream().map(Shipment::getShipmentId).collect(Collectors.toList());
+        List<String> shipmentIds = searchShipmentV3Response.getShipments().stream().map(Shipment::getShipmentId).collect(Collectors.toList());
         String commaSepratedShipmentIds = StringUtils.join(shipmentIds);
-        Map<String,ShipmentDetails> shipmentIdToShipmentAddressDetails = new HashMap<>();
-        ShipmentDetailsWithAddressResponseV3 shipmentDetailsWithAddressSearchResponse = flipkartSellerApiService.getShipmentDetailsWithAddress(commaSepratedShipmentIds);
-        shipmentIdToShipmentAddressDetails = shipmentDetailsWithAddressSearchResponse.getShipments().stream().collect(
+        ShipmentDetailsV3WithAddressResponse shipmentDetailsWithAddressSearchResponse = flipkartSellerApiService.getShipmentDetailsWithAddress(commaSepratedShipmentIds);
+
+        Map<String,ShipmentDetails> shipmentIdToShipmentAddressDetails = shipmentDetailsWithAddressSearchResponse.getShipments().stream().collect(
                 Collectors.toMap(ShipmentDetails::getShipmentId, Function.identity() ));
 
-        for (Shipment shipment: searchShipmentResponse.getShipments()) {
+        List<SaleOrder> saleOrderList = new ArrayList<>();
+
+        for (Shipment shipment: searchShipmentV3Response.getShipments()) {
 
             ShipmentDetails shipmentDetailsWithAddress = shipmentIdToShipmentAddressDetails.get(shipment.getShipmentId());
 
             SaleOrder saleOrder = new SaleOrder();
             saleOrder.setCode(shipment.getShipmentId());
             saleOrder.setDisplayOrderCode(shipment.getOrderItems().get(0).getOrderId());
-
-            String orderCreationDate = shipment.getOrderItems().get(0).getOrderDate().toString();
-            Date orderCreationDateInUniwareFormat = DateUtils.stringToDate(orderCreationDate, UNIWARE_DATE_FORMAT);
-            saleOrder.setDisplayOrderDateTime(orderCreationDateInUniwareFormat);
-
-            String orderDispatchByDate = shipment.getDispatchByDate().toString();
-            Date orderDispatchByDateInUniwareFormat = DateUtils.stringToDate(orderDispatchByDate, UNIWARE_DATE_FORMAT);
-            saleOrder.setFulfillmentTat(orderDispatchByDateInUniwareFormat);
-
-            saleOrder.setChannel(ChannelSource.FLIPKART_DROPSHIP.getChannelSourceCode());
+            saleOrder.setDisplayOrderDateTime(shipment.getOrderItems().get(0).getOrderDate());
+            saleOrder.setFulfillmentTat(shipment.getDispatchByDate());
+            saleOrder.setChannel(ChannelSource.FLIPKART.getChannelSourceCode());
             saleOrder.setCashOnDelivery("COD".equalsIgnoreCase(shipment.getOrderItems().get(0).getPaymentType().name()));
+            String customerPhoneNumber = shipmentDetailsWithAddress.getDeliveryAddress().getContactNumber();
+            saleOrder.setNotificationMobile(StringUtils.isNotBlank(customerPhoneNumber) ? customerPhoneNumber : DEFAULT_PHONE_NUMBER);
 
             if ( ExpressShipment )
                 saleOrder.setPriority(1);
-
-            String customerPhoneNumber = shipmentDetailsWithAddress.getDeliveryAddress().getContactNumber();
-            saleOrder.setNotificationMobile(StringUtils.isNotBlank(customerPhoneNumber) ? customerPhoneNumber : DEFAULT_PHONE_NUMBER);
 
             List<SaleOrderItem> saleOrderItems = new ArrayList<>();
             for (OrderItem orderItem: shipment.getOrderItems()) {
@@ -1219,7 +1296,6 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                         saleOrderItem.setCode(orderItem.getOrderItemId() + "-" + (count + 1));
                         BigDecimal quantity = BigDecimal.valueOf(orderItem.getQuantity());
                         saleOrderItem.setChannelSaleOrderItemCode(orderItem.getOrderItemId());
-                        saleOrderItem.setCode(orderItem.getOrderItemId());
                         saleOrderItem.setItemSku(orderItem.getSku().replaceAll("&quot;", ""));
                         saleOrderItem.setChannelProductId(orderItem.getFsn().replaceAll("&quot;", ""));
 
@@ -1251,6 +1327,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                     }
                 }
             }
+            saleOrder.setSaleOrderItems(saleOrderItems);
 
             List<AddressDetail> addresses = new ArrayList<>();
             addresses.add(getAddressDetails(shipmentDetailsWithAddress.getDeliveryAddress(),"1"));
@@ -1264,9 +1341,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             billingAddressRef.setReferenceId(addresses.get(0).getId());
             saleOrder.setBillingAddress(billingAddressRef);
 
-            // todo we are not getting freebee items in response of shipment api but as per script we are getting freebee items in the same api.
-
-            saleOrder.setSaleOrderItems(saleOrderItems);
+            saleOrderList.add(saleOrder);
         }
 
         return saleOrderList;

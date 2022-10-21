@@ -1,10 +1,11 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.uniware.integrations.client.dto.BaseRequest;
 import java.util.Objects;
 import org.joda.time.DateTime;
 
-public class GetManifestRequest {
+public class GetManifestRequest extends BaseRequest {
     @JsonProperty("params")
     private Params params = null;
 
