@@ -5,7 +5,7 @@ package com.uniware.integrations.client.constants;
  */
 public enum ChannelSource {
 
-    FLIPKART_DROPSHIP("FLIPKART_DROPSHIP"),
+    FLIPKART("FLIPKART"),
     FLIPKART_OMNI("FLIPKART_OMNI"),
     FLIPKART_WHOLESALE("FLIPKART_WHOLESALE"),
     FLIPKART_LITE("FLIPKART_LITE"),

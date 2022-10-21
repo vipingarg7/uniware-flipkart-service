@@ -1,6 +1,7 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.uniware.integrations.client.dto.BaseRequest;
 import com.uniware.integrations.client.dto.Form;
 import com.uniware.integrations.client.dto.Shipment;
 import java.util.ArrayList;
@@ -8,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class UpdateInventoryV3Request {
+public class UpdateInventoryV3Request extends BaseRequest {
 
     @JsonProperty("sku")
     private Map<String,SkuDetails> skus;

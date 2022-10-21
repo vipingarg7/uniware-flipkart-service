@@ -64,12 +64,8 @@ public class FlipkartFilter extends OncePerRequestFilter {
 
             if (!FlipkartRequestContext.current().validate()) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                LOGGER.error("Mandatory headers are missing");
                 return;
             }
-
-            LOGGER.info("Starting processing request :- {}", requestData);
-
             String hostname = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec("hostname").getInputStream())).readLine();
             response.addHeader("Hostname", hostname);
             response.addHeader("RequestIdentifier", FlipkartRequestContext.current().getRequestIdentifier());

@@ -1,20 +1,14 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.gson.annotations.SerializedName;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
-import org.joda.time.DateTime;
 
 public class OrderItem {
 
-    @JsonProperty("orderId")
-    private String orderId = null;
-
-    /**
-     * Gets or Sets status
-     */
     public enum StatusEnum {
         APPROVED("APPROVED"),
         PACKING_IN_PROGRESS("PACKING_IN_PROGRESS"),
@@ -53,24 +47,8 @@ public class OrderItem {
             return null;
         }
 
-    }  @JsonProperty("status")
-    private StatusEnum status = null;
+    }
 
-    @JsonProperty("packageIds")
-    private java.util.List<String> packageIds = null;
-
-    @JsonProperty("orderItemId")
-    private String orderItemId = null;
-
-    @JsonProperty("courierReturn")
-    private Boolean courierReturn = null;
-
-    @JsonProperty("title")
-    private String title = null;
-
-    /**
-     * Gets or Sets serviceProfile
-     */
     public enum ServiceProfileEnum {
         FLIPKART_FULFILMENT("Flipkart_Fulfilment"),
         SELLER_FULFILMENT("Seller_Fulfilment"),
@@ -103,21 +81,8 @@ public class OrderItem {
             return null;
         }
 
-    }  @JsonProperty("serviceProfile")
-    private ServiceProfileEnum serviceProfile = null;
+    }
 
-    @JsonProperty("hsn")
-    private String hsn = null;
-
-    @JsonProperty("cancellationGroupId")
-    private String cancellationGroupId = null;
-
-    @JsonProperty("orderDate")
-    private DateTime orderDate = null;
-
-    /**
-     * Gets or Sets paymentType
-     */
     public enum PaymentTypeEnum {
         COD("COD"),
         PREPAID("PREPAID");
@@ -146,34 +111,75 @@ public class OrderItem {
             return null;
         }
 
-    }  @JsonProperty("paymentType")
+    }
+    
+    @SerializedName("orderId")
+    private String orderId = null;
+
+    /**
+     * Gets or Sets status
+     */
+    @SerializedName("status")
+    private StatusEnum status = null;
+
+    @SerializedName("packageIds")
+    private List<String> packageIds = null;
+
+    @SerializedName("orderItemId")
+    private String orderItemId = null;
+
+    @SerializedName("courierReturn")
+    private Boolean courierReturn = null;
+
+    @SerializedName("title")
+    private String title = null;
+
+    /**
+     * Gets or Sets serviceProfile
+     */
+    @SerializedName("serviceProfile")
+    private ServiceProfileEnum serviceProfile = null;
+
+    @SerializedName("hsn")
+    private String hsn = null;
+
+    @SerializedName("cancellationGroupId")
+    private String cancellationGroupId = null;
+
+    @SerializedName("orderDate")
+    private Date orderDate = null;
+
+    /**
+     * Gets or Sets paymentType
+     */
+    @SerializedName("paymentType")
     private PaymentTypeEnum paymentType = null;
 
-    @JsonProperty("is_replacement")
+    @SerializedName("is_replacement")
     private Boolean isReplacement = null;
 
-    @JsonProperty("cancellationSubReason")
+    @SerializedName("cancellationSubReason")
     private String cancellationSubReason = null;
 
-    @JsonProperty("fsn")
+    @SerializedName("fsn")
     private String fsn = null;
 
-    @JsonProperty("sku")
+    @SerializedName("sku")
     private String sku = null;
 
-    @JsonProperty("priceComponents")
+    @SerializedName("priceComponents")
     private PriceComponent priceComponents = null;
 
-    @JsonProperty("cancellationReason")
+    @SerializedName("cancellationReason")
     private String cancellationReason = null;
 
-    @JsonProperty("cancellationDate")
-    private DateTime cancellationDate = null;
+    @SerializedName("cancellationDate")
+    private Date cancellationDate = null;
 
-    @JsonProperty("listingId")
+    @SerializedName("listingId")
     private String listingId = null;
 
-    @JsonProperty("quantity")
+    @SerializedName("quantity")
     private Integer quantity = null;
 
     public OrderItem orderId(String orderId) {
@@ -212,7 +218,7 @@ public class OrderItem {
         this.status = status;
     }
 
-    public OrderItem packageIds(java.util.List<String> packageIds) {
+    public OrderItem packageIds(List<String> packageIds) {
         this.packageIds = packageIds;
         return this;
     }
@@ -230,11 +236,11 @@ public class OrderItem {
      * @return packageIds
      **/
     
-    public java.util.List<String> getPackageIds() {
+    public List<String> getPackageIds() {
         return packageIds;
     }
 
-    public void setPackageIds(java.util.List<String> packageIds) {
+    public void setPackageIds(List<String> packageIds) {
         this.packageIds = packageIds;
     }
 
@@ -346,7 +352,7 @@ public class OrderItem {
         this.cancellationGroupId = cancellationGroupId;
     }
 
-    public OrderItem orderDate(DateTime orderDate) {
+    public OrderItem orderDate(Date orderDate) {
         this.orderDate = orderDate;
         return this;
     }
@@ -356,11 +362,11 @@ public class OrderItem {
      * @return orderDate
      **/
     
-    public DateTime getOrderDate() {
+    public Date getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(DateTime orderDate) {
+    public void setOrderDate(Date orderDate) {
         this.orderDate = orderDate;
     }
 
@@ -490,7 +496,7 @@ public class OrderItem {
         this.cancellationReason = cancellationReason;
     }
 
-    public OrderItem cancellationDate(DateTime cancellationDate) {
+    public OrderItem cancellationDate(Date cancellationDate) {
         this.cancellationDate = cancellationDate;
         return this;
     }
@@ -500,11 +506,11 @@ public class OrderItem {
      * @return cancellationDate
      **/
     
-    public DateTime getCancellationDate() {
+    public Date getCancellationDate() {
         return cancellationDate;
     }
 
-    public void setCancellationDate(DateTime cancellationDate) {
+    public void setCancellationDate(Date cancellationDate) {
         this.cancellationDate = cancellationDate;
     }
 
@@ -544,82 +550,14 @@ public class OrderItem {
         this.quantity = quantity;
     }
 
-
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        OrderItem orderItem = (OrderItem) o;
-        return Objects.equals(this.orderId, orderItem.orderId) &&
-                Objects.equals(this.status, orderItem.status) &&
-                Objects.equals(this.packageIds, orderItem.packageIds) &&
-                Objects.equals(this.orderItemId, orderItem.orderItemId) &&
-                Objects.equals(this.courierReturn, orderItem.courierReturn) &&
-                Objects.equals(this.title, orderItem.title) &&
-                Objects.equals(this.serviceProfile, orderItem.serviceProfile) &&
-                Objects.equals(this.hsn, orderItem.hsn) &&
-                Objects.equals(this.cancellationGroupId, orderItem.cancellationGroupId) &&
-                Objects.equals(this.orderDate, orderItem.orderDate) &&
-                Objects.equals(this.paymentType, orderItem.paymentType) &&
-                Objects.equals(this.isReplacement, orderItem.isReplacement) &&
-                Objects.equals(this.cancellationSubReason, orderItem.cancellationSubReason) &&
-                Objects.equals(this.fsn, orderItem.fsn) &&
-                Objects.equals(this.sku, orderItem.sku) &&
-                Objects.equals(this.priceComponents, orderItem.priceComponents) &&
-                Objects.equals(this.cancellationReason, orderItem.cancellationReason) &&
-                Objects.equals(this.cancellationDate, orderItem.cancellationDate) &&
-                Objects.equals(this.listingId, orderItem.listingId) &&
-                Objects.equals(this.quantity, orderItem.quantity);
+    @Override public String toString() {
+        return "OrderItem{" + "orderId='" + orderId + '\'' + ", status=" + status + ", packageIds=" + packageIds
+                + ", orderItemId='" + orderItemId + '\'' + ", courierReturn=" + courierReturn + ", title='" + title
+                + '\'' + ", serviceProfile=" + serviceProfile + ", hsn='" + hsn + '\'' + ", cancellationGroupId='"
+                + cancellationGroupId + '\'' + ", orderDate=" + orderDate + ", paymentType=" + paymentType
+                + ", isReplacement=" + isReplacement + ", cancellationSubReason='" + cancellationSubReason + '\''
+                + ", fsn='" + fsn + '\'' + ", sku='" + sku + '\'' + ", priceComponents=" + priceComponents
+                + ", cancellationReason='" + cancellationReason + '\'' + ", cancellationDate=" + cancellationDate
+                + ", listingId='" + listingId + '\'' + ", quantity=" + quantity + '}';
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(orderId, status, packageIds, orderItemId, courierReturn, title, serviceProfile, hsn, cancellationGroupId, orderDate, paymentType, isReplacement, cancellationSubReason, fsn, sku, priceComponents, cancellationReason, cancellationDate, listingId, quantity);
-    }
-
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class OrderItem {\n");
-
-        sb.append("    orderId: ").append(toIndentedString(orderId)).append("\n");
-        sb.append("    status: ").append(toIndentedString(status)).append("\n");
-        sb.append("    packageIds: ").append(toIndentedString(packageIds)).append("\n");
-        sb.append("    orderItemId: ").append(toIndentedString(orderItemId)).append("\n");
-        sb.append("    courierReturn: ").append(toIndentedString(courierReturn)).append("\n");
-        sb.append("    title: ").append(toIndentedString(title)).append("\n");
-        sb.append("    serviceProfile: ").append(toIndentedString(serviceProfile)).append("\n");
-        sb.append("    hsn: ").append(toIndentedString(hsn)).append("\n");
-        sb.append("    cancellationGroupId: ").append(toIndentedString(cancellationGroupId)).append("\n");
-        sb.append("    orderDate: ").append(toIndentedString(orderDate)).append("\n");
-        sb.append("    paymentType: ").append(toIndentedString(paymentType)).append("\n");
-        sb.append("    isReplacement: ").append(toIndentedString(isReplacement)).append("\n");
-        sb.append("    cancellationSubReason: ").append(toIndentedString(cancellationSubReason)).append("\n");
-        sb.append("    fsn: ").append(toIndentedString(fsn)).append("\n");
-        sb.append("    sku: ").append(toIndentedString(sku)).append("\n");
-        sb.append("    priceComponents: ").append(toIndentedString(priceComponents)).append("\n");
-        sb.append("    cancellationReason: ").append(toIndentedString(cancellationReason)).append("\n");
-        sb.append("    cancellationDate: ").append(toIndentedString(cancellationDate)).append("\n");
-        sb.append("    listingId: ").append(toIndentedString(listingId)).append("\n");
-        sb.append("    quantity: ").append(toIndentedString(quantity)).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
-
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(java.lang.Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
-    }
-
 }

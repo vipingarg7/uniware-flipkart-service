@@ -3,16 +3,19 @@ package com.uniware.integrations.client.context;
 import com.unifier.core.utils.StringUtils;
 import com.uniware.integrations.client.constants.ChannelSource;
 import com.uniware.integrations.client.utils.Constants;
+import com.uniware.integrations.web.filter.FlipkartFilter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 /**
  * Created by vipin on 20/05/22.
  */
 public class FlipkartRequestContext {
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(FlipkartFilter.class);
     private static final ThreadLocal<FlipkartRequestContext> ctx = new ThreadLocal<FlipkartRequestContext>();
 
     private String              apiVersion;
@@ -189,8 +192,23 @@ public class FlipkartRequestContext {
     }
 
     public boolean validate() {
-        return !StringUtils.isBlank(authToken) && !StringUtils.isBlank(locationId)
-                && !StringUtils.isBlank(userName) && !StringUtils.isBlank(password);
+        if ( StringUtils.isBlank(authToken) ) {
+            LOGGER.error("AuthToken is missing in headers");
+            return false;
+        }
+        if ( StringUtils.isBlank(locationId) ) {
+            LOGGER.error("locationId is missing in headers");
+            return false;
+        }
+        if ( StringUtils.isBlank(userName) ) {
+            LOGGER.error("userName is missing in headers");
+            return false;
+        }
+        if ( StringUtils.isBlank(password) ) {
+            LOGGER.error("password is missing in headers");
+            return false;
+        }
+        return true;
     }
 
 }

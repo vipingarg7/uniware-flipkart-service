@@ -1,20 +1,19 @@
 package com.uniware.integrations.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
+import com.google.gson.annotations.SerializedName;
 
 public class DeliverShipmentStatus {
 
-    @JsonProperty("errorCode")
+    @SerializedName("errorCode")
     private String errorCode = null;
 
-    @JsonProperty("errorMessage")
+    @SerializedName("errorMessage")
     private String errorMessage = null;
 
-    @JsonProperty("processingStatus")
+    @SerializedName("processingStatus")
     private String processingStatus = null;
 
-    @JsonProperty("shipmentId")
+    @SerializedName("shipmentId")
     private String shipmentId = null;
 
     public DeliverShipmentStatus errorCode(String errorCode) {
@@ -89,50 +88,8 @@ public class DeliverShipmentStatus {
         this.shipmentId = shipmentId;
     }
 
-
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        DeliverShipmentStatus DeliverShipmentStatus = (DeliverShipmentStatus) o;
-        return Objects.equals(this.errorCode, DeliverShipmentStatus.errorCode) &&
-                Objects.equals(this.errorMessage, DeliverShipmentStatus.errorMessage) &&
-                Objects.equals(this.processingStatus, DeliverShipmentStatus.processingStatus) &&
-                Objects.equals(this.shipmentId, DeliverShipmentStatus.shipmentId);
+    @Override public String toString() {
+        return "DeliverShipmentStatus{" + "errorCode='" + errorCode + '\'' + ", errorMessage='" + errorMessage + '\''
+                + ", processingStatus='" + processingStatus + '\'' + ", shipmentId='" + shipmentId + '\'' + '}';
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(errorCode, errorMessage, processingStatus, shipmentId);
-    }
-
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class DeliverShipmentStatus {\n");
-
-        sb.append("    errorCode: ").append(toIndentedString(errorCode)).append("\n");
-        sb.append("    errorMessage: ").append(toIndentedString(errorMessage)).append("\n");
-        sb.append("    processingStatus: ").append(toIndentedString(processingStatus)).append("\n");
-        sb.append("    shipmentId: ").append(toIndentedString(shipmentId)).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
-
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(java.lang.Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
-    }
-    
 }

@@ -1,8 +1,9 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.uniware.integrations.client.dto.BaseRequest;
 
-public class FetchOnHoldOrderRequest {
+public class FetchOnHoldOrderRequest extends BaseRequest {
 
     @JsonProperty("payload")
     private Payload payload;

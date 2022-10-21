@@ -1,14 +1,13 @@
 package com.uniware.integrations.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
+import com.google.gson.annotations.SerializedName;
 
 public class BuyerDetails {
 
-    @JsonProperty("lastName")
+    @SerializedName("lastName")
     private String lastName = null;
 
-    @JsonProperty("firstName")
+    @SerializedName("firstName")
     private String firstName = null;
 
     public BuyerDetails lastName(String lastName) {
@@ -47,46 +46,7 @@ public class BuyerDetails {
         this.firstName = firstName;
     }
 
-
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        BuyerDetails buyerDetails = (BuyerDetails) o;
-        return Objects.equals(this.lastName, buyerDetails.lastName) &&
-                Objects.equals(this.firstName, buyerDetails.firstName);
+    @Override public String toString() {
+        return "BuyerDetails{" + "lastName='" + lastName + '\'' + ", firstName='" + firstName + '\'' + '}';
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(lastName, firstName);
-    }
-
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class BuyerDetails {\n");
-
-        sb.append("    lastName: ").append(toIndentedString(lastName)).append("\n");
-        sb.append("    firstName: ").append(toIndentedString(firstName)).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
-
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(java.lang.Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
-    }
-
 }

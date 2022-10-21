@@ -1,10 +1,11 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.uniware.integrations.client.dto.BaseRequest;
 import com.uniware.integrations.client.dto.DispatchRequest;
 import java.util.Objects;
 
-public class DispatchSelfShipmentRequestV3 {
+public class DispatchSelfShipmentRequestV3 extends BaseRequest {
 
     @JsonProperty("shipments")
     private java.util.List<DispatchRequest> shipments = null;

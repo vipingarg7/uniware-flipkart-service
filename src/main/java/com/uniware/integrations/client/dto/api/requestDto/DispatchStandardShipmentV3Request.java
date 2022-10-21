@@ -1,10 +1,11 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.uniware.integrations.client.dto.BaseRequest;
 import java.util.List;
 import java.util.Objects;
 
-public class DispatchStandardShipmentV3Request {
+public class DispatchStandardShipmentV3Request extends BaseRequest {
 
     @JsonProperty("locationId")
     private String locationId = null;

@@ -1,12 +1,13 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.uniware.integrations.client.dto.BaseRequest;
 import com.uniware.integrations.client.dto.Filter;
 import com.uniware.integrations.client.dto.Pagination;
 import com.uniware.integrations.client.dto.Sort;
 import java.util.Objects;
 
-public class SearchShipmentRequest {
+public class SearchShipmentRequest extends BaseRequest {
 
     @JsonProperty("sort")
     private Sort sort = null;

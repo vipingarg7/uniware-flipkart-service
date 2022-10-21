@@ -1,16 +1,16 @@
 package com.uniware.integrations.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 
 public class Error {
 
-    @JsonProperty("severity")
+    @SerializedName("severity")
     private String severity;
-    @JsonProperty("code")
+    @SerializedName("code")
     private String code;
-    @JsonProperty("description")
+    @SerializedName("description")
     private String description;
-    @JsonProperty("path")
+    @SerializedName("path")
     private String path;
 
     public Error(String severity, String code, String description, String path){
@@ -49,5 +49,10 @@ public class Error {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    @Override public String toString() {
+        return "Error{" + "severity='" + severity + '\'' + ", code='" + code + '\'' + ", description='" + description
+                + '\'' + ", path='" + path + '\'' + '}';
     }
 }

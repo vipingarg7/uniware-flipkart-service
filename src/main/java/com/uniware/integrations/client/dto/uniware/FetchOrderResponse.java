@@ -1,6 +1,7 @@
 package com.uniware.integrations.client.dto.uniware;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ public class FetchOrderResponse {
     private String nextToken;
     private boolean hasMoreOrders = false;
     private Map<String,Object> metadata;
+    private int totalPages;
 
     public FetchOrderResponse addOrders(List<SaleOrder> orders) {
         if (this.orders == null) {
@@ -43,10 +45,20 @@ public class FetchOrderResponse {
     }
 
     public Map<String, Object> getMetadata() {
+        if ( this.metadata == null )
+            this.metadata = new HashMap<>();
         return metadata;
     }
 
     public void setMetadata(Map<String, Object> metadata) {
         this.metadata = metadata;
+    }
+
+    public int getTotalPages() {
+        return totalPages;
+    }
+
+    public void setTotalPages(int totalPages) {
+        this.totalPages = totalPages;
     }
 }

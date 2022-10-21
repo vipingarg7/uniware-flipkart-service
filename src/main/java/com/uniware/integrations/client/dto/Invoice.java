@@ -1,25 +1,26 @@
 package com.uniware.integrations.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 import java.util.Objects;
-import org.joda.time.LocalDate;
 
 public class Invoice {
 
-    @JsonProperty("invoiceNumber")
+    @SerializedName("invoiceNumber")
     private String invoiceNumber = null;
 
-    @JsonProperty("orderItems")
-    private java.util.List<OrderItem> orderItems = null;
+    @SerializedName("orderItems")
+    private List<OrderItem> orderItems = null;
 
-    @JsonProperty("invoiceDate")
-    private LocalDate invoiceDate = null;
+    @SerializedName("invoiceDate")
+    private Date invoiceDate = null;
 
-    @JsonProperty("orderId")
+    @SerializedName("orderId")
     private String orderId = null;
 
-    @JsonProperty("shipmentId")
+    @SerializedName("shipmentId")
     private String shipmentId = null;
 
     public Invoice invoiceNumber(String invoiceNumber) {
@@ -40,7 +41,7 @@ public class Invoice {
         this.invoiceNumber = invoiceNumber;
     }
 
-    public Invoice orderItems(java.util.List<OrderItem> orderItems) {
+    public Invoice orderItems(List<OrderItem> orderItems) {
         this.orderItems = orderItems;
         return this;
     }
@@ -58,15 +59,15 @@ public class Invoice {
      * @return orderItems
      **/
     
-    public java.util.List<OrderItem> getOrderItems() {
+    public List<OrderItem> getOrderItems() {
         return orderItems;
     }
 
-    public void setOrderItems(java.util.List<OrderItem> orderItems) {
+    public void setOrderItems(List<OrderItem> orderItems) {
         this.orderItems = orderItems;
     }
 
-    public Invoice invoiceDate(LocalDate invoiceDate) {
+    public Invoice invoiceDate(Date invoiceDate) {
         this.invoiceDate = invoiceDate;
         return this;
     }
@@ -76,11 +77,11 @@ public class Invoice {
      * @return invoiceDate
      **/
     
-    public LocalDate getInvoiceDate() {
+    public Date getInvoiceDate() {
         return invoiceDate;
     }
 
-    public void setInvoiceDate(LocalDate invoiceDate) {
+    public void setInvoiceDate(Date invoiceDate) {
         this.invoiceDate = invoiceDate;
     }
 
@@ -102,67 +103,26 @@ public class Invoice {
         this.orderId = orderId;
     }
 
-
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Invoice invoice = (Invoice) o;
-        return Objects.equals(this.invoiceNumber, invoice.invoiceNumber) &&
-                Objects.equals(this.orderItems, invoice.orderItems) &&
-                Objects.equals(this.invoiceDate, invoice.invoiceDate) &&
-                Objects.equals(this.orderId, invoice.orderId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(invoiceNumber, orderItems, invoiceDate, orderId);
-    }
-
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class Invoice {\n");
-
-        sb.append("    invoiceNumber: ").append(toIndentedString(invoiceNumber)).append("\n");
-        sb.append("    orderItems: ").append(toIndentedString(orderItems)).append("\n");
-        sb.append("    invoiceDate: ").append(toIndentedString(invoiceDate)).append("\n");
-        sb.append("    orderId: ").append(toIndentedString(orderId)).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
-
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(java.lang.Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
+    @Override public String toString() {
+        return "Invoice{" + "invoiceNumber='" + invoiceNumber + '\'' + ", orderItems=" + orderItems + ", invoiceDate="
+                + invoiceDate + ", orderId='" + orderId + '\'' + ", shipmentId='" + shipmentId + '\'' + '}';
     }
 
     public static class OrderItem {
 
-        @JsonProperty("invoiceAmount")
+        @SerializedName("invoiceAmount")
         private BigDecimal invoiceAmount = null;
 
-        @JsonProperty("taxRate")
+        @SerializedName("taxRate")
         private BigDecimal taxRate = null;
 
-        @JsonProperty("serialNumbers")
-        private java.util.List<java.util.List<String>> serialNumbers = null;
+        @SerializedName("serialNumbers")
+        private List<List<String>> serialNumbers = null;
 
-        @JsonProperty("orderItemId")
+        @SerializedName("orderItemId")
         private String orderItemId = null;
 
-        @JsonProperty("taxDetails")
+        @SerializedName("taxDetails")
         private TaxDetails taxDetails = null;
 
         public OrderItem invoiceAmount(BigDecimal invoiceAmount) {
@@ -201,12 +161,12 @@ public class Invoice {
             this.taxRate = taxRate;
         }
 
-        public OrderItem serialNumbers(java.util.List<java.util.List<String>> serialNumbers) {
+        public OrderItem serialNumbers(List<List<String>> serialNumbers) {
             this.serialNumbers = serialNumbers;
             return this;
         }
 
-        public OrderItem addSerialNumbersItem(java.util.List<String> serialNumbersItem) {
+        public OrderItem addSerialNumbersItem(List<String> serialNumbersItem) {
             if (this.serialNumbers == null) {
                 this.serialNumbers = new java.util.ArrayList<>();
             }
@@ -219,11 +179,11 @@ public class Invoice {
          * @return serialNumbers
          **/
 
-        public java.util.List<java.util.List<String>> getSerialNumbers() {
+        public List<List<String>> getSerialNumbers() {
             return serialNumbers;
         }
 
-        public void setSerialNumbers(java.util.List<java.util.List<String>> serialNumbers) {
+        public void setSerialNumbers(List<List<String>> serialNumbers) {
             this.serialNumbers = serialNumbers;
         }
 
@@ -263,52 +223,9 @@ public class Invoice {
             this.taxDetails = taxDetails;
         }
 
-
-        @Override
-        public boolean equals(java.lang.Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            OrderItem orderItems = (OrderItem) o;
-            return Objects.equals(this.invoiceAmount, orderItems.invoiceAmount) &&
-                    Objects.equals(this.taxRate, orderItems.taxRate) &&
-                    Objects.equals(this.serialNumbers, orderItems.serialNumbers) &&
-                    Objects.equals(this.orderItemId, orderItems.orderItemId) &&
-                    Objects.equals(this.taxDetails, orderItems.taxDetails);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(invoiceAmount, taxRate, serialNumbers, orderItemId, taxDetails);
-        }
-
-
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("class OrderItems {\n");
-
-            sb.append("    invoiceAmount: ").append(toIndentedString(invoiceAmount)).append("\n");
-            sb.append("    taxRate: ").append(toIndentedString(taxRate)).append("\n");
-            sb.append("    serialNumbers: ").append(toIndentedString(serialNumbers)).append("\n");
-            sb.append("    orderItemId: ").append(toIndentedString(orderItemId)).append("\n");
-            sb.append("    taxDetails: ").append(toIndentedString(taxDetails)).append("\n");
-            sb.append("}");
-            return sb.toString();
-        }
-
-        /**
-         * Convert the given object to string with each line indented by 4 spaces
-         * (except the first line).
-         */
-        private String toIndentedString(java.lang.Object o) {
-            if (o == null) {
-                return "null";
-            }
-            return o.toString().replace("\n", "\n    ");
+        @Override public String toString() {
+            return "OrderItem{" + "invoiceAmount=" + invoiceAmount + ", taxRate=" + taxRate + ", serialNumbers="
+                    + serialNumbers + ", orderItemId='" + orderItemId + '\'' + ", taxDetails=" + taxDetails + '}';
         }
 
     }

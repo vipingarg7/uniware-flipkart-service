@@ -64,7 +64,7 @@ public class SalesFlipkartControllerV1 extends BaseController {
 
     @PostMapping(value = "/catalog/fetch", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> fetchCatalog(@RequestHeader Map<String,String> headers, @RequestBody CatalogSyncRequest catalogSyncRequest) {
-        return ResponseEntity.ok    ().body(((SalesFlipkartService)getFlipkartModel()).fetchCatalog(headers, catalogSyncRequest));
+        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).fetchCatalog(headers, catalogSyncRequest));
     }
     // todo self ship
     @PostMapping(value = "/invoice/generate", consumes = MediaType.APPLICATION_JSON_VALUE)

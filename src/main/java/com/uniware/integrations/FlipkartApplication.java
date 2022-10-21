@@ -11,13 +11,6 @@ public class FlipkartApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(FlipkartApplication.class, args);
-//		ClassLoader cl = ClassLoader.getSystemClassLoader();
-//
-//		URL[] urls = ((URLClassLoader)cl).getURLs();
-//
-//		for(URL url: urls){
-//			System.out.println(url.getFile());
-//		}
 
 	}
 

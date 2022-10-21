@@ -2,20 +2,20 @@ package com.uniware.integrations.client.dto.api.responseDto;
 
 import com.google.gson.annotations.SerializedName;
 import com.uniware.integrations.client.dto.BaseResponse;
-import com.uniware.integrations.client.dto.Shipment;
+import com.uniware.integrations.client.dto.DeliverShipmentStatus;
 import java.util.List;
 
-public class ShipmentStatusV3Response extends BaseResponse {
+public class ShipmentsDeliverV3Response extends BaseResponse {
 
     @SerializedName("shipments")
-    private List<Shipment> shipments = null;
+    private List<DeliverShipmentStatus> shipments = null;
 
-    public ShipmentStatusV3Response shipments(List<Shipment> shipments) {
+    public ShipmentsDeliverV3Response shipments(List<DeliverShipmentStatus> shipments) {
         this.shipments = shipments;
         return this;
     }
 
-    public ShipmentStatusV3Response addShipmentsItem(Shipment shipmentsItem) {
+    public ShipmentsDeliverV3Response addShipmentsItem(DeliverShipmentStatus shipmentsItem) {
         if (this.shipments == null) {
             this.shipments = new java.util.ArrayList<>();
         }
@@ -27,17 +27,16 @@ public class ShipmentStatusV3Response extends BaseResponse {
      * Get shipments
      * @return shipments
      **/
-
-    public List<Shipment> getShipments() {
+    
+    public List<DeliverShipmentStatus> getShipments() {
         return shipments;
     }
 
-    public void setShipments(List<Shipment> shipments) {
+    public void setShipments(List<DeliverShipmentStatus> shipments) {
         this.shipments = shipments;
     }
 
     @Override public String toString() {
-        return "ShipmentStatusV3Response{" + "shipments=" + shipments + '}';
+        return "ShipmentsDeliverV3Response{" + "shipments=" + shipments + '}';
     }
-
 }

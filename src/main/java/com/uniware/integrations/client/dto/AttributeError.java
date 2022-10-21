@@ -1,10 +1,10 @@
 package com.uniware.integrations.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 
 public class AttributeError extends Error {
 
-    @JsonProperty("attribute")
+    @SerializedName("attribute")
     private String attribute;
 
     public AttributeError(String severity, String code, String description, String path, String attribute) {
@@ -18,5 +18,9 @@ public class AttributeError extends Error {
 
     public void setAttribute(String attribute) {
         this.attribute = attribute;
+    }
+
+    @Override public String toString() {
+        return "AttributeError{" + "attribute='" + attribute + '\'' + '}';
     }
 }

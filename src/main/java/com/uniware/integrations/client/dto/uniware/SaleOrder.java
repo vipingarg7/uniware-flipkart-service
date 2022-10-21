@@ -1,5 +1,6 @@
 package com.uniware.integrations.client.dto.uniware;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.unifier.core.annotation.EncryptableList;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -52,6 +53,7 @@ public class SaleOrder {
     @Length(max = 45)
     private String                           displayOrderCode;
 
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Date                             displayOrderDateTime;
 
     private String                           customerCode;
@@ -108,6 +110,7 @@ public class SaleOrder {
 
     private Boolean                          cformProvided;
 
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Date                             fulfillmentTat;
 
     private Boolean                          verificationRequired;
@@ -139,6 +142,7 @@ public class SaleOrder {
     @Length(max = 45)
     private String                           transactionId;
 
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Date                             transactionDate;
 
     @Min(value = 0)
@@ -201,6 +205,8 @@ public class SaleOrder {
         public void setTrackingNumber(String trackingNumber) {
             this.trackingNumber = trackingNumber;
         }
+
+
 
         @Override
         public String toString() {
