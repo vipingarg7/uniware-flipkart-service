@@ -1,16 +1,17 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class SerialNumber {
 
-    @JsonProperty("serialNumbers")
+    @SerializedName("serialNumbers")
     private List<List<String>> serialNumbers = null;
 
-    @JsonProperty("orderItemId")
+    @SerializedName("orderItemId")
     private String orderItemId = null;
 
     public SerialNumber serialNumbers(List<List<String>> serialNumbers) {

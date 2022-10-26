@@ -1,16 +1,17 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import com.uniware.integrations.client.dto.BaseRequest;
 import java.util.List;
 import java.util.Objects;
 
 public class DispatchStandardShipmentV3Request extends BaseRequest {
 
-    @JsonProperty("locationId")
+    @SerializedName("locationId")
     private String locationId = null;
 
-    @JsonProperty("shipmentIds")
+    @SerializedName("shipmentIds")
     private List<String> shipmentIds = null;
 
     public DispatchStandardShipmentV3Request locationId(String locationId) {

@@ -1,28 +1,29 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.math.BigDecimal;
 import java.util.Objects;
 import org.joda.time.LocalDate;
 
 public class ConfirmItemRow {
 
-    @JsonProperty("taxRate")
+    @SerializedName("taxRate")
     private BigDecimal taxRate = null;
 
-    @JsonProperty("orderItemId")
+    @SerializedName("orderItemId")
     private String orderItemId = null;
 
-    @JsonProperty("invoiceDate")
+    @SerializedName("invoiceDate")
     private LocalDate invoiceDate = null;
 
-    @JsonProperty("serialNumbers")
+    @SerializedName("serialNumbers")
     private java.util.List<java.util.List<String>> serialNumbers = null;
 
-    @JsonProperty("invoiceNumber")
+    @SerializedName("invoiceNumber")
     private String invoiceNumber = null;
 
-    @JsonProperty("quantity")
+    @SerializedName("quantity")
     private Integer quantity = null;
 
     public ConfirmItemRow taxRate(BigDecimal taxRate) {

@@ -3,10 +3,11 @@ package com.uniware.integrations.client.dto;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.gson.annotations.SerializedName;
 import java.util.Objects;
 
 public class Filter {
-    @JsonProperty("sku")
+    @SerializedName("sku")
     private java.util.List<String> sku = null;
 
     /**
@@ -41,7 +42,7 @@ public class Filter {
             return null;
         }
 
-    }  @JsonProperty("serviceProfiles")
+    }  @SerializedName("serviceProfiles")
     private java.util.List<ServiceProfilesEnum> serviceProfiles = null;
 
     /**
@@ -76,7 +77,7 @@ public class Filter {
             return null;
         }
 
-    }  @JsonProperty("shipmentTypes")
+    }  @SerializedName("shipmentTypes")
     private java.util.List<ShipmentTypesEnum> shipmentTypes = null;
 
     /**
@@ -111,7 +112,7 @@ public class Filter {
             return null;
         }
 
-    }  @JsonProperty("cancellationType")
+    }  @SerializedName("cancellationType")
     private CancellationTypeEnum cancellationType = null;
 
     /**
@@ -145,13 +146,13 @@ public class Filter {
             return null;
         }
 
-    }  @JsonProperty("dispatchServiceTiers")
+    }  @SerializedName("dispatchServiceTiers")
     private java.util.List<DispatchServiceTiersEnum> dispatchServiceTiers = null;
 
-    @JsonProperty("dispatchByDate")
+    @SerializedName("dispatchByDate")
     private DateFilter dispatchByDate = null;
 
-    @JsonProperty("cancellationDate")
+    @SerializedName("cancellationDate")
     private DateFilter cancellationDate = null;
 
     /**
@@ -195,13 +196,13 @@ public class Filter {
             return null;
         }
 
-    }  @JsonProperty("states")
+    }  @SerializedName("states")
     private java.util.List<StatesEnum> states = null;
 
-    @JsonProperty("locationId")
+    @SerializedName("locationId")
     private String locationId = null;
 
-    @JsonProperty("dispatchAfterDate")
+    @SerializedName("dispatchAfterDate")
     private DateFilter dispatchAfterDate = null;
 
     /**
@@ -236,13 +237,13 @@ public class Filter {
             return null;
         }
 
-    }  @JsonProperty("type")
+    }  @SerializedName("type")
     private TypeEnum type = null;
 
-    @JsonProperty("orderDate")
+    @SerializedName("orderDate")
     private DateFilter orderDate = null;
 
-    @JsonProperty("modifiedDate")
+    @SerializedName("modifiedDate")
     private DateFilter modifiedDate = null;
 
     public Filter sku(java.util.List<String> sku) {

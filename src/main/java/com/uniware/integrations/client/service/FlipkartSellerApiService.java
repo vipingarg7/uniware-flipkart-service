@@ -60,24 +60,29 @@ public class FlipkartSellerApiService {
         HashMap<String, String> headersMap = new HashMap<>();
         headersMap.put("cache-control", "no-cache");
         headersMap.put("Authorization", FlipkartRequestContext.current().getAuthToken());
+        String apiEndpoint = "/sellers/locations/allLocations";
 
         HttpSender httpSender = HttpSenderFactory.getHttpSender();
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
         try {
-            String response = httpSender.executeGet(channelBaseUrl + "/sellers/locations/allLocations", Collections.emptyMap(), headersMap, httpResponseWrapper);
-            locationDetailsResponse = new Gson().fromJson(response, LocationDetailsResponse.class);
+            String response = httpSender.executeGet(channelBaseUrl + apiEndpoint, Collections.emptyMap(), headersMap, httpResponseWrapper);
+
             if ( httpResponseWrapper.getResponseStatus().is5xxServerError() )
                 throw new FailureResponse("Flipkart Server error :" + response + "responseCode " + httpResponseWrapper.getResponseStatus().name());
             if ( httpResponseWrapper.getResponseStatus().is4xxClientError())
             throw new FailureResponse("Client Error : response " + response + " responseCode " + httpResponseWrapper.getResponseStatus().name());
 
+            locationDetailsResponse = new Gson().fromJson(response, LocationDetailsResponse.class);
             return locationDetailsResponse;
         }
-        catch (HttpTransportException | JsonSyntaxException e) {
-            LOGGER.error("Exception while fetchShipmentTrackingDetails", e);
+        catch (HttpTransportException ex ) {
+            LOGGER.error("Getting error while fetching LocationDetails, apiEndpoint : {}, exception : {}",apiEndpoint, ex);
+            throw  new FailureResponse("Getting error  while fetching LocationDetails" + ex.getMessage());
+        } catch ( JsonSyntaxException ex ) {
+            LOGGER.error("Getting error  while parsing LocationDetails, apiEndpoint : {}, exception : {}",apiEndpoint, ex);
+            throw  new FailureResponse("Getting error  while parsing LocationDetails" + ex.getMessage());
         }
 
-        return locationDetailsResponse;
     }
 
     public AuthTokenResponse getAuthToken(Map<String, String> headers, String payload) {
@@ -91,14 +96,13 @@ public class FlipkartSellerApiService {
 
         HashMap<String, String> headersMap = new HashMap<>();
         headersMap.put("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+        String apiEndpoint = "/oauth-service/oauth/token";
 
         HttpSender httpSender = HttpSenderFactory.getHttpSenderNoProxy();
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
         try {
-            httpSender.setBasicAuthentication(environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_APPLICATION_ID),
-                    environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_APPLICATION_SECRET));
-            String response = httpSender.executeGet(channelBaseUrl + "/oauth-service/oauth/token", requestParams,
-                    headersMap, httpResponseWrapper);
+            httpSender.setBasicAuthentication(environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_APPLICATION_ID), environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_APPLICATION_SECRET));
+            String response = httpSender.executeGet(channelBaseUrl + apiEndpoint, requestParams, headersMap, httpResponseWrapper);
             if ( httpResponseWrapper.getResponseStatus().is5xxServerError() )
                 throw new FailureResponse("Flipkart Server error :" + response + "responseCode " + httpResponseWrapper.getResponseStatus().name());
             if ( httpResponseWrapper.getResponseStatus().is4xxClientError())
@@ -107,10 +111,11 @@ public class FlipkartSellerApiService {
             AuthTokenResponse authTokenResponseJson = new Gson().fromJson(response, AuthTokenResponse.class);
             return authTokenResponseJson;
         }
-        catch (HttpTransportException | JsonSyntaxException e) {
-            LOGGER.error("Exception while generating auth token", e);
+        catch (HttpTransportException | JsonSyntaxException ex) {
+            LOGGER.error("Error while generating auth token, apiEndpoint : {}, exception : {}",apiEndpoint, ex);
+            throw new FailureResponse("Error while generating auth token"+ ex.getMessage());
         }
-        return null;
+
     }
 
     public AuthTokenResponse refreshAuthToken(String refreshToken) {
@@ -124,14 +129,14 @@ public class FlipkartSellerApiService {
 
         HashMap<String, String> headersMap = new HashMap<>();
         headersMap.put("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
+        String apiEndpoint =  "/oauth-service/oauth/token";
 
         HttpSender httpSender = HttpSenderFactory.getHttpSenderNoProxy();
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
         try {
             httpSender.setBasicAuthentication(environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_APPLICATION_ID),
                     environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_APPLICATION_SECRET));
-            String response = httpSender.executeGet(channelBaseUrl + "/oauth-service/oauth/token", requestParams,
-                    headersMap, httpResponseWrapper);
+            String response = httpSender.executeGet(channelBaseUrl + apiEndpoint, requestParams, headersMap, httpResponseWrapper);
 
             if ( httpResponseWrapper.getResponseStatus().is5xxServerError() )
                 throw new FailureResponse("Flipkart Server error :" + response + "responseCode " + httpResponseWrapper.getResponseStatus().name());
@@ -140,8 +145,9 @@ public class FlipkartSellerApiService {
 
             authTokenResponse = new Gson().fromJson(response, AuthTokenResponse.class);
         }
-        catch (HttpTransportException | JsonSyntaxException e) {
-            LOGGER.error("Exception while fetchShipmentTrackingDetails", e);
+        catch (HttpTransportException | JsonSyntaxException ex) {
+            LOGGER.error("Getting Error while generating AuthToken, apiEndpoint : {}, exception : {}",apiEndpoint, ex);
+            throw new FailureResponse("Getting Error while generating AuthToken" + ex.getMessage());
         }
         return authTokenResponse;
     }
@@ -241,28 +247,33 @@ public class FlipkartSellerApiService {
 
     public ShipmentDetailsV3WithSubPackages getShipmentDetailsWithSubPackages(String shipmentIds) {
 
-        ShipmentDetailsV3WithSubPackages shipmentDetailsV3WithSubPackages = null;
+        ShipmentDetailsV3WithSubPackages shipmentDetailsV3WithSubPackages;
         String channelBaseUrl = getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource());
         HttpSender httpSender = HttpSenderFactory.getHttpSenderNoProxy();
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
         Map<String, String> headersMap = new HashMap<>();
         headersMap.put("Content-Type", "application/json");
         headersMap.put("Authorization", FlipkartRequestContext.current().getAuthToken());
+        Map<String, String> params = new HashMap<>();
+        params.put("shipmentIds", shipmentIds);
+        String apiEndpoint = "/sellers/v3/shipments";
         try {
-            String response = httpSender.executeGet(channelBaseUrl + "/v3/shipments?shipmentIds=" + shipmentIds, Collections.emptyMap(), headersMap, httpResponseWrapper);
+            String response = httpSender.executeGet(channelBaseUrl + apiEndpoint, params, headersMap, httpResponseWrapper);
             if ( httpResponseWrapper.getResponseStatus().is5xxServerError() )
                 throw new FailureResponse("Flipkart Server error :" + response + "responseCode " + httpResponseWrapper.getResponseStatus().name());
             if ( httpResponseWrapper.getResponseStatus().is4xxClientError())
                 throw new FailureResponse("Client Error : response " + response + " responseCode " + httpResponseWrapper.getResponseStatus().name());
 
             shipmentDetailsV3WithSubPackages = new Gson().fromJson(response, ShipmentDetailsV3WithSubPackages.class);
-            LOGGER.info("shipmentDetailsSearchResponse : " + shipmentDetailsV3WithSubPackages);
+            shipmentDetailsV3WithSubPackages.setResponseHeaders(httpResponseWrapper.getAllHeaders());
+            shipmentDetailsV3WithSubPackages.setResponseStatus(httpResponseWrapper.getResponseStatus());
             return shipmentDetailsV3WithSubPackages;
         }
         catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Error occur while fetching shipments details apiEndpoint : {}, exception {}, ",apiEndpoint, e);
+            throw new FailureResponse("Error occur while fetching shipments details exception {}" + e.getMessage());
         }
-        return null;
+
     }
 
     public DispatchShipmentV3Response markSelfShipDispatch(DispatchSelfShipmentRequestV3 dispatchSelfShipmentRequest) {
@@ -276,22 +287,21 @@ public class FlipkartSellerApiService {
         Map<String, String> headersMap = new HashMap<>();
         headersMap.put("Content-Type", "application/json");
         headersMap.put("Authorization", FlipkartRequestContext.current().getAuthToken());
+        String apiEndpoint =  "/sellers/v3/shipments/selfShip/dispatch";
         try {
-            String response = httpSender.executePost(channelBaseUrl + "/sellers/v3/shipments/selfShip/dispatch",
-                    dispatchSelfShipmentRequestJson, headersMap, httpResponseWrapper);
+            String response = httpSender.executePost(channelBaseUrl + apiEndpoint, dispatchSelfShipmentRequestJson, headersMap, httpResponseWrapper);
             if ( httpResponseWrapper.getResponseStatus().is5xxServerError() )
                 throw new FailureResponse("Flipkart Server error :" + response + "responseCode " + httpResponseWrapper.getResponseStatus().name());
             if ( httpResponseWrapper.getResponseStatus().is4xxClientError())
                 throw new FailureResponse("Client Error : response " + response + " responseCode " + httpResponseWrapper.getResponseStatus().name());
 
             dispatchShipmentV3Response = new Gson().fromJson(response, DispatchShipmentV3Response.class);
-            LOGGER.info("DispatchShipmentV3Response : " + dispatchShipmentV3Response);
             return dispatchShipmentV3Response;
         }
         catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Error occur while marking shipment dispatch : {}, exception {}, ",apiEndpoint, e);
+            throw new FailureResponse("Error occur while marking shipment dispatch exception {}" + e.getMessage());
         }
-        return null;
     }
 
     public DispatchShipmentV3Response markStandardFulfilmentShipmentsRTD(DispatchStandardShipmentV3Request dispatchStandardShipmentRequest) {
@@ -305,21 +315,21 @@ public class FlipkartSellerApiService {
         Map<String, String> headersMap = new HashMap<>();
         headersMap.put("Content-Type", "application/json");
         headersMap.put("Authorization", FlipkartRequestContext.current().getAuthToken());
+        String apiEndpoint = "/sellers/v3/shipments/dispatch";
         try {
-            String response = httpSender.executePost(channelBaseUrl + "/sellers/v3/shipments/dispatch",
-                    dispatchStandardShipmentRequestJson, headersMap, httpResponseWrapper);
+            String response = httpSender.executePost(channelBaseUrl + apiEndpoint , dispatchStandardShipmentRequestJson, headersMap, httpResponseWrapper);
             if ( httpResponseWrapper.getResponseStatus().is5xxServerError() )
                 throw new FailureResponse("Flipkart Server error :" + response + "responseCode " + httpResponseWrapper.getResponseStatus().name());
             if ( httpResponseWrapper.getResponseStatus().is4xxClientError())
                 throw new FailureResponse("Client Error : response " + response + " responseCode " + httpResponseWrapper.getResponseStatus().name());
+
             dispatchShipmentV3Response = new Gson().fromJson(response, DispatchShipmentV3Response.class);
-            LOGGER.info("dispatchShipmentV3Response : " + dispatchShipmentV3Response);
             return dispatchShipmentV3Response;
         }
         catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Error occur while marking shipment dispatch : {}, exception {}, ",apiEndpoint, e);
+            throw new FailureResponse("Error occur while marking shipment dispatch exception {}" + e.getMessage());
         }
-        return null;
     }
 
     public ShipmentsDeliverV3Response markSelfShipmentDeliver(ShipmentDeliveryRequestV3 shipmentDeliveryRequestV3) {
@@ -386,16 +396,17 @@ public class FlipkartSellerApiService {
         Map<String, String> headersMap = new HashMap<>();
         headersMap.put("Content-Type", "application/json");
         headersMap.put("Authorization", FlipkartRequestContext.current().getAuthToken());
+        String apiEndpoint = "/sellers/v3/shipments/" + shipmentIds + "/invoices";
         try {
-            String response = httpSender.executeGet(channelBaseUrl + "/v3/shipments/" + shipmentIds + "invoices",
-                    Collections.emptyMap(), headersMap, httpResponseWrapper);
+            String response = httpSender.executeGet(channelBaseUrl + apiEndpoint, Collections.emptyMap(), headersMap, httpResponseWrapper);
             if ( httpResponseWrapper.getResponseStatus().is5xxServerError() )
                 throw new FailureResponse("Flipkart Server error :" + response + "responseCode " + httpResponseWrapper.getResponseStatus().name());
             if ( httpResponseWrapper.getResponseStatus().is4xxClientError())
                 throw new FailureResponse("Client Error : response " + response + " responseCode " + httpResponseWrapper.getResponseStatus().name());
 
             invoiceDetailsV3Response = new Gson().fromJson(response, InvoiceDetailsV3Response.class);
-            LOGGER.info("invoiceDetailsV3Response : " + invoiceDetailsV3Response);
+            invoiceDetailsV3Response.setResponseHeaders(httpResponseWrapper.getAllHeaders());
+            invoiceDetailsV3Response.setResponseStatus(httpResponseWrapper.getResponseStatus());
             return invoiceDetailsV3Response;
         }
         catch (Exception e) {
@@ -456,8 +467,9 @@ public class FlipkartSellerApiService {
         Map<String, String> headersMap = new HashMap<>();
         headersMap.put("Content-Type", "application/pdf");
         headersMap.put("Authorization", FlipkartRequestContext.current().getAuthToken());
+        String apiEndpoint = "/sellers/v3/shipments/" + shipmentId + "/labels";
         try {
-            httpSender.downloadToFile( channelBaseUrl + "/" + shipmentId + "/labels", Collections.emptyMap(), headersMap, HttpSender.MethodType.GET, filePath, httpResponseWrapper);
+            httpSender.downloadToFile( channelBaseUrl + apiEndpoint, Collections.emptyMap(), headersMap, HttpSender.MethodType.GET, filePath, httpResponseWrapper);
             if ( httpResponseWrapper.getResponseStatus().is5xxServerError() )
                 throw new FailureResponse("Flipkart Server error :" + "responseCode " + httpResponseWrapper.getResponseStatus().name());
             if ( httpResponseWrapper.getResponseStatus().is4xxClientError())

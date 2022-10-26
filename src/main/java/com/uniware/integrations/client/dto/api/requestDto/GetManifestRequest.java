@@ -1,12 +1,13 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import com.uniware.integrations.client.dto.BaseRequest;
 import java.util.Objects;
 import org.joda.time.DateTime;
 
 public class GetManifestRequest extends BaseRequest {
-    @JsonProperty("params")
+    @SerializedName("params")
     private Params params = null;
 
     private GetManifestRequest(Builder builder) {
@@ -43,16 +44,16 @@ public class GetManifestRequest extends BaseRequest {
     }
 
     public static class Params {
-        @JsonProperty("pickupDate")
+        @SerializedName("pickupDate")
         private PickUpDate pickupDate = null;
 
-        @JsonProperty("locationId")
+        @SerializedName("locationId")
         private String locationId = null;
 
-        @JsonProperty("is_mps")
+        @SerializedName("is_mps")
         private Boolean isMps = null;
 
-        @JsonProperty("vendorGroupCode")
+        @SerializedName("vendorGroupCode")
         private String vendorGroupCode = null;
 
         private Params(Builder builder) {
@@ -169,10 +170,10 @@ public class GetManifestRequest extends BaseRequest {
     }
 
     public static class PickUpDate {
-        @JsonProperty("to")
+        @SerializedName("to")
         private DateTime to = null;
 
-        @JsonProperty("from")
+        @SerializedName("from")
         private DateTime from = null;
 
         private PickUpDate(Builder builder) {

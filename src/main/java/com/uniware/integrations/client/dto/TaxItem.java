@@ -1,18 +1,19 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.math.BigDecimal;
 import java.util.Objects;
 
 public class TaxItem {
 
-    @JsonProperty("taxRate")
+    @SerializedName("taxRate")
     private BigDecimal taxRate = null;
 
-    @JsonProperty("orderItemId")
+    @SerializedName("orderItemId")
     private String orderItemId = null;
 
-    @JsonProperty("quantity")
+    @SerializedName("quantity")
     private Integer quantity = null;
 
     public TaxItem() {};

@@ -1,21 +1,22 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.util.Objects;
 import org.joda.time.DateTime;
 
 public class DeliverRequest {
 
-    @JsonProperty("deliveryDate")
+    @SerializedName("deliveryDate")
     private DateTime deliveryDate = null;
 
-    @JsonProperty("deliveryDateValid")
+    @SerializedName("deliveryDateValid")
     private Boolean deliveryDateValid = null;
 
-    @JsonProperty("locationId")
+    @SerializedName("locationId")
     private String locationId = null;
 
-    @JsonProperty("shipmentId")
+    @SerializedName("shipmentId")
     private String shipmentId = null;
 
     public DeliverRequest deliveryDate(DateTime deliveryDate) {

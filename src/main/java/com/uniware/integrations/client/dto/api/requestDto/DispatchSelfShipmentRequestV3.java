@@ -1,13 +1,14 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import com.uniware.integrations.client.dto.BaseRequest;
 import com.uniware.integrations.client.dto.DispatchRequest;
 import java.util.Objects;
 
 public class DispatchSelfShipmentRequestV3 extends BaseRequest {
 
-    @JsonProperty("shipments")
+    @SerializedName("shipments")
     private java.util.List<DispatchRequest> shipments = null;
 
     public DispatchSelfShipmentRequestV3 shipments(java.util.List<DispatchRequest> shipments) {

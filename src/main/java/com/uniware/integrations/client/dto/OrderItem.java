@@ -1,6 +1,7 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.gson.annotations.SerializedName;
 import java.util.Date;
@@ -147,6 +148,7 @@ public class OrderItem {
     private String cancellationGroupId = null;
 
     @SerializedName("orderDate")
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Date orderDate = null;
 
     /**

@@ -1,28 +1,29 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class PackRequest {
 
-    @JsonProperty("subShipments")
+    @SerializedName("subShipments")
     private List<SubShipments> subShipments = null;
 
-    @JsonProperty("taxItems")
+    @SerializedName("taxItems")
     private List<TaxItem> taxItems = null;
 
-    @JsonProperty("invoices")
+    @SerializedName("invoices")
     private List<Invoice> invoices = null;
 
-    @JsonProperty("serialNumbers")
+    @SerializedName("serialNumbers")
     private List<SerialNumber> serialNumbers = null;
 
-    @JsonProperty("locationId")
+    @SerializedName("locationId")
     private String locationId = null;
 
-    @JsonProperty("shipmentId")
+    @SerializedName("shipmentId")
     private String shipmentId = null;
 
     public PackRequest subShipments(List<SubShipments> subShipments) {

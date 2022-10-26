@@ -1,8 +1,6 @@
 package com.uniware.integrations.client.service;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.unifier.core.transport.http.HttpResponseWrapper;
@@ -15,9 +13,6 @@ import com.uniware.integrations.client.dto.api.requestDto.EnqueDownloadRequest;
 import com.uniware.integrations.client.dto.api.requestDto.FetchOnHoldOrderRequest;
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadNUploadHistoryResponse;
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadRequestStatusResponse;
-import com.uniware.integrations.client.dto.uniware.Pendency;
-import com.uniware.integrations.core.dto.api.Response;
-import com.uniware.integrations.utils.CollectionUtils;
 import com.uniware.integrations.utils.http.HttpSenderFactory;
 import com.uniware.integrations.web.context.TenantRequestContext;
 import com.uniware.integrations.web.exception.FailureResponse;
@@ -25,7 +20,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
@@ -84,12 +78,6 @@ public class FlipkartSellerPanelService {
         return false;
     }
 
-    public static void main(String[] args) {
-        FlipkartRequestContext.current().setUserName("abcd");
-        boolean flag = doLogin("sales@everpeak.in","Durapack@2020");
-        System.out.println(flag);
-    }
-
     /*
         Description     - Login on fipkart panel with Client credentials ( username, password)
         Method          - POST
@@ -136,16 +124,12 @@ public class FlipkartSellerPanelService {
         Sample Response - Returns Json containing client details
      */
     public Pair<String, String> getFeaturesForSeller() {
-        String username = FlipkartRequestContext.current().getUserName();
-        HttpSender httpSender = null;
-        if ( StringUtils.isNotBlank(username)){
-            httpSender = HttpSenderFactory.getHttpSender(username);
-        } else {
-            httpSender = HttpSenderFactory.getHttpSender();
-        }
+
+        HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
+        HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
 
         try {
-            HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
+
             String sellerFeaturePageResponse = httpSender.executeGet(SELLER_PANEL_URL + "/getFeaturesForSeller", Collections.emptyMap(), Collections.EMPTY_MAP, httpResponseWrapper);
             if (httpResponseWrapper.getResponseStatus().equals(HttpStatus.TOO_MANY_REQUESTS)) {
                 LOGGER.error("Got http error for TOO_MANY_REQUESTS, resposne:{} ", sellerFeaturePageResponse);
@@ -179,17 +163,21 @@ public class FlipkartSellerPanelService {
     public String getOnHoldOrdersFromPanel(FetchOnHoldOrderRequest fetchOnHoldOrderRequest)  {
 
         String fetchOnHoldOrderRequestJson = new Gson().toJson(fetchOnHoldOrderRequest);
-
         HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
+        HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
+        Map<String,String> headers = new HashMap<>();
+        headers.put("Content-Type","application/json");
+        headers.put("X-LOCATION-ID",FlipkartRequestContext.current().getLocationId());
+        headers.put("fk-csrf-token",FlipkartRequestContext.current().getSellerPanelHeaders().get("fk-csrf-token"));
+
         try {
-            HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
-            String response = httpSender.executePost(SELLER_PANEL_URL + "/napi/my-orders/fetch",fetchOnHoldOrderRequestJson,FlipkartRequestContext.current()
-                    .getSellerPanelHeaders(), httpResponseWrapper );
+            String response = httpSender.executePost(SELLER_PANEL_URL + "/napi/my-orders/fetch",fetchOnHoldOrderRequestJson, headers, httpResponseWrapper );
             if ( httpResponseWrapper.getResponseStatus().is5xxServerError() )
                 throw new FailureResponse("Flipkart Server error :" + response + "responseCode " + httpResponseWrapper.getResponseStatus().name());
             if ( httpResponseWrapper.getResponseStatus().is4xxClientError())
                 throw new FailureResponse("Client Error : response " + response + " responseCode  " + httpResponseWrapper.getResponseStatus().name());
 
+            LOGGER.info("getOnHoldOrdersFromPanel Response : {}", response);
             return response;
         }
         catch (HttpTransportException | JsonSyntaxException e) {
@@ -207,11 +195,11 @@ public class FlipkartSellerPanelService {
     public StockFileDownloadNUploadHistoryResponse getStockFileDownloadNUploadHistory() {
 
         StockFileDownloadNUploadHistoryResponse stockFileDownloadNUploadHistoryResponse = new StockFileDownloadNUploadHistoryResponse();
+        HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
+        HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
         String apiEndpoint = "/napi/listing/stockFileDownloadNUploadHistory";
 
         try {
-            HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
-            HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
             String response = httpSender.executeGet(SELLER_PANEL_URL + apiEndpoint, Collections.emptyMap(), FlipkartRequestContext.current()
                     .getSellerPanelHeaders(), httpResponseWrapper);
             if ( httpResponseWrapper.getResponseStatus().is5xxServerError() )
@@ -237,11 +225,11 @@ public class FlipkartSellerPanelService {
     public StockFileDownloadRequestStatusResponse getStockFileDownloadRequestStatus() {
 
         StockFileDownloadRequestStatusResponse stockFileDownloadRequestStatusResponse;
+        HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
+        HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
         String apiEndpoint = "/napi/listing/stockFileDownloadRequestStatus";
-
         try {
-            HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
-            HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
+
             String response = httpSender.executeGet(SELLER_PANEL_URL + apiEndpoint, Collections.emptyMap(), FlipkartRequestContext.current()
                     .getSellerPanelHeaders(), httpResponseWrapper);
             if ( httpResponseWrapper.getResponseStatus().is5xxServerError() )
@@ -273,10 +261,11 @@ public class FlipkartSellerPanelService {
         EnqueDownloadRequest enqueDownloadRequest = new EnqueDownloadRequest.Builder().setState("LISTING_UI_GROUP").setRefiner(refiner).setVerticalGroup(new EnqueDownloadRequest.VerticalGroup()).build();
         String enqueDownloadRequestJson = new Gson().toJson(enqueDownloadRequest);
 
+        HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
+        HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
         String apiEndpoint = "/napi/listing/enqueueDownload";
+
         try {
-            HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
-            HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
             String response = httpSender.executePost(SELLER_PANEL_URL + apiEndpoint,enqueDownloadRequestJson,FlipkartRequestContext.current()
                     .getSellerPanelHeaders(), httpResponseWrapper );
             if ( httpResponseWrapper.getResponseStatus().is5xxServerError() )
@@ -293,7 +282,7 @@ public class FlipkartSellerPanelService {
     }
 
     /*
-        Description       - Download stock file
+        Description       - Download stock file   [ path => Seller panel Home page -> MyListings -> Download ]
         Method            - GET
         Request Params    - SellerId, FileId received in stockFileDownloadAndUpload History request, FileName
         Response          - stock file
@@ -302,14 +291,14 @@ public class FlipkartSellerPanelService {
 
         String currentDate = DateUtils.dateToString(DateUtils.getCurrentTime(),"yyyy-MM-dd");
         String downloadFilePath = "/tmp/" +TenantRequestContext.current().getTenantCode() + "_" + currentDate + "." + fileFormat;
+        HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
+        HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
         String apiEndpoint = "/napi/listing/stockFileDownload";
         try {
-            HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
             Map<String, String> requestParams = new HashMap<>();
             requestParams.put("sellerId", FlipkartRequestContext.current().getSellerId());
             requestParams.put("fileId", URLEncoder.encode(fileLink,"UTF-8") );
             requestParams.put("fileName", fileName);
-            HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
             httpSender.downloadToFile(SELLER_PANEL_URL + apiEndpoint, requestParams, Collections.emptyMap(), HttpSender.MethodType.GET, downloadFilePath, httpResponseWrapper);
             if ( httpResponseWrapper.getResponseStatus().is5xxServerError() )
                 throw new FailureResponse("Flipkart Server error :" + "responseCode " + httpResponseWrapper.getResponseStatus().name());

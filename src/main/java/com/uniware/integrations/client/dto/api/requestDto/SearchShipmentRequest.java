@@ -1,6 +1,7 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import com.uniware.integrations.client.dto.BaseRequest;
 import com.uniware.integrations.client.dto.Filter;
 import com.uniware.integrations.client.dto.Pagination;
@@ -9,31 +10,31 @@ import java.util.Objects;
 
 public class SearchShipmentRequest extends BaseRequest {
 
-    @JsonProperty("sort")
+    @SerializedName("sort")
     private Sort sort = null;
 
-    @JsonProperty("pagination")
+    @SerializedName("pagination")
     private Pagination pagination = null;
 
-    @JsonProperty("orderDateValid")
+    @SerializedName("orderDateValid")
     private Boolean orderDateValid = null;
 
-    @JsonProperty("dispatchByDateValid")
+    @SerializedName("dispatchByDateValid")
     private Boolean dispatchByDateValid = null;
 
-    @JsonProperty("dispatchAfterDateValid")
+    @SerializedName("dispatchAfterDateValid")
     private Boolean dispatchAfterDateValid = null;
 
-    @JsonProperty("skuValid")
+    @SerializedName("skuValid")
     private Boolean skuValid = null;
 
-    @JsonProperty("filter")
+    @SerializedName("filter")
     private Filter filter = null;
 
-    @JsonProperty("cancellationDateValid")
+    @SerializedName("cancellationDateValid")
     private Boolean cancellationDateValid = null;
 
-    @JsonProperty("sellerId")
+    @SerializedName("sellerId")
     private String sellerId = null;
 
     public SearchShipmentRequest sort(Sort sort) {

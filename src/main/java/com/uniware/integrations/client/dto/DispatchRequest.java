@@ -1,43 +1,44 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.util.Date;
 import java.util.Objects;
 import org.joda.time.DateTime;
 
 public class DispatchRequest {
 
-    @JsonProperty("facilityId")
+    @SerializedName("facilityId")
     private String facilityId = null;
 
-    @JsonProperty("validTrackingLength")
+    @SerializedName("validTrackingLength")
     private Boolean validTrackingLength = null;
 
-    @JsonProperty("dispatchDateValid")
+    @SerializedName("dispatchDateValid")
     private Boolean dispatchDateValid = null;
 
-    @JsonProperty("shipmentId")
+    @SerializedName("shipmentId")
     private String shipmentId = null;
 
-    @JsonProperty("tentativeDeliveryDateValid")
+    @SerializedName("tentativeDeliveryDateValid")
     private Boolean tentativeDeliveryDateValid = null;
 
-    @JsonProperty("locationId")
+    @SerializedName("locationId")
     private String locationId = null;
 
-    @JsonProperty("orderItems")
+    @SerializedName("orderItems")
     private java.util.List<ConfirmItemRow> orderItems = new java.util.ArrayList<>();
 
-    @JsonProperty("trackingId")
+    @SerializedName("trackingId")
     private String trackingId = null;
 
-    @JsonProperty("tentativeDeliveryDate")
+    @SerializedName("tentativeDeliveryDate")
     private Date tentativeDeliveryDate = null;
 
-    @JsonProperty("deliveryPartner")
+    @SerializedName("deliveryPartner")
     private String deliveryPartner = null;
 
-    @JsonProperty("dispatchDate")
+    @SerializedName("dispatchDate")
     private Date dispatchDate = null;
 
     public DispatchRequest incrementOrderItemQuantityByOne(String orderItemId) {

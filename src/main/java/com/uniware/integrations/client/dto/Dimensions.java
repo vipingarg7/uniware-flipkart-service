@@ -1,21 +1,22 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.math.BigDecimal;
 import java.util.Objects;
 
 public class Dimensions {
 
-    @JsonProperty("breadth")
+    @SerializedName("breadth")
     private BigDecimal breadth = null;
 
-    @JsonProperty("length")
+    @SerializedName("length")
     private BigDecimal length = null;
 
-    @JsonProperty("weight")
+    @SerializedName("weight")
     private BigDecimal weight = null;
 
-    @JsonProperty("height")
+    @SerializedName("height")
     private BigDecimal height = null;
 
     public Dimensions breadth(BigDecimal breadth) {
