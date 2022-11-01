@@ -87,12 +87,12 @@ public class SalesFlipkartControllerV1 extends BaseController {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).closeShippingManifest(headers, closeShippingManifestRequest));
     }
 
-    @PutMapping(value = "/inventory", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/inventory/update", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> updateInventory(@RequestHeader Map<String,String> headers, @RequestBody UpdateInventoryRequest updateInventoryRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).updateInventory(headers, updateInventoryRequest));
     }
 
-    @PostMapping(value = "/currentChannelmanifest", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/manifest/currentChannel", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> fetchCurrentChannelManifest(@RequestHeader Map<String,String> headers, @RequestBody FetchCurrentChannelManifestRequest fetchCurrentChannelManifestRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).fetchCurrentChannelManifest(headers, fetchCurrentChannelManifestRequest));
     }

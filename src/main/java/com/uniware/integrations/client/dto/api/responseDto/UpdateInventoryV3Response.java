@@ -4,16 +4,13 @@ import com.google.gson.annotations.SerializedName;
 import com.uniware.integrations.client.dto.AttributeError;
 import com.uniware.integrations.client.dto.BaseResponse;
 import com.uniware.integrations.client.dto.Error;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class UpdateInventoryV3Response extends BaseResponse {
 
-    @SerializedName("sku")
     private Map<String, InventoryUpdateStatus> skus;
-
-    @SerializedName("errors")
-    private List<Error> errors;
 
     public Map<String, InventoryUpdateStatus> getSkus() {
         return skus;
@@ -24,16 +21,22 @@ public class UpdateInventoryV3Response extends BaseResponse {
         this.skus = skus;
     }
 
-    public List<Error> getErrors() {
-        return errors;
+    public UpdateInventoryV3Response addSku(String sku,InventoryUpdateStatus inventoryUpdateStatus) {
+        if (this.skus == null)
+            this.skus = new HashMap<>();
+        this.skus.put(sku,inventoryUpdateStatus);
+        return this;
     }
 
-    public void setErrors(List<Error> errors) {
-        this.errors = errors;
+    public UpdateInventoryV3Response addSku(Map<String, InventoryUpdateStatus> updateInventoryV3Response) {
+        if (this.skus == null)
+            this.skus = new HashMap<>();
+        this.skus.putAll(updateInventoryV3Response);
+        return this;
     }
 
     @Override public String toString() {
-        return "UpdateInventoryV3Response{" + "skus=" + skus + ", errors=" + errors + '}';
+        return "UpdateInventoryV3Response{" + "skus=" + skus + '}';
     }
 
     public static class InventoryUpdateStatus {

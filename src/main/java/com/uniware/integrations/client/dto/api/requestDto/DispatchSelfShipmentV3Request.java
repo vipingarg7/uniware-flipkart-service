@@ -1,22 +1,21 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.annotations.SerializedName;
 import com.uniware.integrations.client.dto.BaseRequest;
 import com.uniware.integrations.client.dto.DispatchRequest;
 import java.util.Objects;
 
-public class DispatchSelfShipmentRequestV3 extends BaseRequest {
+public class DispatchSelfShipmentV3Request extends BaseRequest {
 
     @SerializedName("shipments")
     private java.util.List<DispatchRequest> shipments = null;
 
-    public DispatchSelfShipmentRequestV3 shipments(java.util.List<DispatchRequest> shipments) {
+    public DispatchSelfShipmentV3Request shipments(java.util.List<DispatchRequest> shipments) {
         this.shipments = shipments;
         return this;
     }
 
-    public DispatchSelfShipmentRequestV3 addShipmentsItem(DispatchRequest shipmentsItem) {
+    public DispatchSelfShipmentV3Request addShipmentsItem(DispatchRequest shipmentsItem) {
         if (this.shipments == null) {
             this.shipments = new java.util.ArrayList<>();
         }
@@ -46,7 +45,7 @@ public class DispatchSelfShipmentRequestV3 extends BaseRequest {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        DispatchSelfShipmentRequestV3 DispatchSelfShipmentRequest = (DispatchSelfShipmentRequestV3) o;
+        DispatchSelfShipmentV3Request DispatchSelfShipmentRequest = (DispatchSelfShipmentV3Request) o;
         return Objects.equals(this.shipments, DispatchSelfShipmentRequest.shipments);
     }
 

@@ -57,7 +57,7 @@ public class FlipkartAspect {
 
                 LOG.info("{} Response Code: {}", method.getName(), ((BaseResponse) result).getResponseStatus().name());
             }
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             LOG.error("After throwing : {}, {}", ex.getMessage(), ex.getCause());
             throw ex;
         } finally {

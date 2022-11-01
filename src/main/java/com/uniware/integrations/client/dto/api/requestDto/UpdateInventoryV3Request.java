@@ -12,7 +12,6 @@ import java.util.Map;
 
 public class UpdateInventoryV3Request extends BaseRequest {
 
-    @SerializedName("sku")
     private Map<String,SkuDetails> skus;
 
     public Map<String, SkuDetails> getSkus() {
