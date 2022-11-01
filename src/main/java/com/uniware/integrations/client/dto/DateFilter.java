@@ -1,15 +1,16 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.util.Date;
 import java.util.Objects;
 
 public class DateFilter {
 
-    @JsonProperty("to")
+    @SerializedName("to")
     private String to = null;
 
-    @JsonProperty("from")
+    @SerializedName("from")
     private String from = null;
 
     public DateFilter to(String to) {

@@ -1,6 +1,7 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import com.uniware.integrations.client.dto.BaseRequest;
 import com.uniware.integrations.client.dto.PackRequest;
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.Objects;
 
 public class ShipmentPackV3Request extends BaseRequest {
 
-    @JsonProperty("shipments")
+    @SerializedName("shipments")
     private List<PackRequest> shipments = null;
 
     public ShipmentPackV3Request shipments(java.util.List<PackRequest> shipments) {

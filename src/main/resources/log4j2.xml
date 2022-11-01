@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration packages="com.uniware.integrations.logging.jms.appender">
+    <Appenders>
+        <Console name="CONSOLE" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss,SSS} %-5p [%X{TENANT}][%X{REQUEST_IDENTIFIER}][%t][%c{1}] - %m%n"/>
+        </Console>
+
+        <Routing name="TraceLogAppender">
+            <!--Used when kekda is ON-->
+            <Routes pattern="$${ctx:TRACE_SERVER_LOGGING_ENABLED}">
+                <Route key="TRACE_SERVER_LOGGING_ENABLED">
+                    <JmsAppender name="JmsQueueAppender">
+                        <!-- This is custom appender that publishes logs to a JmsQueue.
+                             The <JmsAppender> tag used here is built on account of the @Plugin(name = "") annotation
+                             on JMSQueueAppender.class.
+                        -->
+                    </JmsAppender>
+                </Route>
+            </Routes>
+        </Routing>
+
+        <Routing name="UniDynamicLogRouting">
+            <Routes pattern="$${ctx:TENANT_CODE_LOG_KEY}">
+                <!-- Default path
+                     Append to server.log if no LOG_ROUTING_KEY is present in ThreadContext (ctx)
+                 -->
+                <Route key="$${ctx:TENANT_CODE_LOG_KEY}">
+                    <RollingFile name="UniRollingFileAppender" append="true" filename="${sys:logPath}/server.log"
+                                 filePattern="${sys:logPath}/archived/server.log.%d{yyyy-MM-dd}">
+                        <!-- cm is our custom Alias which wil be used for Masking -->
+                        <PatternLayout>
+                            <Pattern>%d{HH:mm:ss,SSS} %-5p [%X{REQUEST_IDENTIFIER}][%X{TENANT}][%t][%c{1}] - %m%n</Pattern>
+                        </PatternLayout>
+                        <Policies>
+                            <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                        </Policies>
+                    </RollingFile>
+                </Route>
+            </Routes>
+        </Routing>
+    </Appenders>
+    <Loggers>
+        <Logger name="org.apache.http.impl.conn.DefaultClientConnection" level="trace"/>
+        <Logger name="org.apache.http.headers" level="trace"/>
+        <AsyncRoot level="info">
+            <AppenderRef ref="CONSOLE"/>
+            <AppenderRef ref="UniDynamicLogRouting"/>
+            <AppenderRef ref="TraceLogAppender"/>
+        </AsyncRoot>
+    </Loggers>
+</Configuration>

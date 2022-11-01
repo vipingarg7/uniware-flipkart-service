@@ -7,7 +7,7 @@ public class UpdateInventoryResponse {
 
     public enum Status {
         SUCCESS,
-        FAILED,
+        FAILED
     }
     private List<Listing> listings;
 
@@ -25,7 +25,6 @@ public class UpdateInventoryResponse {
         private String channelProductId;
         private String channelSkuCode;
         private List<Attributes> attributes;
-        private int totalCount;
         private List<Error> errors;
         private List<Facility> facilities;
 
@@ -52,10 +51,6 @@ public class UpdateInventoryResponse {
         public void setAttributes(List<Attributes> attributes)  {   this.attributes = attributes;   }
 
         public void setChannelSkuCode(String channelSkuCode) {  this.channelSkuCode = channelSkuCode;   }
-
-        public int getTotalCount() {    return totalCount;  }
-
-        public void setTotalCount(int totalCount) { this.totalCount = totalCount;   }
 
         public List<Facility> getFacilities() { return facilities;  }
 

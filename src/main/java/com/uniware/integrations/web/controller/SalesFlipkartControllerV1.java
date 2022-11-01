@@ -48,7 +48,7 @@ public class SalesFlipkartControllerV1 extends BaseController {
     }
 
     @PostMapping(value = "/pendency/fetch", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Response> fetchPendency(@RequestHeader Map<String,String> headers, @RequestHeader FetchPendencyRequest fetchPendencyRequest) {
+    public ResponseEntity<Response> fetchPendency(@RequestHeader Map<String,String> headers, @RequestBody FetchPendencyRequest fetchPendencyRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).fetchPendency(headers, fetchPendencyRequest));
     }
 
@@ -66,7 +66,7 @@ public class SalesFlipkartControllerV1 extends BaseController {
     public ResponseEntity<Response> fetchCatalog(@RequestHeader Map<String,String> headers, @RequestBody CatalogSyncRequest catalogSyncRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).fetchCatalog(headers, catalogSyncRequest));
     }
-    // todo self ship
+
     @PostMapping(value = "/invoice/generate", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> generateInvoice(@RequestHeader Map<String,String> headers, @RequestBody GenerateInvoiceRequest generateInvoiceRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).generateInvoice(headers, generateInvoiceRequest));
@@ -87,12 +87,12 @@ public class SalesFlipkartControllerV1 extends BaseController {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).closeShippingManifest(headers, closeShippingManifestRequest));
     }
 
-    @PutMapping(value = "/inventory", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/inventory/update", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> updateInventory(@RequestHeader Map<String,String> headers, @RequestBody UpdateInventoryRequest updateInventoryRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).updateInventory(headers, updateInventoryRequest));
     }
 
-    @PostMapping(value = "/currentChannelmanifest", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/manifest/currentChannel", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> fetchCurrentChannelManifest(@RequestHeader Map<String,String> headers, @RequestBody FetchCurrentChannelManifestRequest fetchCurrentChannelManifestRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).fetchCurrentChannelManifest(headers, fetchCurrentChannelManifestRequest));
     }

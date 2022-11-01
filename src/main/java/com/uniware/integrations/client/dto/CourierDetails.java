@@ -1,14 +1,15 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.util.Objects;
 
 public class CourierDetails {
 
-    @JsonProperty("vendorName")
+    @SerializedName("vendorName")
     private String vendorName = null;
 
-    @JsonProperty("trackingId")
+    @SerializedName("trackingId")
     private String trackingId = null;
 
     public CourierDetails vendorName(String vendorName) {

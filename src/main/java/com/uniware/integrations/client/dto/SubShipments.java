@@ -1,13 +1,14 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.util.Objects;
 
 public class SubShipments {
 
-    @JsonProperty("dimensions")
+    @SerializedName("dimensions")
     private Dimensions dimensions = null;
-    @JsonProperty("subShipmentId")
+    @SerializedName("subShipmentId")
     private String subShipmentId = null;
 
     public SubShipments dimensions(Dimensions dimensions) {

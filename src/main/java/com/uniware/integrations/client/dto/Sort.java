@@ -3,6 +3,7 @@ package com.uniware.integrations.client.dto;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.gson.annotations.SerializedName;
 import java.util.Objects;
 
 public class Sort {
@@ -40,7 +41,7 @@ public class Sort {
             return null;
         }
 
-    }  @JsonProperty("field")
+    }  @SerializedName("field")
     private FieldEnum field = null;
 
     /**
@@ -74,7 +75,7 @@ public class Sort {
             return null;
         }
 
-    }  @JsonProperty("order")
+    }  @SerializedName("order")
     private OrderEnum order = null;
 
     public Sort field(FieldEnum field) {

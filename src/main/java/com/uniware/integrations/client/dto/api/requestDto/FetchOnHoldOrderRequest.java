@@ -1,14 +1,14 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import com.uniware.integrations.client.dto.BaseRequest;
 
 public class FetchOnHoldOrderRequest extends BaseRequest {
 
-    @JsonProperty("payload")
+    @SerializedName("payload")
     private Payload payload;
 
-    @JsonProperty("status")
+    @SerializedName("status")
     private String status;
 
     public Payload getPayload() {
@@ -27,11 +27,15 @@ public class FetchOnHoldOrderRequest extends BaseRequest {
         this.status = status;
     }
 
+    @Override public String toString() {
+        return "FetchOnHoldOrderRequest{" + "payload=" + payload + ", status='" + status + '\'' + '}';
+    }
+
     public static class  Payload {
-        @JsonProperty("pagination")
+        @SerializedName("pagination")
         private Pagination pagination = null;
 
-        @JsonProperty("params")
+        @SerializedName("params")
         private Params params = null;
 
         public Pagination getPagination() {
@@ -50,13 +54,16 @@ public class FetchOnHoldOrderRequest extends BaseRequest {
             this.params = params;
         }
 
+        @Override public String toString() {
+            return "Payload{" + "pagination=" + pagination + ", params=" + params + '}';
+        }
     }
     public static class  Pagination {
 
-        @JsonProperty("page_num")
+        @SerializedName("page_num")
         private int pageNumber ;
 
-        @JsonProperty("page_size")
+        @SerializedName("page_size")
         private int pageSize;
 
         public int getPageNumber() {
@@ -74,14 +81,18 @@ public class FetchOnHoldOrderRequest extends BaseRequest {
         public void setPageSize(Integer pageSize) {
             this.pageSize = pageSize;
         }
+
+        @Override public String toString() {
+            return "Pagination{" + "pageNumber=" + pageNumber + ", pageSize=" + pageSize + '}';
+        }
     }
 
     public static class Params {
 
-        @JsonProperty("seller_id")
+        @SerializedName("seller_id")
         private String sellerId = null;
 
-        @JsonProperty("on_hold")
+        @SerializedName("on_hold")
         private boolean onHold = true;
 
         public String getSellerId() {
@@ -98,6 +109,10 @@ public class FetchOnHoldOrderRequest extends BaseRequest {
 
         public void setOnHold(boolean onHold) {
             this.onHold = onHold;
+        }
+
+        @Override public String toString() {
+            return "Params{" + "sellerId='" + sellerId + '\'' + ", onHold=" + onHold + '}';
         }
     }
 }

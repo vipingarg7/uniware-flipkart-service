@@ -1,6 +1,7 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import com.uniware.integrations.client.dto.BaseRequest;
 import com.uniware.integrations.client.dto.Form;
 import com.uniware.integrations.client.dto.Shipment;
@@ -11,7 +12,6 @@ import java.util.Map;
 
 public class UpdateInventoryV3Request extends BaseRequest {
 
-    @JsonProperty("sku")
     private Map<String,SkuDetails> skus;
 
     public Map<String, SkuDetails> getSkus() {
@@ -31,10 +31,10 @@ public class UpdateInventoryV3Request extends BaseRequest {
 
     public static class SkuDetails {
 
-        @JsonProperty("product_id")
+        @SerializedName("product_id")
         private String productId;
 
-        @JsonProperty("locations")
+        @SerializedName("locations")
         private List<Location> location;
 
         public SkuDetails addLocation(Location location) {
@@ -65,10 +65,10 @@ public class UpdateInventoryV3Request extends BaseRequest {
 
     public static class Location {
 
-        @JsonProperty("id")
+        @SerializedName("id")
         private String id;
 
-        @JsonProperty("inventory")
+        @SerializedName("inventory")
         private int  inventory;
 
         public Location() {}

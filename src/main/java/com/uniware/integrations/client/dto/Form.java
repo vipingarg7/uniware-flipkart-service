@@ -1,17 +1,18 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.util.Objects;
 
 public class Form {
 
-    @JsonProperty("link")
+    @SerializedName("link")
     private String link = null;
 
-    @JsonProperty("name")
+    @SerializedName("name")
     private String name = null;
 
-    @JsonProperty("automated")
+    @SerializedName("automated")
     private Boolean automated = null;
 
     public Form link(String link) {

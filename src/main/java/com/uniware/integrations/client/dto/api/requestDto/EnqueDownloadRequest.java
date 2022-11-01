@@ -1,6 +1,7 @@
 package com.uniware.integrations.client.dto.api.requestDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import com.uniware.integrations.client.dto.BaseRequest;
 import com.uniware.integrations.client.dto.PackRequest;
 import java.util.ArrayList;
@@ -8,13 +9,13 @@ import java.util.List;
 
 public class EnqueDownloadRequest extends BaseRequest {
 
-    @JsonProperty("state")
+    @SerializedName("state")
     private String state;
 
-    @JsonProperty("refiners")
+    @SerializedName("refiners")
     private Refiner refiner;
 
-    @JsonProperty("verticalGroups")
+    @SerializedName("verticalGroups")
     private VerticalGroup verticalGroup;
 
     private EnqueDownloadRequest(Builder builder) {
@@ -50,7 +51,7 @@ public class EnqueDownloadRequest extends BaseRequest {
 
     public static class Refiner {
 
-        @JsonProperty("internal_state")
+        @SerializedName("internal_state")
         List<InternalState> internalStateList;
 
         public Refiner() {}
@@ -94,10 +95,10 @@ public class EnqueDownloadRequest extends BaseRequest {
 
     public static class InternalState {
 
-        @JsonProperty("exactValue")
+        @SerializedName("exactValue")
         private ExactValue exactValue;
 
-        @JsonProperty("valueType")
+        @SerializedName("valueType")
         private String valueType;
 
         private InternalState(Builder builder) {
@@ -146,7 +147,7 @@ public class EnqueDownloadRequest extends BaseRequest {
 
     public static class ExactValue {
 
-        @JsonProperty("value")
+        @SerializedName("value")
         private String value;
 
         private ExactValue(Builder builder) {

@@ -101,7 +101,7 @@ public class CreateInvoiceResponse {
         }
     }
 
-    public class ShippingProviderInfo {
+    public static class ShippingProviderInfo {
 
         private String trackingNumber;
 

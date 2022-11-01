@@ -1,43 +1,48 @@
 package com.uniware.integrations.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
-import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 
 public class DispatchRequest {
 
-    @JsonProperty("facilityId")
+    @SerializedName("facilityId")
     private String facilityId = null;
 
-    @JsonProperty("validTrackingLength")
+    @SerializedName("validTrackingLength")
     private Boolean validTrackingLength = null;
 
-    @JsonProperty("dispatchDateValid")
+    @SerializedName("dispatchDateValid")
     private Boolean dispatchDateValid = null;
 
-    @JsonProperty("shipmentId")
+    @SerializedName("shipmentId")
     private String shipmentId = null;
 
-    @JsonProperty("tentativeDeliveryDateValid")
+    @SerializedName("tentativeDeliveryDateValid")
     private Boolean tentativeDeliveryDateValid = null;
 
-    @JsonProperty("locationId")
+    @SerializedName("locationId")
     private String locationId = null;
 
-    @JsonProperty("orderItems")
-    private java.util.List<ConfirmItemRow> orderItems = new java.util.ArrayList<>();
+    @SerializedName("orderItems")
+    private List<ConfirmItemRow> orderItems = new ArrayList<>();
 
-    @JsonProperty("trackingId")
+    @SerializedName("invoice")
+    private Invoice invoice;
+
+    @SerializedName("trackingId")
     private String trackingId = null;
 
-    @JsonProperty("tentativeDeliveryDate")
+    @SerializedName("tentativeDeliveryDate")
     private Date tentativeDeliveryDate = null;
 
-    @JsonProperty("deliveryPartner")
+    @SerializedName("deliveryPartner")
     private String deliveryPartner = null;
 
-    @JsonProperty("dispatchDate")
+    @SerializedName("dispatchDate")
     private Date dispatchDate = null;
 
     public DispatchRequest incrementOrderItemQuantityByOne(String orderItemId) {
@@ -156,7 +161,7 @@ public class DispatchRequest {
         this.locationId = locationId;
     }
 
-    public DispatchRequest orderItems(java.util.List<ConfirmItemRow> orderItems) {
+    public DispatchRequest orderItems(List<ConfirmItemRow> orderItems) {
         this.orderItems = orderItems;
         return this;
     }
@@ -171,12 +176,32 @@ public class DispatchRequest {
      * @return orderItems
      **/
     
-    public java.util.List<ConfirmItemRow> getOrderItems() {
+    public List<ConfirmItemRow> getOrderItems() {
         return orderItems;
     }
 
-    public void setOrderItems(java.util.List<ConfirmItemRow> orderItems) {
+    public void setOrderItems(List<ConfirmItemRow> orderItems) {
         this.orderItems = orderItems;
+    }
+
+    public Boolean getValidTrackingLength() {
+        return validTrackingLength;
+    }
+
+    public Boolean getDispatchDateValid() {
+        return dispatchDateValid;
+    }
+
+    public Boolean getTentativeDeliveryDateValid() {
+        return tentativeDeliveryDateValid;
+    }
+
+    public Invoice getInvoice() {
+        return invoice;
+    }
+
+    public void setInvoice(Invoice invoice) {
+        this.invoice = invoice;
     }
 
     public DispatchRequest trackingId(String trackingId) {
@@ -309,6 +334,31 @@ public class DispatchRequest {
             return "null";
         }
         return o.toString().replace("\n", "\n    ");
+    }
+
+    public static class Invoice {
+
+        @SerializedName("invoiceNumber")
+        private String invoiceNumber = null;
+
+        @SerializedName("invoiceDate")
+        private String invoiceDate = null;
+
+        public String getInvoiceNumber() {
+            return invoiceNumber;
+        }
+
+        public void setInvoiceNumber(String invoiceNumber) {
+            this.invoiceNumber = invoiceNumber;
+        }
+
+        public String getInvoiceDate() {
+            return invoiceDate;
+        }
+
+        public void setInvoiceDate(String invoiceDate) {
+            this.invoiceDate = invoiceDate;
+        }
     }
 
 }

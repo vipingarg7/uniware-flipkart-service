@@ -1,14 +1,15 @@
 package com.uniware.integrations.client.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import java.util.Objects;
 
 public class Courier {
 
-    @JsonProperty("pickupDetails")
+    @SerializedName("pickupDetails")
     private CourierDetails pickupDetails = null;
 
-    @JsonProperty("deliveryDetails")
+    @SerializedName("deliveryDetails")
     private CourierDetails deliveryDetails = null;
 
     public Courier pickupDetails(CourierDetails pickupDetails) {
