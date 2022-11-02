@@ -25,7 +25,7 @@
                      Append to server.log if no LOG_ROUTING_KEY is present in ThreadContext (ctx)
                  -->
                 <Route key="$${ctx:TENANT_CODE_LOG_KEY}">
-                    <RollingFile name="UniRollingFileAppender" append="true" filename="${sys:logPath}/server.log"
+                    <RollingFile name="UniRollingFileAppender" append="true" filename="${sys:logDir}/server.log"
                                  filePattern="${sys:logPath}/archived/server.log.%d{yyyy-MM-dd}">
                         <!-- cm is our custom Alias which wil be used for Masking -->
                         <PatternLayout>
