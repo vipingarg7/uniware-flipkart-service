@@ -1,6 +1,5 @@
 package com.uniware.integrations.client.dto.uniware;
 
-import com.uniware.integrations.config.DatabaseConfiguration;
 import java.util.Date;
 import java.util.List;
 
