@@ -6,10 +6,10 @@ package com.uniware.integrations.client.constants;
 public class EnvironmentPropertiesConstant {
 
     // flipkart dropship config keys
-    public static final String FLIPKART_DROPSHIP_BASE_URL = "flipkart_dropship.baseUrl";
-    public static final String FLIPKART_DROPSHIP_APPLICATION_ID = "flipkart_dropship.applicationId";
-    public static final String FLIPKART_DROPSHIP_APPLICATION_SECRET = "flipkart_dropship.applicationSecret";
-    public static final String FLIPKART_DROPSHIP_REDIRECT_URL = "flipkart_dropship.redirectUrl";
-    public static final String FLIPKART_DROPSHIP_SCOPE = "flipkart_dropship.scope";
+    public static final String FLIPKART_BASE_URL = "flipkart.baseUrl";
+    public static final String FLIPKART_APPLICATION_ID = "flipkart.applicationId";
+    public static final String FLIPKART_APPLICATION_SECRET = "flipkart.applicationSecret";
+    public static final String FLIPKART_REDIRECT_URL = "flipkart.redirectUrl";
+    public static final String FLIPKART_SCOPE = "flipkart.scope";
 
 }

@@ -8,7 +8,6 @@ public class DispatchShipmentRequest {
 
     private String  saleOrderCode;
     private List<SaleOrderItem> saleOrderItems;
-
     private String invoiceCode;
     private Date invoiceDate;
     private String shippingProvider;

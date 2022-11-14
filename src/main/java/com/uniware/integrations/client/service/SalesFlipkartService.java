@@ -3,12 +3,15 @@ package com.uniware.integrations.client.service;
 import com.uniware.integrations.client.dto.uniware.CatalogPreProcessorRequest;
 import com.uniware.integrations.client.dto.uniware.CatalogSyncRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
+import com.uniware.integrations.client.dto.uniware.ConnectorVerificationRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
 import com.uniware.integrations.client.dto.uniware.FetchCurrentChannelManifestRequest;
 import com.uniware.integrations.client.dto.uniware.FetchOrderRequest;
 import com.uniware.integrations.client.dto.uniware.FetchPendencyRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateLabelRequest;
+import com.uniware.integrations.client.dto.uniware.PostConfigurationRequest;
+import com.uniware.integrations.client.dto.uniware.PreConfigurationRequest;
 import com.uniware.integrations.client.dto.uniware.UpdateInventoryRequest;
 import com.uniware.integrations.core.dto.api.Response;
 import java.util.Map;
@@ -18,11 +21,11 @@ import java.util.Map;
  */
 public interface SalesFlipkartService extends FlipkartService {
 
-    Response preConfiguration(Map<String, String> headers, String payload, String connectorName);
+    Response preConfiguration(Map<String, String> headers, PreConfigurationRequest preConfigurationRequest);
 
-    Response postConfiguration(Map<String, String> headers, String payload, String connectorName);
+    Response postConfiguration(Map<String, String> headers, PostConfigurationRequest postConfigurationRequest);
 
-    Response connectorVerification(Map<String, String> headers, String payload, String connectorName);
+    Response connectorVerification(Map<String, String> headers, ConnectorVerificationRequest connectorVerificationRequest);
     
     Response catalogSyncPreProcessor(Map<String, String> headers, CatalogPreProcessorRequest catalogPreProcessorRequest);
     

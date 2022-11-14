@@ -11,4 +11,5 @@ public class CatalogPreProcessorRequest {
     public void setAsyncRun(boolean asyncRun) {
         isAsyncRun = asyncRun;
     }
+
 }

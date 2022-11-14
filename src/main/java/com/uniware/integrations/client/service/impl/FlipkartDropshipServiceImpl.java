@@ -12,8 +12,6 @@ import com.unifier.core.fileparser.DelimitedFileParser;
 import com.unifier.core.fileparser.ExcelSheetParser;
 import com.unifier.core.fileparser.Row;
 import com.unifier.core.utils.DateUtils;
-import com.unifier.core.utils.EncryptionUtils;
-import com.unifier.core.utils.JsonUtils;
 import com.unifier.core.utils.NumberUtils;
 import com.unifier.core.utils.PdfUtils;
 import com.unifier.core.utils.StringUtils;
@@ -61,6 +59,7 @@ import com.uniware.integrations.client.dto.uniware.CatalogSyncResponse;
 import com.uniware.integrations.client.dto.uniware.ChannelItemType;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestResponse;
+import com.uniware.integrations.client.dto.uniware.ConnectorVerificationRequest;
 import com.uniware.integrations.client.dto.uniware.CreateInvoiceResponse;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentResponse;
@@ -78,6 +77,9 @@ import com.uniware.integrations.client.dto.uniware.FetchPendencyRequest;
 import com.uniware.integrations.client.dto.uniware.FetchPendencyResponse;
 import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;
 import com.uniware.integrations.client.dto.uniware.Pendency;
+import com.uniware.integrations.client.dto.uniware.PostConfigurationRequest;
+import com.uniware.integrations.client.dto.uniware.PostConfigurationResponse;
+import com.uniware.integrations.client.dto.uniware.PreConfigurationRequest;
 import com.uniware.integrations.client.dto.uniware.SaleOrder;
 import com.uniware.integrations.client.dto.uniware.SaleOrderItem;
 import com.uniware.integrations.client.dto.uniware.ShippingPackage;
@@ -89,6 +91,7 @@ import com.uniware.integrations.core.dto.api.Response;
 import com.uniware.integrations.client.dto.uniware.PreConfigurationResponse;
 import com.uniware.integrations.utils.ResponseUtil;
 import com.uniware.integrations.web.context.TenantRequestContext;
+import com.uniware.integrations.web.exception.BadRequest;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -133,9 +136,11 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     private S3Service s3Service;
     private static final String BUCKET_NAME = "unicommerce-channel-shippinglabels";
     private static final String SUCCESS = "success";
+    private static final String CODE = "code";
     private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS+05:30";
     private static final String DEFAULT_PHONE_NUMBER = "9999999999";
     private static final String UNIWARE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssXXX";
+    private static final String FK_CODE        =  "fk_code";
     private static Map<String,List<String>> sourceCodeToFulfilmentModeList= new HashMap();
 
     static  {
@@ -166,45 +171,56 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         }
     }
 
-    @Override public Response preConfiguration(Map<String, String> headers, String payload, String connectorName) {
-        PreConfigurationResponse channelPreConfigurationResponse = new PreConfigurationResponse();
+    @Override public Response preConfiguration(Map<String, String> headers, PreConfigurationRequest preConfigurationRequest) {
+
+        String state = preConfigurationRequest.getParams() != null ? preConfigurationRequest.getParams().get("state") : null;
+        if ( StringUtils.isBlank(state )) {
+            throw new BadRequest("State is missing in request payload");
+        }
+
+        state = state + "?locationId=" + FlipkartRequestContext.current().getLocationId();
+
+        PreConfigurationResponse preConfigurationResponse = new PreConfigurationResponse();
         HashMap<String, String> params = new HashMap<>();
-        params.put("client_id", environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_APPLICATION_ID));
-        params.put("response_type", "code");
-        params.put("scope", environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_SCOPE));
-        params.put("state", headers.get("state"));
-        params.put("redirect_uri", environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_REDIRECT_URL));
-        channelPreConfigurationResponse.setUrl(flipkartSellerApiService.getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource()) + "/oauth-service/oauth/authorize");
-        channelPreConfigurationResponse.setMethod("GET");
-        channelPreConfigurationResponse.setParams(params);
-        return ResponseUtil.success(SUCCESS, channelPreConfigurationResponse);
+        params.put("client_id", environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_APPLICATION_ID));
+        params.put("response_type", CODE);
+        params.put("scope", environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_SCOPE));
+        params.put("state", state);
+        params.put("redirect_uri", environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_REDIRECT_URL));
+        preConfigurationResponse.setUrl(flipkartSellerApiService.getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource()) + "/oauth-service/oauth/authorize");
+        preConfigurationResponse.setMethod("Get");
+        preConfigurationResponse.setParams(params);
+        return ResponseUtil.success(SUCCESS, preConfigurationResponse);
     }
 
-    @Override public Response postConfiguration(Map<String, String> headers, String payload, String connectorName) {
+    @Override public Response postConfiguration(Map<String, String> headers, PostConfigurationRequest postConfigurationRequest) {
 
-        AuthTokenResponse authTokenResponse = flipkartSellerApiService.getAuthToken(headers,payload);
+        AuthTokenResponse authTokenResponse = flipkartSellerApiService.getAuthToken(postConfigurationRequest.getParams().get(FK_CODE));
 
         if ( authTokenResponse !=null && authTokenResponse.getAccessToken() != null ) {
             String authToken = authTokenResponse.getTokenType() + " " + authTokenResponse.getAccessToken();
             Long authTokenExpireIn = authTokenResponse.getExpiresIn();
             String refreshToken = authTokenResponse.getRefreshToken();
 
-            HashMap<String, String> responseParam = new HashMap<>();
-            responseParam.put("authToken", authToken);
-            responseParam.put("refreshToken", refreshToken);
-            responseParam.put(AUTH_TOKEN_EXPIRES_IN, String.valueOf(authTokenExpireIn));
-            return ResponseUtil.success(SUCCESS, responseParam);
+            HashMap<String, String> responseParams = new HashMap<>();
+            responseParams.put("authToken", authToken);
+            responseParams.put("refreshToken", refreshToken);
+            responseParams.put(AUTH_TOKEN_EXPIRES_IN, String.valueOf(authTokenExpireIn));
+
+            PostConfigurationResponse postConfigurationResponse = new PostConfigurationResponse();
+            postConfigurationResponse.setParams(responseParams);
+            return ResponseUtil.success(SUCCESS, postConfigurationResponse);
         }
 
         return ResponseUtil.failure("Unable to generate AuthToken");
     }
 
-    @Override public Response connectorVerification(Map<String, String> headers, String payload, String connectorName) {
+    @Override public Response connectorVerification(Map<String, String> headers, ConnectorVerificationRequest connectorVerificationRequest) {
 
-        Map<String,String> requestParams = JsonUtils.jsonToMap(payload);
+        Map<String,String> requestParams = connectorVerificationRequest.getParameters();
         Map<String,String> responseParams = new HashMap<>();
 
-        if ("FLIPKART_SELLER_PANEL".equalsIgnoreCase(connectorName)){
+        if ("FLIPKART_SELLER_PANEL".equalsIgnoreCase(connectorVerificationRequest.getName())){
             String username = requestParams.get("username");
             String password = requestParams.get("password");
             boolean loginSuccess = flipkartSellerPanelService.sellerPanelLogin(username, password, false);
@@ -217,7 +233,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             responseParams.put("sellerId", sellerId);
             return ResponseUtil.success("Logged in Successfully");
         }
-        else if ("FLIPKART_INVENTORY_PANEL".equalsIgnoreCase(connectorName)) {
+        else if ("FLIPKART_INVENTORY_PANEL".equalsIgnoreCase(connectorVerificationRequest.getName())) {
             String locationId = requestParams.get("locationId");
             String authToken = requestParams.get("authToken");
             String refreshToken = requestParams.get("refreshToken");

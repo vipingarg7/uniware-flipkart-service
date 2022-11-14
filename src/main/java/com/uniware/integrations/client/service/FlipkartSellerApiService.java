@@ -44,7 +44,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class FlipkartSellerApiService {
 
-    private static final String FK_CODE        =  "fk_code";
     private static final Logger LOGGER = LoggerFactory.getLogger(FlipkartSellerApiService.class);
 
     @Autowired private Environment environment;
@@ -84,12 +83,12 @@ public class FlipkartSellerApiService {
     /*
         Description - Fetch a new authToken
      */
-    public AuthTokenResponse getAuthToken(Map<String, String> headers, String payload) {
+    public AuthTokenResponse getAuthToken(String fkAuthCode) {
 
         String channelBaseUrl = getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource());
         HashMap<String, String> requestParams = new HashMap<>();
-        requestParams.put("redirect_uri", environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_REDIRECT_URL));
-        requestParams.put("code", headers.get(FK_CODE));
+        requestParams.put("redirect_uri", environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_REDIRECT_URL));
+        requestParams.put("code", fkAuthCode);
         requestParams.put("grant_type", "authorization_code");
         requestParams.put("state", "123");
 
@@ -100,7 +99,7 @@ public class FlipkartSellerApiService {
         HttpSender httpSender = HttpSenderFactory.getHttpSenderNoProxy();
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
         try {
-            httpSender.setBasicAuthentication(environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_APPLICATION_ID), environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_APPLICATION_SECRET));
+            httpSender.setBasicAuthentication(environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_APPLICATION_ID), environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_APPLICATION_SECRET));
             String response = httpSender.executeGet(channelBaseUrl + apiEndpoint, requestParams, headersMap, httpResponseWrapper);
             handleResponseCode(response, httpResponseWrapper);
             AuthTokenResponse authTokenResponseJson = new Gson().fromJson(response, AuthTokenResponse.class);
@@ -114,13 +113,13 @@ public class FlipkartSellerApiService {
     }
 
     /*
-        Description - Fetch a new/refresh outhtoken with the help of refresh token
+        Description - Fetch a new/refresh auth token with the help of refresh token
      */
     public AuthTokenResponse refreshAuthToken(String refreshToken) {
 
         String channelBaseUrl = getChannelBaseUrl(FlipkartRequestContext.current().getChannelSource());
         HashMap<String, String> requestParams = new HashMap<>();
-        requestParams.put("redirect_uri", environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_REDIRECT_URL));
+        requestParams.put("redirect_uri", environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_REDIRECT_URL));
         requestParams.put("refresh_token", refreshToken);
         requestParams.put("grant_type", "refresh_token");
 
@@ -131,7 +130,7 @@ public class FlipkartSellerApiService {
         HttpSender httpSender = HttpSenderFactory.getHttpSenderNoProxy();
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
         try {
-            httpSender.setBasicAuthentication(environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_APPLICATION_ID), environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_DROPSHIP_APPLICATION_SECRET));
+            httpSender.setBasicAuthentication(environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_APPLICATION_ID), environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_APPLICATION_SECRET));
             String response = httpSender.executeGet(channelBaseUrl + apiEndpoint, requestParams, headersMap, httpResponseWrapper);
             handleResponseCode(response, httpResponseWrapper);
             AuthTokenResponse authTokenResponse = new Gson().fromJson(response, AuthTokenResponse.class);

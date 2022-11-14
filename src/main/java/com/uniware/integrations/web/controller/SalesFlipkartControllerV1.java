@@ -3,20 +3,21 @@ package com.uniware.integrations.web.controller;
 import com.uniware.integrations.client.dto.uniware.CatalogPreProcessorRequest;
 import com.uniware.integrations.client.dto.uniware.CatalogSyncRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
+import com.uniware.integrations.client.dto.uniware.ConnectorVerificationRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
 import com.uniware.integrations.client.dto.uniware.FetchCurrentChannelManifestRequest;
 import com.uniware.integrations.client.dto.uniware.FetchOrderRequest;
 import com.uniware.integrations.client.dto.uniware.FetchPendencyRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateLabelRequest;
+import com.uniware.integrations.client.dto.uniware.PostConfigurationRequest;
+import com.uniware.integrations.client.dto.uniware.PreConfigurationRequest;
 import com.uniware.integrations.client.dto.uniware.UpdateInventoryRequest;
 import com.uniware.integrations.client.service.SalesFlipkartService;
 import com.uniware.integrations.core.dto.api.Response;
-import java.util.HashMap;
 import java.util.Map;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,22 +33,24 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("flipkart/v1")
 public class SalesFlipkartControllerV1 extends BaseController {
 
-    @PostMapping(value = "/connector/preconfig/{connectorName}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Response> connectorPreconfiguration(@RequestHeader Map<String,String> headers, @RequestBody String payload, @PathVariable String connectorName) {
-        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).preConfiguration(headers, payload, connectorName));
+    @PostMapping(value = "/connector/preconfig", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Response> connectorPreConfiguration(@RequestHeader Map<String,String> headers, @RequestBody PreConfigurationRequest preConfigurationRequest) {
+        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).preConfiguration(headers, preConfigurationRequest));
     }
 
-    @PostMapping(value = "/connector/postconfig/{connectorName}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Response> connectorPostconfiguration(@RequestHeader Map<String,String> headers, @RequestBody String payload, @PathVariable String connectorName) {
-        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).postConfiguration(headers, payload, connectorName));
+    @PostMapping(value = "/connector/postconfig", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Response> connectorPostConfiguration(@RequestHeader Map<String,String> headers, @RequestBody PostConfigurationRequest postConfigurationRequest) {
+        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).postConfiguration(headers, postConfigurationRequest));
     }
 
-    @PostMapping(value = "/connector/validate/{connectorName}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Response> connectorVerification(@RequestHeader Map<String,String> headers, @RequestBody String payload, @PathVariable String connectorName) {
-        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).connectorVerification(headers, payload, connectorName));
+    // todo - change request payload, connectorname
+    @PostMapping(value = "connector/verify", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Response> connectorVerification(@RequestHeader Map<String,String> headers, @RequestBody
+            ConnectorVerificationRequest connectorVerificationRequest) {
+        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).connectorVerification(headers, connectorVerificationRequest));
     }
 
-    @PostMapping(value = "/pendency/fetch", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/pendency/get", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> fetchPendency(@RequestHeader Map<String,String> headers, @RequestBody FetchPendencyRequest fetchPendencyRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).fetchPendency(headers, fetchPendencyRequest));
     }
