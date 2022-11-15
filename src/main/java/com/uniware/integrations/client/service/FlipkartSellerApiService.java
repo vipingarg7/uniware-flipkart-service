@@ -71,6 +71,8 @@ public class FlipkartSellerApiService {
             String response = httpSender.executeGet(channelBaseUrl + apiEndpoint, Collections.emptyMap(), headersMap, httpResponseWrapper);
             handleResponseCode(response, httpResponseWrapper);
             LocationDetailsResponse locationDetailsResponse = new Gson().fromJson(response, LocationDetailsResponse.class);
+            locationDetailsResponse.setResponseHeaders(httpResponseWrapper.getAllHeaders());
+            locationDetailsResponse.setResponseStatus(httpResponseWrapper.getResponseStatus());
             return locationDetailsResponse;
         }
         catch (HttpTransportException | JsonSyntaxException ex) {
