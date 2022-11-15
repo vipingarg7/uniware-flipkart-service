@@ -102,8 +102,10 @@ public class FlipkartSellerApiService {
             httpSender.setBasicAuthentication(environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_APPLICATION_ID), environment.getProperty(EnvironmentPropertiesConstant.FLIPKART_APPLICATION_SECRET));
             String response = httpSender.executeGet(channelBaseUrl + apiEndpoint, requestParams, headersMap, httpResponseWrapper);
             handleResponseCode(response, httpResponseWrapper);
-            AuthTokenResponse authTokenResponseJson = new Gson().fromJson(response, AuthTokenResponse.class);
-            return authTokenResponseJson;
+            AuthTokenResponse authTokenResponse = new Gson().fromJson(response, AuthTokenResponse.class);
+            authTokenResponse.setResponseHeaders(httpResponseWrapper.getAllHeaders());
+            authTokenResponse.setResponseStatus(httpResponseWrapper.getResponseStatus());
+            return authTokenResponse;
         }
         catch (HttpTransportException | JsonSyntaxException ex) {
             LOGGER.error("Something went wrong apiEndpoint {}, Error {}",apiEndpoint, ex);
@@ -134,6 +136,8 @@ public class FlipkartSellerApiService {
             String response = httpSender.executeGet(channelBaseUrl + apiEndpoint, requestParams, headersMap, httpResponseWrapper);
             handleResponseCode(response, httpResponseWrapper);
             AuthTokenResponse authTokenResponse = new Gson().fromJson(response, AuthTokenResponse.class);
+            authTokenResponse.setResponseHeaders(httpResponseWrapper.getAllHeaders());
+            authTokenResponse.setResponseStatus(httpResponseWrapper.getResponseStatus());
             return authTokenResponse;
         }
         catch (HttpTransportException | JsonSyntaxException ex) {
