@@ -8,13 +8,13 @@ import com.uniware.integrations.client.dto.BaseResponse;
  */
 public class AuthTokenResponse extends BaseResponse {
 
-    @SerializedName("accessToken")
+    @SerializedName("access_token")
     private String accessToken;
-    @SerializedName("tokenType")
+    @SerializedName("token_type")
     private String tokenType;
-    @SerializedName("refreshToken")
+    @SerializedName("refresh_token")
     private String refreshToken;
-    @SerializedName("expiresIn")
+    @SerializedName("expires_in")
     private Long expiresIn;
     @SerializedName("scope")
     private String scope;

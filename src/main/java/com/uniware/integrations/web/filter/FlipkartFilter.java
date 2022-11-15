@@ -45,6 +45,8 @@ public class FlipkartFilter extends OncePerRequestFilter {
             final long startTime = System.currentTimeMillis();
             String requestData = WebUtil.httptoString(request);
 
+            LOGGER.info("Starting processing request :- {}", requestData);
+
             FlipkartRequestContext.current().setRequestIdentifier(FlipkartRequestContext.generateRequestIdentifier());
             FlipkartRequestContext.current().setChannelSource(
                     ChannelSource.findByChannelSourceCode(TenantRequestContext.current().getSourceCode()));
@@ -57,10 +59,10 @@ public class FlipkartFilter extends OncePerRequestFilter {
             FlipkartRequestContext.current().setApiVersion(apiVersion);
             ThreadContextUtils.setThreadMetadata("HTTP");
 
-            FlipkartRequestContext.current().setAuthToken(request.getHeader("AuthToken"));
-            FlipkartRequestContext.current().setLocationId(request.getHeader("Location"));
-            FlipkartRequestContext.current().setUserName(request.getHeader("UserName"));
-            FlipkartRequestContext.current().setPassword(request.getHeader("Password"));
+            FlipkartRequestContext.current().setAuthToken(request.getHeader("authToken"));
+            FlipkartRequestContext.current().setLocationId(request.getHeader("locationid"));
+            FlipkartRequestContext.current().setUserName(request.getHeader("userName"));
+            FlipkartRequestContext.current().setPassword(request.getHeader("password"));
 
 //            if (!FlipkartRequestContext.current().validate()) {
 //                response.sendError(HttpServletResponse.SC_BAD_REQUEST);

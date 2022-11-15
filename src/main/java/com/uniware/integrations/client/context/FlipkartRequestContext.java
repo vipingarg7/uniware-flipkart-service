@@ -211,4 +211,13 @@ public class FlipkartRequestContext {
         return true;
     }
 
+    @Override public String toString() {
+        return "FlipkartRequestContext{" + "apiVersion='" + apiVersion + '\'' + ", requestURI='" + requestURI + '\''
+                + ", requestIdentifier='" + requestIdentifier + '\'' + ", channelSource=" + channelSource
+                + ", apiHeaders=" + apiHeaders + ", sellerPanelHeaders=" + sellerPanelHeaders + ", userName='"
+                + userName + '\'' + ", password='" + password + '\'' + ", sellerId='" + sellerId + '\''
+                + ", locationId='" + locationId + '\'' + ", authToken='" + authToken + '\'' + ", authTokenExpiresIn='"
+                + authTokenExpiresIn + '\'' + ", refreshToken='" + refreshToken + '\'' + ", contextVariables="
+                + contextVariables + '}';
+    }
 }

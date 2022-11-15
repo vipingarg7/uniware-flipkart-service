@@ -60,6 +60,7 @@ import com.uniware.integrations.client.dto.uniware.ChannelItemType;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestResponse;
 import com.uniware.integrations.client.dto.uniware.ConnectorVerificationRequest;
+import com.uniware.integrations.client.dto.uniware.ConnectorVerificationResponse;
 import com.uniware.integrations.client.dto.uniware.CreateInvoiceResponse;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentResponse;
@@ -207,6 +208,19 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             responseParams.put("refreshToken", refreshToken);
             responseParams.put(AUTH_TOKEN_EXPIRES_IN, String.valueOf(authTokenExpireIn));
 
+            String locationId = postConfigurationRequest.getParams().get("locationId");
+            FlipkartRequestContext.current().setAuthToken(authToken);
+            LocationDetailsResponse locationDetailsResponse = flipkartSellerApiService.getAllLocations();
+            if ( locationDetailsResponse == null )
+                return ResponseUtil.failure("Getting error while fetching location details");
+            boolean isValidLocation = locationDetailsResponse.getLocations().stream().anyMatch(location -> locationId.equalsIgnoreCase(location.getLocationId()));
+            if ( isValidLocation ) {
+                responseParams.put("locationId", locationId);
+            }
+            else {
+                return ResponseUtil.failure("Invalid locationId");
+            }
+
             PostConfigurationResponse postConfigurationResponse = new PostConfigurationResponse();
             postConfigurationResponse.setParams(responseParams);
             return ResponseUtil.success(SUCCESS, postConfigurationResponse);
@@ -217,6 +231,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
     @Override public Response connectorVerification(Map<String, String> headers, ConnectorVerificationRequest connectorVerificationRequest) {
 
+        ConnectorVerificationResponse connectorVerificationResponse = new ConnectorVerificationResponse();
         Map<String,String> requestParams = connectorVerificationRequest.getParameters();
         Map<String,String> responseParams = new HashMap<>();
 
@@ -231,10 +246,10 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             responseParams.put("username", username);
             responseParams.put("password", password);
             responseParams.put("sellerId", sellerId);
-            return ResponseUtil.success("Logged in Successfully");
+            connectorVerificationResponse.setParams(responseParams);
+            return ResponseUtil.success("Logged in Successfully", connectorVerificationResponse);
         }
         else if ("FLIPKART_INVENTORY_PANEL".equalsIgnoreCase(connectorVerificationRequest.getName())) {
-            String locationId = requestParams.get("locationId");
             String authToken = requestParams.get("authToken");
             String refreshToken = requestParams.get("refreshToken");
             Long authTokenExpiresIn = Long.valueOf(requestParams.get("authTokenExpiresIn"));
@@ -247,22 +262,11 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                 authToken = authTokenResponse.getAccessToken();
                 refreshToken = authTokenResponse.getRefreshToken();
                 authTokenExpiresIn = authTokenResponse.getExpiresIn();
-            }
-
-            LocationDetailsResponse locationDetailsResponse = flipkartSellerApiService.getAllLocations();
-            if ( locationDetailsResponse == null )
-                return ResponseUtil.failure("Getting error while fetching location details");
-            boolean isValidLocation = locationDetailsResponse.getLocations().stream().anyMatch(location -> locationId.equalsIgnoreCase(location.getLocationId()));
-
-            if ( isValidLocation ) {
                 responseParams.put("authToken",authToken);
                 responseParams.put("refreshToken",refreshToken);
                 responseParams.put("authTokenExpiresIn", String.valueOf(authTokenExpiresIn));
-                responseParams.put("locationId",locationId);
-                return ResponseUtil.success("Connector verified successfully");
-            }
-            else {
-                return ResponseUtil.failure("Invalid locationId");
+                connectorVerificationResponse.setParams(responseParams);
+                return ResponseUtil.success("Connector verified successfully",connectorVerificationResponse);
             }
         }
 
