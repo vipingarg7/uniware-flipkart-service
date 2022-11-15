@@ -250,9 +250,9 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             return ResponseUtil.success("Logged in Successfully", connectorVerificationResponse);
         }
         else if ("FLIPKART_INVENTORY_PANEL".equalsIgnoreCase(connectorVerificationRequest.getName())) {
-            String authToken = requestParams.get("authToken");
-            String refreshToken = requestParams.get("refreshToken");
-            Long authTokenExpiresIn = Long.valueOf(requestParams.get("authTokenExpiresIn"));
+            String authToken = requestParams.get("authtoken");
+            String refreshToken = requestParams.get("refreshtoken");
+            Long authTokenExpiresIn = Long.valueOf(requestParams.get("authtokenexpiresin"));
 
             boolean isAuthTokenExpiryNear = isAuthTokenExpiryNear(authTokenExpiresIn);
             if ( isAuthTokenExpiryNear ) {
