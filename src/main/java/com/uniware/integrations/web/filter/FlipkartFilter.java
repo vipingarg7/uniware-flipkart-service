@@ -62,10 +62,10 @@ public class FlipkartFilter extends OncePerRequestFilter {
             FlipkartRequestContext.current().setUserName(request.getHeader("UserName"));
             FlipkartRequestContext.current().setPassword(request.getHeader("Password"));
 
-            if (!FlipkartRequestContext.current().validate()) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                return;
-            }
+//            if (!FlipkartRequestContext.current().validate()) {
+//                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+//                return;
+//            }
             String hostname = new BufferedReader(new InputStreamReader(Runtime.getRuntime().exec("hostname").getInputStream())).readLine();
             response.addHeader("Hostname", hostname);
             response.addHeader("RequestIdentifier", FlipkartRequestContext.current().getRequestIdentifier());
