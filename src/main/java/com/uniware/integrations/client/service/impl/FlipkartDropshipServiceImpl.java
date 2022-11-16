@@ -246,13 +246,11 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             responseParams.put("username", username);
             responseParams.put("password", password);
             responseParams.put("sellerId", sellerId);
-            connectorVerificationResponse.setParams(responseParams);
-            return ResponseUtil.success("Logged in Successfully", connectorVerificationResponse);
         }
         else if ("FLIPKART_INVENTORY_PANEL".equalsIgnoreCase(connectorVerificationRequest.getName())) {
-            String authToken = requestParams.get("authtoken");
-            String refreshToken = requestParams.get("refreshtoken");
-            Long authTokenExpiresIn = Long.valueOf(requestParams.get("authtokenexpiresin"));
+            String authToken = requestParams.get("authToken");
+            String refreshToken = requestParams.get("refreshToken");
+            Long authTokenExpiresIn = Long.valueOf(requestParams.get("authTokenExpiresIn"));
 
             boolean isAuthTokenExpiryNear = isAuthTokenExpiryNear(authTokenExpiresIn);
             if ( isAuthTokenExpiryNear ) {
@@ -265,12 +263,10 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                 responseParams.put("authToken",authToken);
                 responseParams.put("refreshToken",refreshToken);
                 responseParams.put("authTokenExpiresIn", String.valueOf(authTokenExpiresIn));
-                connectorVerificationResponse.setParams(responseParams);
-                return ResponseUtil.success("Connector verified successfully",connectorVerificationResponse);
             }
         }
-
-        return ResponseUtil.failure("Unable to verify connector");
+        connectorVerificationResponse.setParams(responseParams);
+        return ResponseUtil.success("Logged in Successfully", connectorVerificationResponse);
     }
 
 //    @Override public Response fetchCatalog(Map<String, String> headers, CatalogSyncRequest catalogSyncRequest) {
@@ -823,6 +819,12 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         else{
             return false;
         }
+    }
+
+    public static void main(String[] args) {
+        Date authTokenExpiresInDate = new Date(Long.valueOf("2794588"));
+ ;
+        System.out.println(authTokenExpiresInDate);
     }
 
     private SearchShipmentRequest prepareSearchShimentRequest(Filter.ShipmentTypesEnum shipmentType, int orderWindow, Date orderDateOfLastOrderOfLastPage) {
