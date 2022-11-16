@@ -266,7 +266,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             }
         }
         connectorVerificationResponse.setParams(responseParams);
-        return ResponseUtil.success("Logged in Successfully", connectorVerificationResponse);
+        return ResponseUtil.success("Connector verified successfully ", connectorVerificationResponse);
     }
 
 //    @Override public Response fetchCatalog(Map<String, String> headers, CatalogSyncRequest catalogSyncRequest) {
