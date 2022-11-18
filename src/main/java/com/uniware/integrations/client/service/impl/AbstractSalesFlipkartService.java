@@ -5,7 +5,7 @@ import com.uniware.integrations.client.dto.uniware.CatalogSyncRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.uniware.authentication.connector.request.dto.ConnectorVerificationRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
-import com.uniware.integrations.client.dto.uniware.FetchCurrentChannelManifestRequest;
+import com.uniware.integrations.uniware.manifest.currentChannel.request.dto.CurrentChannelManifestRequest;
 import com.uniware.integrations.client.dto.uniware.FetchOrderRequest;
 import com.uniware.integrations.client.dto.uniware.FetchPendencyRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;
@@ -48,5 +48,5 @@ public abstract class AbstractSalesFlipkartService implements SalesFlipkartServi
 
     @Override public Response updateInventory(Map<String, String> headers, UpdateInventoryRequest updateInventoryRequest) { return null; };
 
-    @Override public Response fetchCurrentChannelManifest(Map<String, String> headers, FetchCurrentChannelManifestRequest fetchCurrentChannelManifestRequest) {  return null; };
+    @Override public Response fetchCurrentChannelManifest(Map<String, String> headers, CurrentChannelManifestRequest currentChannelManifestRequest) {  return null; };
 }

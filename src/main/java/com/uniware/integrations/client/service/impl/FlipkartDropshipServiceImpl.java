@@ -65,8 +65,8 @@ import com.uniware.integrations.client.dto.uniware.CreateInvoiceResponse;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentResponse;
 import com.uniware.integrations.client.dto.uniware.Error;
-import com.uniware.integrations.client.dto.uniware.FetchCurrentChannelManifestRequest;
-import com.uniware.integrations.client.dto.uniware.FetchCurrentChannelManifestResponse;
+import com.uniware.integrations.uniware.manifest.currentChannel.request.dto.CurrentChannelManifestRequest;
+import com.uniware.integrations.uniware.manifest.currentChannel.response.dto.CurrentChannelManifestResponse;
 import com.uniware.integrations.client.dto.uniware.FetchOrderRequest;
 import com.uniware.integrations.client.dto.api.requestDto.ShipmentPackV3Request;
 import com.uniware.integrations.client.dto.api.responseDto.AuthTokenResponse;
@@ -749,25 +749,25 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         return ResponseUtil.success("Manifest Closed Successfully.",closeShippingManifestResponse);
     }
 
-    @Override public Response fetchCurrentChannelManifest(Map<String,String> headers, FetchCurrentChannelManifestRequest fetchCurrentChannelManifestRequest) {
+    @Override public Response fetchCurrentChannelManifest(Map<String,String> headers, CurrentChannelManifestRequest currentChannelManifestRequest) {
 
         GetManifestRequest getManifestRequest = new GetManifestRequest.Builder()
                 .setParams(new GetManifestRequest.Params.Builder()
-                        .setVendorGroupCode(getVendorGroupCode(fetchCurrentChannelManifestRequest.getShippingProviderCode()))
+                        .setVendorGroupCode(getVendorGroupCode(currentChannelManifestRequest.getShippingProviderCode()))
                         .setIsMps(false)
                         .setLocationId(FlipkartRequestContext.current().getLocationId())
                         .build())
                 .build();
 
-        String manifestFilePath = "/tmp/"+ com.uniware.integrations.utils.StringUtils.join('_', TenantRequestContext.current().getTenantCode(), UUID.randomUUID().toString(), fetchCurrentChannelManifestRequest.getShippingManifestCode()) + ".pdf";
+        String manifestFilePath = "/tmp/"+ com.uniware.integrations.utils.StringUtils.join('_', TenantRequestContext.current().getTenantCode(), UUID.randomUUID().toString(), currentChannelManifestRequest.getShippingManifestCode()) + ".pdf";
 
         boolean isManifestDownloaded = flipkartSellerApiService.getCurrentChannelManifest(getManifestRequest, manifestFilePath);
 
         if (isManifestDownloaded) {
             String manifestLink = s3Service.uploadFile(new File(manifestFilePath),BUCKET_NAME);
-            FetchCurrentChannelManifestResponse fetchCurrentChannelManifestResponse = new FetchCurrentChannelManifestResponse();
-            fetchCurrentChannelManifestResponse.setManifestLink(manifestLink);
-            return ResponseUtil.success("Manifest downloaded successfully", fetchCurrentChannelManifestResponse);
+            CurrentChannelManifestResponse currentChannelManifestResponse = new CurrentChannelManifestResponse();
+            currentChannelManifestResponse.setManifestLink(manifestLink);
+            return ResponseUtil.success("Manifest downloaded successfully", currentChannelManifestResponse);
         }
 
         return ResponseUtil.failure("Unable to download Manifest");
