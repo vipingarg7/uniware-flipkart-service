@@ -7,10 +7,15 @@ public class DispatchShipmentRequest {
 
     private String  saleOrderCode;
     private List<SaleOrderItem> saleOrderItems;
+
+    // invoice entity
     private String invoiceCode;
     private Date invoiceDate;
     private String shippingProvider;
+
+    // shippingInfo
     private String trackingNumber;
+    // Make ENUM
     private String  shippingManager;
     private boolean isShippingProviderIsAggregator;
     private String  aggregatorAllocatedCourier;

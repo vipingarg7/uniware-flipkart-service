@@ -59,8 +59,8 @@ import com.uniware.integrations.client.dto.uniware.CatalogSyncResponse;
 import com.uniware.integrations.client.dto.uniware.ChannelItemType;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestResponse;
-import com.uniware.integrations.client.dto.uniware.ConnectorVerificationRequest;
-import com.uniware.integrations.client.dto.uniware.ConnectorVerificationResponse;
+import com.uniware.integrations.uniware.authentication.connector.request.dto.ConnectorVerificationRequest;
+import com.uniware.integrations.uniware.authentication.connector.response.dto.ConnectorVerificationResponse;
 import com.uniware.integrations.client.dto.uniware.CreateInvoiceResponse;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentResponse;
@@ -78,9 +78,9 @@ import com.uniware.integrations.client.dto.uniware.FetchPendencyRequest;
 import com.uniware.integrations.client.dto.uniware.FetchPendencyResponse;
 import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;
 import com.uniware.integrations.client.dto.uniware.Pendency;
-import com.uniware.integrations.client.dto.uniware.PostConfigurationRequest;
-import com.uniware.integrations.client.dto.uniware.PostConfigurationResponse;
-import com.uniware.integrations.client.dto.uniware.PreConfigurationRequest;
+import com.uniware.integrations.uniware.authentication.postConfig.request.dto.PostConfigurationRequest;
+import com.uniware.integrations.uniware.authentication.postConfig.response.dto.PostConfigurationResponse;
+import com.uniware.integrations.uniware.authentication.preConfig.request.dto.PreConfigurationRequest;
 import com.uniware.integrations.client.dto.uniware.SaleOrder;
 import com.uniware.integrations.client.dto.uniware.SaleOrderItem;
 import com.uniware.integrations.client.dto.uniware.ShippingPackage;
@@ -89,7 +89,7 @@ import com.uniware.integrations.client.dto.uniware.UpdateInventoryResponse;
 import com.uniware.integrations.client.service.FlipkartSellerApiService;
 import com.uniware.integrations.client.service.FlipkartSellerPanelService;
 import com.uniware.integrations.core.dto.api.Response;
-import com.uniware.integrations.client.dto.uniware.PreConfigurationResponse;
+import com.uniware.integrations.uniware.authentication.preConfig.response.dto.PreConfigurationResponse;
 import com.uniware.integrations.utils.ResponseUtil;
 import com.uniware.integrations.web.context.TenantRequestContext;
 import com.uniware.integrations.web.exception.BadRequest;
@@ -126,6 +126,13 @@ import org.springframework.stereotype.Service;
 public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
     public static final String AUTH_TOKEN_EXPIRES_IN = "authTokenExpiresIn";
+    public static final String AUTH_TOKEN = "authToken";
+    public static final String REFRESH_TOKEN = "refreshToken";
+    public static final String LOCATION_ID = "locationId";
+    public static final String USERNAME = "username";
+    public static final String PASSWORD = "password";
+    public static final String FLIPKART_SELLER_PANEL = "FLIPKART_SELLER_PANEL";
+    public static final String FLIPKART_INVENTORY_PANEL = "FLIPKART_INVENTORY_PANEL";
     @Autowired
     private Environment environment;
     @Autowired
@@ -196,61 +203,62 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
     @Override public Response postConfiguration(Map<String, String> headers, PostConfigurationRequest postConfigurationRequest) {
 
-        AuthTokenResponse authTokenResponse = flipkartSellerApiService.getAuthToken(postConfigurationRequest.getParams().get(FK_CODE));
+        Map<String,String> params = postConfigurationRequest.getParams();
+        AuthTokenResponse authTokenResponse = flipkartSellerApiService.getAuthToken(params.get(FK_CODE));
 
-        if ( authTokenResponse !=null && authTokenResponse.getAccessToken() != null ) {
-            String authToken = authTokenResponse.getTokenType() + " " + authTokenResponse.getAccessToken();
-            Long authTokenExpireIn = authTokenResponse.getExpiresIn();
-            String refreshToken = authTokenResponse.getRefreshToken();
-
-            HashMap<String, String> responseParams = new HashMap<>();
-            responseParams.put("authToken", authToken);
-            responseParams.put("refreshToken", refreshToken);
-            responseParams.put(AUTH_TOKEN_EXPIRES_IN, String.valueOf(authTokenExpireIn));
-
-            String locationId = postConfigurationRequest.getParams().get("locationId");
-            FlipkartRequestContext.current().setAuthToken(authToken);
-            LocationDetailsResponse locationDetailsResponse = flipkartSellerApiService.getAllLocations();
-            if ( locationDetailsResponse == null )
-                return ResponseUtil.failure("Getting error while fetching location details");
-            boolean isValidLocation = locationDetailsResponse.getLocations().stream().anyMatch(location -> locationId.equalsIgnoreCase(location.getLocationId()));
-            if ( isValidLocation ) {
-                responseParams.put("locationId", locationId);
-            }
-            else {
-                return ResponseUtil.failure("Invalid locationId");
-            }
-
-            PostConfigurationResponse postConfigurationResponse = new PostConfigurationResponse();
-            postConfigurationResponse.setParams(responseParams);
-            return ResponseUtil.success(SUCCESS, postConfigurationResponse);
+        if ( authTokenResponse ==null || authTokenResponse.getAccessToken() == null ) {
+            return ResponseUtil.failure("Unable to generate AuthToken");
         }
 
-        return ResponseUtil.failure("Unable to generate AuthToken");
+        String authToken = authTokenResponse.getTokenType() + " " + authTokenResponse.getAccessToken();
+        Long authTokenExpireIn = authTokenResponse.getExpiresIn();
+        String refreshToken = authTokenResponse.getRefreshToken();
+
+        HashMap<String, String> responseParams = new HashMap<>();
+        responseParams.put(AUTH_TOKEN, authToken);
+        responseParams.put(REFRESH_TOKEN, refreshToken);
+        responseParams.put(AUTH_TOKEN_EXPIRES_IN, String.valueOf(authTokenExpireIn));
+
+        String locationId = params.get(LOCATION_ID);
+        FlipkartRequestContext.current().setAuthToken(authToken);
+        LocationDetailsResponse locationDetailsResponse = flipkartSellerApiService.getAllLocations();
+        if ( locationDetailsResponse == null )
+            return ResponseUtil.failure("Getting error while fetching location details");
+        boolean isValidLocation = locationDetailsResponse.getLocations().stream().anyMatch(location -> locationId.equalsIgnoreCase(location.getLocationId()));
+        if ( isValidLocation ) {
+            responseParams.put(LOCATION_ID, locationId);
+        } else {
+            return ResponseUtil.failure("Invalid locationId");
+        }
+
+        PostConfigurationResponse postConfigurationResponse = new PostConfigurationResponse();
+        postConfigurationResponse.setParams(responseParams);
+        return ResponseUtil.success(SUCCESS, postConfigurationResponse);
+
     }
 
     @Override public Response connectorVerification(Map<String, String> headers, ConnectorVerificationRequest connectorVerificationRequest) {
 
         ConnectorVerificationResponse connectorVerificationResponse = new ConnectorVerificationResponse();
-        Map<String,String> requestParams = connectorVerificationRequest.getParameters();
+        Map<String,String> connectorParameters = connectorVerificationRequest.getConnectorParameters();
         Map<String,String> responseParams = new HashMap<>();
 
-        if ("FLIPKART_SELLER_PANEL".equalsIgnoreCase(connectorVerificationRequest.getName())){
-            String username = requestParams.get("username");
-            String password = requestParams.get("password");
+        if (FLIPKART_SELLER_PANEL.equalsIgnoreCase(connectorVerificationRequest.getConnectorName())){
+            String username = connectorParameters.get(USERNAME);
+            String password = connectorParameters.get(PASSWORD);
             boolean loginSuccess = flipkartSellerPanelService.sellerPanelLogin(username, password, false);
             if (!loginSuccess) {
                 return ResponseUtil.failure("Unable to login on Flipkart panel.");
             }
             String sellerId = flipkartSellerPanelService.getFeaturesForSeller().getFirst();
-            responseParams.put("username", username);
-            responseParams.put("password", password);
+            responseParams.put(USERNAME, username);
+            responseParams.put(PASSWORD, password);
             responseParams.put("sellerId", sellerId);
         }
-        else if ("FLIPKART_INVENTORY_PANEL".equalsIgnoreCase(connectorVerificationRequest.getName())) {
-            String authToken = requestParams.get("authToken");
-            String refreshToken = requestParams.get("refreshToken");
-            Long authTokenExpiresIn = Long.valueOf(requestParams.get("authTokenExpiresIn"));
+        else if (FLIPKART_INVENTORY_PANEL.equalsIgnoreCase(connectorVerificationRequest.getConnectorName())) {
+            String authToken = connectorParameters.get(AUTH_TOKEN);
+            String refreshToken = connectorParameters.get(REFRESH_TOKEN);
+            Long authTokenExpiresIn = Long.valueOf(connectorParameters.get(AUTH_TOKEN_EXPIRES_IN));
 
             boolean isAuthTokenExpiryNear = isAuthTokenExpiryNear(authTokenExpiresIn);
             if ( isAuthTokenExpiryNear ) {
@@ -260,12 +268,12 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                 authToken = authTokenResponse.getAccessToken();
                 refreshToken = authTokenResponse.getRefreshToken();
                 authTokenExpiresIn = authTokenResponse.getExpiresIn();
-                responseParams.put("authToken",authToken);
-                responseParams.put("refreshToken",refreshToken);
-                responseParams.put("authTokenExpiresIn", String.valueOf(authTokenExpiresIn));
+                responseParams.put(AUTH_TOKEN,authToken);
+                responseParams.put(REFRESH_TOKEN,refreshToken);
+                responseParams.put(AUTH_TOKEN_EXPIRES_IN, String.valueOf(authTokenExpiresIn));
             }
         }
-        connectorVerificationResponse.setParams(responseParams);
+        connectorVerificationResponse.setConnectorParamters(responseParams);
         return ResponseUtil.success("Connector verified successfully ", connectorVerificationResponse);
     }
 
@@ -811,20 +819,14 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         Date currentTime = DateUtils.getCurrentTime();
         Date authTokenExpiresInDate = new Date(authTokenExpiresIn) ;
         int numberOfDaysLeftBeforeExpiry = DateUtils.diff(currentTime, authTokenExpiresInDate, DateUtils.Resolution.DAY);
-        LOGGER.info("Number Of days are left in auth token expiry.",numberOfDaysLeftBeforeExpiry);
+        LOGGER.info("Number Of days are left in auth token expiry : {}",numberOfDaysLeftBeforeExpiry);
         if ( numberOfDaysLeftBeforeExpiry < 2 ){
-            LOGGER.info("AuthToken Expiry is near refetch new authToken");
+            LOGGER.info("AuthToken will expire in within 2 days refetching new authToken");
             return true;
         }
         else{
             return false;
         }
-    }
-
-    public static void main(String[] args) {
-        Date authTokenExpiresInDate = new Date(Long.valueOf("2794588"));
- ;
-        System.out.println(authTokenExpiresInDate);
     }
 
     private SearchShipmentRequest prepareSearchShimentRequest(Filter.ShipmentTypesEnum shipmentType, int orderWindow, Date orderDateOfLastOrderOfLastPage) {

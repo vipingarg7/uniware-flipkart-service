@@ -72,7 +72,6 @@ public class FlipkartFilter extends OncePerRequestFilter {
             response.addHeader("Hostname", hostname);
             response.addHeader("RequestIdentifier", FlipkartRequestContext.current().getRequestIdentifier());
             filterChain.doFilter(request, response);
-            LOGGER.info("FlipkartRequestContext : {}",FlipkartRequestContext.current().toString());
             LOGGER.info("Finished processing request :- {}, time taken : {} ", requestData, System.currentTimeMillis() - startTime);
 
         } finally {
