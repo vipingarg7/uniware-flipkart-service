@@ -60,7 +60,7 @@ public class FlipkartFilter extends OncePerRequestFilter {
             ThreadContextUtils.setThreadMetadata("HTTP");
 
             FlipkartRequestContext.current().setAuthToken(request.getHeader("authToken"));
-            FlipkartRequestContext.current().setLocationId(request.getHeader("locationid"));
+            FlipkartRequestContext.current().setLocationId(request.getHeader("locationId"));
             FlipkartRequestContext.current().setUserName(request.getHeader("userName"));
             FlipkartRequestContext.current().setPassword(request.getHeader("password"));
 

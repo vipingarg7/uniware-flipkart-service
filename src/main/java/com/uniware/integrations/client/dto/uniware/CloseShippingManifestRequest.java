@@ -1,9 +1,8 @@
 package com.uniware.integrations.client.dto.uniware;
 
-import com.uniware.integrations.utils.DateUtils;
+import com.uniware.integrations.uniware.dto.rest.api.SaleOrderItem;
 import java.util.Date;
 import java.util.List;
-import org.joda.time.DateTime;
 
 public class CloseShippingManifestRequest {
 

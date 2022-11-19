@@ -1,5 +1,6 @@
 package com.uniware.integrations.client.dto.uniware;
 
+import com.uniware.integrations.uniware.dto.rest.api.SaleOrderItem;
 import java.util.Date;
 import java.util.List;
 

@@ -6,8 +6,7 @@ import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.uniware.authentication.connector.request.dto.ConnectorVerificationRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
 import com.uniware.integrations.uniware.manifest.currentChannel.request.dto.CurrentChannelManifestRequest;
-import com.uniware.integrations.client.dto.uniware.FetchOrderRequest;
-import com.uniware.integrations.client.dto.uniware.FetchPendencyRequest;
+import com.uniware.integrations.uniware.order.request.dto.FetchOrderRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateLabelRequest;
 import com.uniware.integrations.uniware.authentication.postConfig.request.dto.PostConfigurationRequest;
@@ -18,6 +17,7 @@ import com.uniware.integrations.core.dto.api.Response;
 import java.util.Map;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,16 +43,15 @@ public class SalesFlipkartControllerV1 extends BaseController {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).postConfiguration(headers, postConfigurationRequest));
     }
 
-    // todo - change request payload, connectorname
     @PostMapping(value = "connector/verify", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> connectorVerification(@RequestHeader Map<String,String> headers, @RequestBody
             ConnectorVerificationRequest connectorVerificationRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).connectorVerification(headers, connectorVerificationRequest));
     }
 
-    @PostMapping(value = "/pendency/get", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Response> fetchPendency(@RequestHeader Map<String,String> headers, @RequestBody FetchPendencyRequest fetchPendencyRequest) {
-        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).fetchPendency(headers, fetchPendencyRequest));
+    @GetMapping(value = "/pendency")
+    public ResponseEntity<Response> fetchPendency(@RequestHeader Map<String,String> headers) {
+        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).fetchPendency(headers));
     }
 
     @PostMapping(value = "/orders/fetch", consumes = MediaType.APPLICATION_JSON_VALUE)

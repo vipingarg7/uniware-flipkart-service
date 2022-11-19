@@ -67,22 +67,21 @@ import com.uniware.integrations.client.dto.uniware.DispatchShipmentResponse;
 import com.uniware.integrations.client.dto.uniware.Error;
 import com.uniware.integrations.uniware.manifest.currentChannel.request.dto.CurrentChannelManifestRequest;
 import com.uniware.integrations.uniware.manifest.currentChannel.response.dto.CurrentChannelManifestResponse;
-import com.uniware.integrations.client.dto.uniware.FetchOrderRequest;
+import com.uniware.integrations.uniware.order.request.dto.FetchOrderRequest;
 import com.uniware.integrations.client.dto.api.requestDto.ShipmentPackV3Request;
 import com.uniware.integrations.client.dto.api.responseDto.AuthTokenResponse;
 import com.uniware.integrations.client.dto.api.responseDto.ShipmentDetailsV3WithAddressResponse;
-import com.uniware.integrations.client.dto.uniware.AddressDetail;
-import com.uniware.integrations.client.dto.uniware.AddressRef;
+import com.uniware.integrations.uniware.dto.rest.api.AddressDetail;
+import com.uniware.integrations.uniware.dto.rest.api.AddressRef;
 import com.uniware.integrations.client.dto.uniware.FetchOrderResponse;
-import com.uniware.integrations.client.dto.uniware.FetchPendencyRequest;
-import com.uniware.integrations.client.dto.uniware.FetchPendencyResponse;
+import com.uniware.integrations.uniware.pendency.response.dto.FetchPendencyResponse;
 import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;
-import com.uniware.integrations.client.dto.uniware.Pendency;
+import com.uniware.integrations.uniware.pendency.response.dto.Pendency;
 import com.uniware.integrations.uniware.authentication.postConfig.request.dto.PostConfigurationRequest;
 import com.uniware.integrations.uniware.authentication.postConfig.response.dto.PostConfigurationResponse;
 import com.uniware.integrations.uniware.authentication.preConfig.request.dto.PreConfigurationRequest;
-import com.uniware.integrations.client.dto.uniware.SaleOrder;
-import com.uniware.integrations.client.dto.uniware.SaleOrderItem;
+import com.uniware.integrations.uniware.dto.rest.api.SaleOrder;
+import com.uniware.integrations.uniware.dto.rest.api.SaleOrderItem;
 import com.uniware.integrations.client.dto.uniware.ShippingPackage;
 import com.uniware.integrations.client.dto.uniware.UpdateInventoryRequest;
 import com.uniware.integrations.client.dto.uniware.UpdateInventoryResponse;
@@ -402,7 +401,8 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         return ResponseUtil.success("File downloaded Successfully", catalogPreProcessorResponse);
     }
 
-    @Override public Response fetchPendency(Map<String, String> headers, FetchPendencyRequest fetchPendencyRequest) {
+    @Override
+    public Response fetchPendency(Map<String, String> headers) {
 
         FetchPendencyResponse fetchPendencyResponse = new FetchPendencyResponse();
         boolean loginSuccess = flipkartSellerPanelService.sellerPanelLogin(FlipkartRequestContext.current().getUserName(), FlipkartRequestContext.current().getPassword(), false);
@@ -832,7 +832,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     private SearchShipmentRequest prepareSearchShimentRequest(Filter.ShipmentTypesEnum shipmentType, int orderWindow, Date orderDateOfLastOrderOfLastPage) {
 
         DateFilter DispatchAfterDateFilter = new DateFilter();
-        DispatchAfterDateFilter.from(DateUtils.dateToString((DateUtils.addToDate(DateUtils.getCurrentDate(), Calendar.DATE, -5)),DATE_PATTERN));
+        DispatchAfterDateFilter.from(DateUtils.dateToString((DateUtils.addToDate(DateUtils.getCurrentDate(), Calendar.DATE, -orderWindow)),DATE_PATTERN));
         DispatchAfterDateFilter.to(DateUtils.dateToString(DateUtils.getCurrentTime(),DATE_PATTERN));
 
         DateFilter orderDateFilter = new DateFilter();
@@ -1286,16 +1286,16 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     private boolean getPendencyOfOnHoldsOrders(Map<String,Pendency> channelProductIdToPendency) {
 
         int pageNumber = 1;
-        boolean hasMore = false;
+        boolean hasMore;
 
         do {
             hasMore = false;
 
             FetchOnHoldOrderRequest fetchOnHoldOrderRequest = prepareFetchOnHoldOrderRequest(pageNumber);
-            String fetchPendencyResponse = flipkartSellerPanelService.getOnHoldOrdersFromPanel(fetchOnHoldOrderRequest);
-            if ( fetchPendencyResponse != null ) {
+            String pendencyForOnHoldOrders = flipkartSellerPanelService.getOnHoldOrdersFromPanel(fetchOnHoldOrderRequest);
+            if ( pendencyForOnHoldOrders != null ) {
                 try {
-                    JsonObject jsonObject = new Gson().fromJson(fetchPendencyResponse, JsonObject.class);
+                    JsonObject jsonObject = new Gson().fromJson(pendencyForOnHoldOrders, JsonObject.class);
                     hasMore = jsonObject.get("has_more").getAsBoolean();
                     JsonArray orders = jsonObject.getAsJsonArray("items");
                     Iterator<JsonElement> ordersIterator = orders.iterator();
@@ -1303,9 +1303,11 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                         JsonObject order = ordersIterator.next().getAsJsonObject();
                         JsonArray orderItems = order.get("order_items").getAsJsonArray();
                         Iterator<JsonElement> orderItemsIterator = orderItems.iterator();
+                        int qty = 0;
                         while (orderItemsIterator.hasNext()) {
                             JsonElement orderItem = orderItemsIterator.next();
                             String listingId = orderItem.getAsJsonObject().get("listing_id").getAsString();
+                            qty += orderItem.getAsJsonObject().get("quantity").getAsInt();
                             if (channelProductIdToPendency.computeIfPresent(listingId, (key, val) -> val.addRequiredInventory(orderItem.getAsJsonObject().get("quantity").getAsInt())) == null) {
                                 Pendency pendency = new Pendency();
                                 pendency.setChannelProductId(listingId);
@@ -1315,9 +1317,10 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                                 channelProductIdToPendency.put(listingId,pendency);
                             }
                         }
+                        LOGGER.info("Pendency count for order : {} is : {}", order.get("order_items").getAsJsonArray().iterator().next(), qty);
                     }
                 } catch (JsonSyntaxException e) {
-                    LOGGER.error("Unable to parse response or Invalid Json, json ", fetchPendencyResponse);
+                    LOGGER.error("Unable to parse response or Invalid Json, json ", pendencyForOnHoldOrders);
                     return false;
                 }
             }
@@ -1353,8 +1356,10 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                 for (Shipment shipment : searchShipmentV3Response.getShipments()) {
                     // Adding shipments in a HashSet to avoid duplicity of shipments in api response
                     if ( shipmentIdSet.add(shipment.getShipmentId())) {
+                        int qty = 0;
                         for (OrderItem orderItem : shipment.getOrderItems()) {
                             String listingId = orderItem.getListingId();
+                            qty += orderItem.getQuantity();
                             if (channelProductIdToPendency.computeIfPresent(listingId, (key, val) -> val.addRequiredInventory(orderItem.getQuantity())) == null) {
                                 Pendency pendency = new Pendency();
                                 pendency.setChannelProductId(listingId);
@@ -1364,11 +1369,12 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                                 channelProductIdToPendency.put(listingId,pendency);
                             }
                         }
+                        LOGGER.info("Pendency count for order : {} is : {}", shipment.getOrderItems().get(0).getOrderId(), qty);
                     }
                     if ( (pageNumber % 249 ) == 0) {
                         Date orderDate = shipment.getOrderItems().get(0).getOrderDate();
                         orderDateOfLastOrderOfLastpage = orderDateOfLastOrderOfLastpage != null ? orderDateOfLastOrderOfLastpage : orderDate;
-                        if ( (orderDate.getTime()-orderDateOfLastOrderOfLastpage.getTime()) > 0){
+                        if ( (orderDate.getTime() - orderDateOfLastOrderOfLastpage.getTime()) > 0){
                             orderDateOfLastOrderOfLastpage = orderDate;
                         }
                         postApiCall = true;

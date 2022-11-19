@@ -6,8 +6,7 @@ import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.uniware.authentication.connector.request.dto.ConnectorVerificationRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
 import com.uniware.integrations.uniware.manifest.currentChannel.request.dto.CurrentChannelManifestRequest;
-import com.uniware.integrations.client.dto.uniware.FetchOrderRequest;
-import com.uniware.integrations.client.dto.uniware.FetchPendencyRequest;
+import com.uniware.integrations.uniware.order.request.dto.FetchOrderRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateLabelRequest;
 import com.uniware.integrations.uniware.authentication.postConfig.request.dto.PostConfigurationRequest;
@@ -23,18 +22,16 @@ import java.util.Map;
 
 public abstract class AbstractSalesFlipkartService implements SalesFlipkartService {
 
-    @Override public Response preConfiguration(Map<String, String> headers,
-            PreConfigurationRequest preConfigurationRequest) { return null; }
+    @Override public Response preConfiguration(Map<String, String> headers, PreConfigurationRequest preConfigurationRequest) { return null; }
 
-    @Override public Response postConfiguration(Map<String, String> headers,
-            PostConfigurationRequest postConfigurationRequest) { return null; }
+    @Override public Response postConfiguration(Map<String, String> headers, PostConfigurationRequest postConfigurationRequest) { return null; }
 
     @Override public Response connectorVerification(Map<String, String> headers, ConnectorVerificationRequest connectorVerificationRequest){ return null; };
 
     @Override public Response catalogSyncPreProcessor(Map<String, String> headers, CatalogPreProcessorRequest catalogPreProcessorRequest){ return null; };
 
     @Override public Response fetchCatalog(Map<String, String> headers, CatalogSyncRequest catalogSyncRequest) { return null; };
-    @Override public Response fetchPendency(Map<String, String> headers, FetchPendencyRequest fetchPendencyRequest) { return null; };
+    @Override public Response fetchPendency(Map<String, String> headers) { return null; };
 
     @Override public Response fetchOrders(Map<String, String> headers, FetchOrderRequest orderSyncRequest) { return null; }
 
