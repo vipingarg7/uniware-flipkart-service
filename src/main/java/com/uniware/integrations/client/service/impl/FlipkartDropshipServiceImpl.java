@@ -211,6 +211,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
         String authToken = authTokenResponse.getTokenType() + " " + authTokenResponse.getAccessToken();
         Long authTokenExpireIn = authTokenResponse.getExpiresIn();
+        authTokenExpireIn = (authTokenExpireIn * 1000) + DateUtils.getCurrentTime().getTime();
         String refreshToken = authTokenResponse.getRefreshToken();
 
         HashMap<String, String> responseParams = new HashMap<>();
@@ -267,6 +268,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                 authToken = authTokenResponse.getAccessToken();
                 refreshToken = authTokenResponse.getRefreshToken();
                 authTokenExpiresIn = authTokenResponse.getExpiresIn();
+                authTokenExpiresIn = (authTokenExpiresIn * 1000) + DateUtils.getCurrentTime().getTime();
                 responseParams.put(AUTH_TOKEN,authToken);
                 responseParams.put(REFRESH_TOKEN,refreshToken);
                 responseParams.put(AUTH_TOKEN_EXPIRES_IN, String.valueOf(authTokenExpiresIn));
