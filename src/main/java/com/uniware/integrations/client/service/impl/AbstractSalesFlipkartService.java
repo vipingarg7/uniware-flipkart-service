@@ -1,7 +1,7 @@
 package com.uniware.integrations.client.service.impl;
 
-import com.uniware.integrations.client.dto.uniware.CatalogPreProcessorRequest;
-import com.uniware.integrations.client.dto.uniware.CatalogSyncRequest;
+import com.uniware.integrations.uniware.catalog.request.dto.CatalogPreProcessorRequest;
+import com.uniware.integrations.uniware.catalog.request.dto.CatalogSyncRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.uniware.authentication.connector.request.dto.ConnectorVerificationRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;

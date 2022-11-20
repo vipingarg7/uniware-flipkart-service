@@ -14,7 +14,6 @@ public class Shipment {
     private List<SubShipment> subShipments = null;
 
     @SerializedName("dispatchByDate")
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Date dispatchByDate = null;
 
     @SerializedName("shipmentId")
@@ -30,11 +29,9 @@ public class Shipment {
     private String locationId = null;
 
     @SerializedName("dispatchAfterDate")
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Date dispatchAfterDate = null;
 
     @SerializedName("updatedAt")
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Date updatedAt = null;
 
     @SerializedName("hold")

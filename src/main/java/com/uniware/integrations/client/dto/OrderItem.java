@@ -148,7 +148,6 @@ public class OrderItem {
     private String cancellationGroupId = null;
 
     @SerializedName("orderDate")
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private Date orderDate = null;
 
     /**

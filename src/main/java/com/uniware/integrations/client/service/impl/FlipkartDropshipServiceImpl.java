@@ -52,11 +52,11 @@ import com.uniware.integrations.client.dto.api.responseDto.ShipmentPackV3Respons
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadNUploadHistoryResponse;
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadRequestStatusResponse;
 import com.uniware.integrations.client.dto.api.responseDto.UpdateInventoryV3Response;
-import com.uniware.integrations.client.dto.uniware.CatalogPreProcessorRequest;
-import com.uniware.integrations.client.dto.uniware.CatalogPreProcessorResponse;
-import com.uniware.integrations.client.dto.uniware.CatalogSyncRequest;
-import com.uniware.integrations.client.dto.uniware.CatalogSyncResponse;
-import com.uniware.integrations.client.dto.uniware.ChannelItemType;
+import com.uniware.integrations.uniware.catalog.request.dto.CatalogPreProcessorRequest;
+import com.uniware.integrations.uniware.catalog.response.dto.CatalogPreProcessorResponse;
+import com.uniware.integrations.uniware.catalog.request.dto.CatalogSyncRequest;
+import com.uniware.integrations.uniware.catalog.response.dto.CatalogSyncResponse;
+import com.uniware.integrations.uniware.catalog.response.dto.ChannelItemType;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestResponse;
 import com.uniware.integrations.uniware.authentication.connector.request.dto.ConnectorVerificationRequest;
@@ -73,7 +73,7 @@ import com.uniware.integrations.client.dto.api.responseDto.AuthTokenResponse;
 import com.uniware.integrations.client.dto.api.responseDto.ShipmentDetailsV3WithAddressResponse;
 import com.uniware.integrations.uniware.dto.rest.api.AddressDetail;
 import com.uniware.integrations.uniware.dto.rest.api.AddressRef;
-import com.uniware.integrations.client.dto.uniware.FetchOrderResponse;
+import com.uniware.integrations.uniware.order.response.dto.FetchOrderResponse;
 import com.uniware.integrations.uniware.pendency.response.dto.FetchPendencyResponse;
 import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;
 import com.uniware.integrations.uniware.pendency.response.dto.Pendency;
@@ -132,6 +132,9 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     public static final String PASSWORD = "password";
     public static final String FLIPKART_SELLER_PANEL = "FLIPKART_SELLER_PANEL";
     public static final String FLIPKART_INVENTORY_PANEL = "FLIPKART_INVENTORY_PANEL";
+    public static final String DOWNLOADING = "DOWNLOADING";
+    public static final String COMPLETED = "COMPLETED";
+    public static final String FAILED = "FAILED";
     @Autowired
     private Environment environment;
     @Autowired
@@ -148,7 +151,8 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     private static final String DEFAULT_PHONE_NUMBER = "9999999999";
     private static final String UNIWARE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssXXX";
     private static final String FK_CODE        =  "fk_code";
-    private static Map<String,List<String>> sourceCodeToFulfilmentModeList= new HashMap();
+    private static Map<String,List<String>> sourceCodeToFulfilmentModeList = new HashMap();
+    private static Map<String,Integer> listingSheetColumnNameToColumnIndex = new HashMap<>();
 
     static  {
         for ( ChannelSource channelSource: ChannelSource.values() ) {
@@ -176,6 +180,17 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                 sourceCodeToFulfilmentModeList.put(channelSource.getChannelSourceCode(),fullfilmentByList);
             }
         }
+
+        listingSheetColumnNameToColumnIndex.put("Product Title",0);
+        listingSheetColumnNameToColumnIndex.put("Seller SKU Id",1);
+        listingSheetColumnNameToColumnIndex.put("Flipkart Serial Number",4);
+        listingSheetColumnNameToColumnIndex.put("Listing ID",5);
+        listingSheetColumnNameToColumnIndex.put("Fulfillment By",13);
+        listingSheetColumnNameToColumnIndex.put("Listing Archival",37);
+        listingSheetColumnNameToColumnIndex.put("Shipping Provider",18);
+        listingSheetColumnNameToColumnIndex.put("Inactive Reason",7);
+        listingSheetColumnNameToColumnIndex.put("MRP",8);
+        listingSheetColumnNameToColumnIndex.put("Your Selling Price",10);
     }
 
     @Override public Response preConfiguration(Map<String, String> headers, PreConfigurationRequest preConfigurationRequest) {
@@ -322,14 +337,15 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         }
         
         String fileFormat = stockFilePath.substring(stockFilePath.lastIndexOf('.')+1);
+        int skipIntialLines = (catalogSyncRequest.getPageNumber()-1) * catalogSyncRequest.getPageSize();
 
         Iterator<Row> rows = null;
         try {
             if ( ("CSV").equalsIgnoreCase(fileFormat)){
-                rows = new DelimitedFileParser(stockFilePath).parse(true);
+                rows = new DelimitedFileParser(stockFilePath).parse(skipIntialLines,true);
             }
             else if (("XLS").equalsIgnoreCase(fileFormat)) {
-                rows = new ExcelSheetParser(stockFilePath).parse(true);
+                rows = new ExcelSheetParser(stockFilePath).parse(skipIntialLines,true);
             } else {
                 LOGGER.error("file format not supported {}",fileFormat);
                 return ResponseUtil.failure("file format not supported, fileFormat : " +fileFormat);
@@ -338,15 +354,21 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             LOGGER.error("Exception occur while parsing stock file, exception : {}", ex);
             return ResponseUtil.failure("Exception occur while parsing stock file " + ex.getMessage());
         }
-        
+
         if ( rows.hasNext() ) {
             // Skipping second row as it's containing header description.
-            rows.next();
-            catalogSyncResponse = fetchCatalogInternal(rows);
-            catalogSyncResponse.setTotalPages(catalogSyncRequest.getPageNumber());
+            if ( catalogSyncRequest.getPageNumber() == 1) {
+                rows.next();
+            }
+            catalogSyncResponse = fetchCatalogInternal(rows, catalogSyncRequest.getPageSize());
         }
         else {
             return ResponseUtil.failure("Invalid Listing report found, path : " + stockFilePath);
+        }
+        if ( rows.hasNext() ){
+            catalogSyncResponse.setHasMore(true);
+            // have to add functionality in FileParsing utility to get total number of lines after parsing the file
+            catalogSyncResponse.setTotalPages(catalogSyncRequest.getPageNumber()+1);
         }
 
         return ResponseUtil.success("Catalog fetched successfully", catalogSyncResponse);
@@ -365,16 +387,16 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
         // check if already a file is under generation process or not.
         StockFileDownloadRequestStatusResponse stockFileDownloadRequestStatusResponse = flipkartSellerPanelService.getStockFileDownloadRequestStatus();
-        if ( "DOWNLOADING".equalsIgnoreCase(stockFileDownloadRequestStatusResponse.getDownloadState())){
+        if ( DOWNLOADING.equalsIgnoreCase(stockFileDownloadRequestStatusResponse.getDownloadState())){
             LOGGER.info("File generation is in DOWNLOADING state. Will retry after sometime...");
             fillAsyncDetails(stockFileDownloadRequestStatusResponse, catalogPreProcessorResponse, catalogPreProcessorRequest.isAsyncRun());
             return ResponseUtil.success("File generation is in PROCESSING state. Wait for sometime...", catalogPreProcessorResponse);
         }
-        else if ( "COMPLETED".equalsIgnoreCase(stockFileDownloadRequestStatusResponse.getDownloadState())) {
+        else if ( COMPLETED.equalsIgnoreCase(stockFileDownloadRequestStatusResponse.getDownloadState())) {
             catalogPreProcessorResponse.setReportStatus(CatalogPreProcessorResponse.Status.COMPLETE);
             LOGGER.info("Stock file generation completed.");
         }
-        else if ( "FAILED".equalsIgnoreCase(stockFileDownloadRequestStatusResponse.getDownloadState())) {
+        else if ( FAILED.equalsIgnoreCase(stockFileDownloadRequestStatusResponse.getDownloadState())) {
             catalogPreProcessorResponse.setReportStatus(CatalogPreProcessorResponse.Status.FAILED);
             LOGGER.info("Status of Last file requested is FAILED, requesting a new file");
         }
@@ -806,7 +828,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         }
         channelSkuCodeToChannelProductId.entrySet().stream().forEach(entry -> {
             UpdateInventoryResponse.Listing listing = new UpdateInventoryResponse.Listing();
-            listing.addError(new Error("FAILED","Not getting update confirmation in api response from Flipkart"));
+            listing.addError(new Error(FAILED,"Not getting update confirmation in api response from Flipkart"));
             listing.setChannelSkuCode(entry.getKey());
             listing.setChannelProductId(entry.getValue());
             updateInventoryResponse.addListing(listing);
@@ -1158,31 +1180,32 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         return null;
     }
 
-    private CatalogSyncResponse fetchCatalogInternal(Iterator<Row> rows) {
+    private CatalogSyncResponse fetchCatalogInternal(Iterator<Row> rows, int pageSize) {
 
         CatalogSyncResponse catalogSyncResponse = new CatalogSyncResponse();
-        while ( rows.hasNext() ) {
+        while ( rows.hasNext() && pageSize > 0 ) {
             Row row = rows.next();
             boolean isValid = validateRow(row);
             if (isValid) {
                 ChannelItemType channelItemType = new ChannelItemType.Builder()
                         .setChannelCode(TenantRequestContext.current().getChannelCode())
                         .setChannelProductId(getChannelProductIdBySourceCode(row,TenantRequestContext.current().getSourceCode()))
-                        .setSellerSkuCode(row.getColumnValue("Seller SKU Id"))
-                        .setProductName(row.getColumnValue("Product Title"))
+                        .setSellerSkuCode(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Seller SKU Id")))
+                        .setProductName(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Product Title")))
                         .setLive(true)
-                        .setSellingPrice(new BigDecimal(row.getColumnValue("Your Selling Price")))
-                        .setMrp(new BigDecimal(row.getColumnValue("MRP")))
+                        .setSellingPrice(new BigDecimal(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Your Selling Price"))))
+                        .setMrp(new BigDecimal(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("MRP"))))
                         .setCurrencyCode("INR")
                         .build();
 
                 if ("FLIPKART_DROPSHIP".equalsIgnoreCase(TenantRequestContext.current().getSourceCode())){
                     channelItemType.addAttribute(new ChannelItemType.Attribute.Builder()
                             .setName("FSN")
-                            .setValue(row.getColumnValue("Flipkart Serial Number"))
+                            .setValue(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Flipkart Serial Number")))
                             .build());
                 }
                 catalogSyncResponse.addChannelItemType(channelItemType);
+                pageSize--;
             }
         }
         return catalogSyncResponse;
@@ -1191,21 +1214,21 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
     private boolean validateRow(Row row) {
 
-        if ( StringUtils.isNotBlank(row.getColumnValue("Inactive Reason"))){
-            LOGGER.info("Skipped row {}, due to inactive reason {}",row,row.getColumnValue("Inactive Reason"));
+        if ( StringUtils.isNotBlank(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Inactive Reason")))){
+            LOGGER.info("Skipped row {}, due to inactive reason {}",row,row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Inactive Reason")));
             return false;
-        }   else if ( row.getColumnValue("Listing Archival") == null
-                || ("ARCHIVED").equalsIgnoreCase(row.getColumnValue("Listing Archival"))) {
+        }   else if ( row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Listing Archival")) != null
+                && ("ARCHIVED").equalsIgnoreCase(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Listing Archival")))) {
             LOGGER.info("Skipped row {}, as either its  Listing Archival is null or has value ARCHIVED",row);
             return false;
-        }   else if ( row.getColumnValue("Fulfillment By") == null
-                || !sourceCodeToFulfilmentModeList.get(TenantRequestContext.current().getSourceCode()).stream().anyMatch(row.getColumnValue("Fulfillment By")::equalsIgnoreCase)) {
+        }   else if ( row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Fulfillment By")) != null
+                && !sourceCodeToFulfilmentModeList.get(TenantRequestContext.current().getSourceCode()).stream().anyMatch(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Fulfillment By"))::equalsIgnoreCase)) {
             LOGGER.info("Skipped row {}, Fulfiment mode not match",row);
             return false;
         }
 
         if ( "FLIPKART_OMNI".equalsIgnoreCase(TenantRequestContext.current().getSourceCode())
-                && "SELLER".equalsIgnoreCase(row.getColumnValue("Shipping Provider"))) {
+                && "SELLER".equalsIgnoreCase(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Shipping Provider")))) {
             LOGGER.info("Skipped row {}, For FLIPKART_OMNI we don't fetch listing have SHIPPING_PROVDER : SELLER",row);
             return false;
         }
@@ -1218,17 +1241,17 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             CatalogPreProcessorResponse.AsyncDetails asyncDetails = new CatalogPreProcessorResponse.AsyncDetails();
             asyncDetails.setNextRunInMs(1000*(stockFileDownloadRequestStatusResponse.getTotalCount() - stockFileDownloadRequestStatusResponse.getProcessed_count())/50);
             asyncDetails.setRetryCount(2);
-            catalogPreProcessorResponse.setReportStatus(CatalogPreProcessorResponse.Status.PROCESSING);
             catalogPreProcessorResponse.setAsyncDetails(asyncDetails);
         }
+        catalogPreProcessorResponse.setReportStatus(CatalogPreProcessorResponse.Status.PROCESSING);
 
     }
 
     private String getChannelProductIdBySourceCode(Row row, String sourceCode) {
         if ( "FLIPKART_FA".equalsIgnoreCase(sourceCode))
-            return row.getColumnValue("Flipkart Serial Number");
+            return row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Flipkart Serial Number"));
 
-        return row.getColumnValue("Listing ID");
+        return row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Listing ID"));
     }
 
     private SearchShipmentRequest prepareFetchPendencyRequestForApprovedShipments(Date fromOrderDate) {
