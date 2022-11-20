@@ -397,11 +397,9 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             LOGGER.info("Stock file generation completed.");
         }
         else if ( FAILED.equalsIgnoreCase(stockFileDownloadRequestStatusResponse.getDownloadState())) {
-            catalogPreProcessorResponse.setReportStatus(CatalogPreProcessorResponse.Status.FAILED);
-            LOGGER.info("Status of Last file requested is FAILED, requesting a new file");
+            LOGGER.info("Status of Last file requested is FAILED");
         }
         else {
-            catalogPreProcessorResponse.setReportStatus(CatalogPreProcessorResponse.Status.FAILED);
             LOGGER.error("ALERT - CASE NOT HANDLED");
         }
 
@@ -418,11 +416,16 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                 return ResponseUtil.success("Requested a new stock file. Wait for sometime...", catalogPreProcessorResponse);
             } else {
                 return ResponseUtil.failure("Getting Error while requesting report...");
-    }
-}
+            }
+        }
 
-        catalogPreProcessorResponse.setFilePath(stockfilePath);
-        return ResponseUtil.success("File downloaded Successfully", catalogPreProcessorResponse);
+        if ( stockfilePath == null ) {
+            return ResponseUtil.failure("Unable to generate report on panel");
+        } else {
+            catalogPreProcessorResponse.setFilePath(stockfilePath);
+            return ResponseUtil.success("File downloaded Successfully", catalogPreProcessorResponse);
+        }
+
     }
 
     @Override
