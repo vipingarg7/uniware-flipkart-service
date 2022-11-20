@@ -1,5 +1,7 @@
 package com.uniware.integrations.client.dto.api.responseDto;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.annotations.SerializedName;
 import com.uniware.integrations.client.dto.AttributeError;
 import com.uniware.integrations.client.dto.BaseResponse;
@@ -28,10 +30,15 @@ public class UpdateInventoryV3Response extends BaseResponse {
         return this;
     }
 
-    public UpdateInventoryV3Response addSku(Map<String, InventoryUpdateStatus> updateInventoryV3Response) {
+    public UpdateInventoryV3Response addSkus(Map<String, InventoryUpdateStatus> updateInventoryV3Response) {
         if (this.skus == null)
             this.skus = new HashMap<>();
-        this.skus.putAll(updateInventoryV3Response);
+        for ( Map.Entry<String, InventoryUpdateStatus> entry :updateInventoryV3Response.entrySet()) {
+            Gson gson = new Gson();
+            JsonElement jsonElement = gson.toJsonTree(entry.getValue());
+            InventoryUpdateStatus inventoryUpdateStatus = gson.fromJson(jsonElement, InventoryUpdateStatus.class);
+            addSku(entry.getKey(), inventoryUpdateStatus);
+        }
         return this;
     }
 

@@ -11,7 +11,7 @@ import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateLabelRequest;
 import com.uniware.integrations.uniware.authentication.postConfig.request.dto.PostConfigurationRequest;
 import com.uniware.integrations.uniware.authentication.preConfig.request.dto.PreConfigurationRequest;
-import com.uniware.integrations.client.dto.uniware.UpdateInventoryRequest;
+import com.uniware.integrations.uniware.inventory.request.dto.UpdateInventoryRequest;
 import com.uniware.integrations.client.service.SalesFlipkartService;
 import com.uniware.integrations.core.dto.api.Response;
 import java.util.Map;
@@ -89,7 +89,7 @@ public class SalesFlipkartControllerV1 extends BaseController {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).closeShippingManifest(headers, closeShippingManifestRequest));
     }
 
-    @PutMapping(value = "/inventory/update", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/inventory", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> updateInventory(@RequestHeader Map<String,String> headers, @RequestBody UpdateInventoryRequest updateInventoryRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).updateInventory(headers, updateInventoryRequest));
     }

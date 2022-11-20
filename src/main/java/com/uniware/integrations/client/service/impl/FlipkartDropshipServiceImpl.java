@@ -64,7 +64,7 @@ import com.uniware.integrations.uniware.authentication.connector.response.dto.Co
 import com.uniware.integrations.client.dto.uniware.CreateInvoiceResponse;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
 import com.uniware.integrations.client.dto.uniware.DispatchShipmentResponse;
-import com.uniware.integrations.client.dto.uniware.Error;
+import com.uniware.integrations.uniware.dto.rest.api.Error;
 import com.uniware.integrations.uniware.manifest.currentChannel.request.dto.CurrentChannelManifestRequest;
 import com.uniware.integrations.uniware.manifest.currentChannel.response.dto.CurrentChannelManifestResponse;
 import com.uniware.integrations.uniware.order.request.dto.FetchOrderRequest;
@@ -83,8 +83,8 @@ import com.uniware.integrations.uniware.authentication.preConfig.request.dto.Pre
 import com.uniware.integrations.uniware.dto.rest.api.SaleOrder;
 import com.uniware.integrations.uniware.dto.rest.api.SaleOrderItem;
 import com.uniware.integrations.client.dto.uniware.ShippingPackage;
-import com.uniware.integrations.client.dto.uniware.UpdateInventoryRequest;
-import com.uniware.integrations.client.dto.uniware.UpdateInventoryResponse;
+import com.uniware.integrations.uniware.inventory.request.dto.UpdateInventoryRequest;
+import com.uniware.integrations.uniware.inventory.response.dto.UpdateInventoryResponse;
 import com.uniware.integrations.client.service.FlipkartSellerApiService;
 import com.uniware.integrations.client.service.FlipkartSellerPanelService;
 import com.uniware.integrations.core.dto.api.Response;
@@ -151,8 +151,9 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     private static final String DEFAULT_PHONE_NUMBER = "9999999999";
     private static final String UNIWARE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssXXX";
     private static final String FK_CODE        =  "fk_code";
-    private static Map<String,List<String>> sourceCodeToFulfilmentModeList = new HashMap();
-    private static Map<String,Integer> listingSheetColumnNameToColumnIndex = new HashMap<>();
+    private static final Map<String,List<String>> sourceCodeToFulfilmentModeList = new HashMap();
+    private static final Map<String,Integer> listingSheetColumnNameToColumnIndex = new HashMap<>();
+    private static final List<String> disabledInventoryErrorMessageList = new ArrayList<>();
 
     static  {
         for ( ChannelSource channelSource: ChannelSource.values() ) {
@@ -191,6 +192,9 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         listingSheetColumnNameToColumnIndex.put("Inactive Reason",7);
         listingSheetColumnNameToColumnIndex.put("MRP",8);
         listingSheetColumnNameToColumnIndex.put("Your Selling Price",10);
+
+        disabledInventoryErrorMessageList.add("Invalid location provided");
+
     }
 
     @Override public Response preConfiguration(Map<String, String> headers, PreConfigurationRequest preConfigurationRequest) {
@@ -821,9 +825,17 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                     listing.setChannelSkuCode(channelSkuCode);
                     listing.setStatus(UpdateInventoryResponse.Status.FAILED);
                     if (inventoryUpdateStatus.getErrors() != null)
-                    inventoryUpdateStatus.getErrors().stream().forEach(error -> listing.addError(new Error(error.getCode(),error.getDescription())));
+                    inventoryUpdateStatus.getErrors().stream().forEach(error -> {
+                        listing.addError(new Error(error.getCode(), error.getDescription()));
+                        if (disabledInventoryErrorMessageList.stream().anyMatch(error.getDescription()::contains))
+                            listing.setStatus(UpdateInventoryResponse.Status.DISABLED);
+                    });
                     if (inventoryUpdateStatus.getAttributeErrors() != null)
-                        inventoryUpdateStatus.getAttributeErrors().stream().forEach(error -> listing.addError(new Error(error.getCode(),error.getDescription())));
+                        inventoryUpdateStatus.getAttributeErrors().stream().forEach(error -> {
+                            listing.addError(new Error(error.getCode(), error.getDescription()));
+                            if (disabledInventoryErrorMessageList.stream().anyMatch(error.getDescription()::contains))
+                                listing.setStatus(UpdateInventoryResponse.Status.DISABLED);
+                        });
                 }
             }
             updateInventoryResponse.addListing(listing);
@@ -1201,7 +1213,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                         .setCurrencyCode("INR")
                         .build();
 
-                if ("FLIPKART_DROPSHIP".equalsIgnoreCase(TenantRequestContext.current().getSourceCode())){
+                if ("FLIPKART".equalsIgnoreCase(TenantRequestContext.current().getSourceCode())){
                     channelItemType.addAttribute(new ChannelItemType.Attribute.Builder()
                             .setName("FSN")
                             .setValue(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Flipkart Serial Number")))

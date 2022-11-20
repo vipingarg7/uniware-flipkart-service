@@ -488,7 +488,7 @@ public class FlipkartSellerApiService {
             handleResponseCode(response, httpResponseWrapper);
             Map<String, UpdateInventoryV3Response.InventoryUpdateStatus> updateInventoryStatusMap =  new Gson().fromJson(response, Map.class);
             UpdateInventoryV3Response updateInventoryV3Response = new UpdateInventoryV3Response();
-            updateInventoryV3Response.addSku(updateInventoryStatusMap);
+            updateInventoryV3Response.addSkus(updateInventoryStatusMap);
             updateInventoryV3Response.setResponseHeaders(httpResponseWrapper.getAllHeaders());
             updateInventoryV3Response.setResponseStatus(httpResponseWrapper.getResponseStatus());
             return updateInventoryV3Response;

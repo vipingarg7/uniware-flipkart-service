@@ -1,5 +1,7 @@
 package com.uniware.integrations.client.dto.uniware;
 
+import com.uniware.integrations.uniware.dto.rest.api.Error;
+
 public class DispatchShipmentResponse {
 
     public enum Status {

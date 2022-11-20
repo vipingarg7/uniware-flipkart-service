@@ -11,7 +11,7 @@ import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateLabelRequest;
 import com.uniware.integrations.uniware.authentication.postConfig.request.dto.PostConfigurationRequest;
 import com.uniware.integrations.uniware.authentication.preConfig.request.dto.PreConfigurationRequest;
-import com.uniware.integrations.client.dto.uniware.UpdateInventoryRequest;
+import com.uniware.integrations.uniware.inventory.request.dto.UpdateInventoryRequest;
 import com.uniware.integrations.client.service.SalesFlipkartService;
 import com.uniware.integrations.core.dto.api.Response;
 import java.util.Map;
