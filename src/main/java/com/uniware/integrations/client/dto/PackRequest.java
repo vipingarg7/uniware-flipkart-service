@@ -166,54 +166,10 @@ public class PackRequest {
         this.shipmentId = shipmentId;
     }
 
-
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        PackRequest packRequest = (PackRequest) o;
-        return Objects.equals(this.subShipments, packRequest.subShipments) &&
-                Objects.equals(this.taxItems, packRequest.taxItems) &&
-                Objects.equals(this.invoices, packRequest.invoices) &&
-                Objects.equals(this.serialNumbers, packRequest.serialNumbers) &&
-                Objects.equals(this.locationId, packRequest.locationId) &&
-                Objects.equals(this.shipmentId, packRequest.shipmentId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(subShipments, taxItems, invoices, serialNumbers, locationId, shipmentId);
-    }
-
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class PackRequest {\n");
-
-        sb.append("    subShipments: ").append(toIndentedString(subShipments)).append("\n");
-        sb.append("    taxItems: ").append(toIndentedString(taxItems)).append("\n");
-        sb.append("    invoices: ").append(toIndentedString(invoices)).append("\n");
-        sb.append("    serialNumbers: ").append(toIndentedString(serialNumbers)).append("\n");
-        sb.append("    locationId: ").append(toIndentedString(locationId)).append("\n");
-        sb.append("    shipmentId: ").append(toIndentedString(shipmentId)).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
-
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(java.lang.Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
+    @Override public String toString() {
+        return "PackRequest{" + "subShipments=" + subShipments + ", taxItems=" + taxItems + ", invoices=" + invoices
+                + ", serialNumbers=" + serialNumbers + ", locationId='" + locationId + '\'' + ", shipmentId='"
+                + shipmentId + '\'' + '}';
     }
 
 }

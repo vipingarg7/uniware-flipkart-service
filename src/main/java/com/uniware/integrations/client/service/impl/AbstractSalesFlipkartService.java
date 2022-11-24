@@ -4,7 +4,7 @@ import com.uniware.integrations.uniware.catalog.request.dto.CatalogPreProcessorR
 import com.uniware.integrations.uniware.catalog.request.dto.CatalogSyncRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.uniware.authentication.connector.request.dto.ConnectorVerificationRequest;
-import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
+import com.uniware.integrations.uniware.Dispatch.response.dto.DispatchShipmentRequest;
 import com.uniware.integrations.uniware.manifest.currentChannel.request.dto.CurrentChannelManifestRequest;
 import com.uniware.integrations.uniware.order.request.dto.FetchOrderRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;

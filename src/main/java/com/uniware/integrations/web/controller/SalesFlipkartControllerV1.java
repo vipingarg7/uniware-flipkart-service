@@ -4,7 +4,7 @@ import com.uniware.integrations.uniware.catalog.request.dto.CatalogPreProcessorR
 import com.uniware.integrations.uniware.catalog.request.dto.CatalogSyncRequest;
 import com.uniware.integrations.client.dto.uniware.CloseShippingManifestRequest;
 import com.uniware.integrations.uniware.authentication.connector.request.dto.ConnectorVerificationRequest;
-import com.uniware.integrations.client.dto.uniware.DispatchShipmentRequest;
+import com.uniware.integrations.uniware.Dispatch.response.dto.DispatchShipmentRequest;
 import com.uniware.integrations.uniware.manifest.currentChannel.request.dto.CurrentChannelManifestRequest;
 import com.uniware.integrations.uniware.order.request.dto.FetchOrderRequest;
 import com.uniware.integrations.client.dto.uniware.GenerateInvoiceRequest;
@@ -69,7 +69,7 @@ public class SalesFlipkartControllerV1 extends BaseController {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).fetchCatalog(headers, catalogSyncRequest));
     }
 
-    @PostMapping(value = "/invoice/generate", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/generate", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> generateInvoice(@RequestHeader Map<String,String> headers, @RequestBody GenerateInvoiceRequest generateInvoiceRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).generateInvoice(headers, generateInvoiceRequest));
     }

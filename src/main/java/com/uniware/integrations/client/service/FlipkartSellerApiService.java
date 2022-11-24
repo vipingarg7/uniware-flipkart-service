@@ -274,6 +274,8 @@ public class FlipkartSellerApiService {
             String response = httpSender.executePost(channelBaseUrl + apiEndpoint, dispatchSelfShipmentRequestJson, headersMap, httpResponseWrapper);
             handleResponseCode(response, httpResponseWrapper);
             DispatchShipmentV3Response dispatchShipmentV3Response = new Gson().fromJson(response, DispatchShipmentV3Response.class);
+            dispatchShipmentV3Response.setResponseHeaders(httpResponseWrapper.getAllHeaders());
+            dispatchShipmentV3Response.setResponseStatus(httpResponseWrapper.getResponseStatus());
             return dispatchShipmentV3Response;
         }
         catch (HttpTransportException | JsonSyntaxException ex) {
@@ -326,6 +328,8 @@ public class FlipkartSellerApiService {
             String response = httpSender.executePost(channelBaseUrl + apiEndpoint, shipmentDeliveryRequestV3Json, headersMap, httpResponseWrapper);
             handleResponseCode(response, httpResponseWrapper);
             ShipmentsDeliverV3Response shipmentsDeliverV3Response = new Gson().fromJson(response, ShipmentsDeliverV3Response.class);
+            shipmentsDeliverV3Response.setResponseHeaders(httpResponseWrapper.getAllHeaders());
+            shipmentsDeliverV3Response.setResponseStatus(httpResponseWrapper.getResponseStatus());
             return shipmentsDeliverV3Response;
         }
         catch (HttpTransportException | JsonSyntaxException ex) {
@@ -351,6 +355,8 @@ public class FlipkartSellerApiService {
             String response = httpSender.executePost(channelBaseUrl + apiEndpoint, shipmentPackRequestJson, headersMap, httpResponseWrapper);
             handleResponseCode(httpResponseWrapper);
             ShipmentPackV3Response shipmentStatusResponse = new Gson().fromJson(response, ShipmentPackV3Response.class);
+            shipmentStatusResponse.setResponseHeaders(httpResponseWrapper.getAllHeaders());
+            shipmentStatusResponse.setResponseStatus(httpResponseWrapper.getResponseStatus());
             return shipmentStatusResponse;
         } catch (HttpTransportException | JsonSyntaxException ex) {
             LOGGER.error("Something went wrong apiEndpoint {}, Error {}",apiEndpoint, ex);
