@@ -79,7 +79,7 @@ public class FlipkartSellerPanelService {
     /*
        Description - Login on fipkart panel with Client credentials ( username, password)
      */
-    private static boolean doLogin(String username, String password) {
+    private boolean doLogin(String username, String password) {
         try {
             HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
             Map<String, String> requestParams = new HashMap<>();
@@ -228,14 +228,9 @@ public class FlipkartSellerPanelService {
     /*
         Description - Request a new stock file on seller panel ( path => Seller panel -> My Listings -> Request Download -> Listing File )
      */
-    public boolean requestStockFile() {
+    public boolean requestStockFile(EnqueDownloadRequest enqueDownloadRequest) {
 
-        EnqueDownloadRequest.ExactValue exactValue = new EnqueDownloadRequest.ExactValue.Builder().setValue("ACTIVE").build();
-        EnqueDownloadRequest.InternalState internalState = new EnqueDownloadRequest.InternalState.Builder().setExactValue(exactValue).build();
-        EnqueDownloadRequest.Refiner refiner = new EnqueDownloadRequest.Refiner().addInternalState(internalState);
-        EnqueDownloadRequest enqueDownloadRequest = new EnqueDownloadRequest.Builder().setState("LISTING_UI_GROUP").setRefiner(refiner).setVerticalGroup(new EnqueDownloadRequest.VerticalGroup()).build();
         String enqueDownloadRequestJson = new Gson().toJson(enqueDownloadRequest);
-
         HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
         String apiEndpoint = "/napi/listing/enqueueDownload";
@@ -285,10 +280,10 @@ public class FlipkartSellerPanelService {
     }
     private void handleResponseCode(String response, HttpResponseWrapper httpResponseWrapper) {
         HttpStatus status = httpResponseWrapper.getResponseStatus();
-        String errorMessage = "invalid response please contact support team";
+        String errorMessage = "Invalid response please contact support team";
         JsonObject responseJson = null;
         boolean isResponseTypeIsJson = true;
-        if ( response == null ){
+        if ( response != null ){
             try {
                 responseJson = new Gson().fromJson(response,JsonObject.class);
             } catch (JsonSyntaxException ex) {
@@ -298,13 +293,12 @@ public class FlipkartSellerPanelService {
             isResponseTypeIsJson = false;
         }
 
-
         if ( status.is5xxServerError() ) {
             LOGGER.error("Flipkart Server error : {}, responseCode : {} ",response, httpResponseWrapper.getResponseStatus().name());
-            if ( response.contains("DEPENDENT_SYSTEM_CALL_FAILED")){
+            if ( StringUtils.isNotBlank(response) && response.contains("DEPENDENT_SYSTEM_CALL_FAILED")){
                 errorMessage = "DEPENDENT_SYSTEM_CALL_FAILED. Please try after sometime";
             }
-            else if ( response.contains("Gateway Time")){
+            else if ( StringUtils.isNotBlank(response) && response.contains("Gateway Time")){
                 errorMessage = "Gateway Time-out";
             }
             else{

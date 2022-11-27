@@ -39,6 +39,7 @@ import com.uniware.integrations.client.dto.SubShipments;
 import com.uniware.integrations.client.dto.TaxItem;
 import com.uniware.integrations.client.dto.api.requestDto.DispatchSelfShipmentV3Request;
 import com.uniware.integrations.client.dto.api.requestDto.DispatchStandardShipmentV3Request;
+import com.uniware.integrations.client.dto.api.requestDto.EnqueDownloadRequest;
 import com.uniware.integrations.client.dto.api.requestDto.FetchOnHoldOrderRequest;
 import com.uniware.integrations.client.dto.api.requestDto.GetManifestRequest;
 import com.uniware.integrations.client.dto.api.requestDto.SearchShipmentRequest;
@@ -379,7 +380,8 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         stockfilePath = getStockFile(stockFileDownloadNUploadHistoryResponse);
 
         if ( stockfilePath == null && !catalogPreProcessorRequest.isAsyncRun()) {
-            boolean isRequestStockFileSuccessful = flipkartSellerPanelService.requestStockFile();
+            EnqueDownloadRequest enqueDownloadRequest = prepareEnqueStockFileRequest();
+            boolean isRequestStockFileSuccessful = flipkartSellerPanelService.requestStockFile(enqueDownloadRequest);
             if (isRequestStockFileSuccessful) {
                 stockFileDownloadRequestStatusResponse = flipkartSellerPanelService.getStockFileDownloadRequestStatus();
                 catalogPreProcessorResponse.setReportStatus(CatalogPreProcessorResponse.Status.PROCESSING);
@@ -397,6 +399,14 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             return ResponseUtil.success("File downloaded Successfully", catalogPreProcessorResponse);
         }
 
+    }
+
+    private EnqueDownloadRequest prepareEnqueStockFileRequest() {
+        EnqueDownloadRequest.ExactValue exactValue = new EnqueDownloadRequest.ExactValue.Builder().setValue("ACTIVE").build();
+        EnqueDownloadRequest.InternalState internalState = new EnqueDownloadRequest.InternalState.Builder().setExactValue(exactValue).setValueType("EXACT").build();
+        EnqueDownloadRequest.Refiner refiner = new EnqueDownloadRequest.Refiner().addInternalState(internalState);
+        EnqueDownloadRequest enqueDownloadRequest = new EnqueDownloadRequest.Builder().setState("LISTING_UI_GROUP").setRefiner(refiner).setVerticalGroup(new EnqueDownloadRequest.VerticalGroup()).build();
+        return enqueDownloadRequest;
     }
 
     @Override
