@@ -65,7 +65,7 @@ public class FlipkartSellerApiService {
         headersMap.put("Authorization", FlipkartRequestContext.current().getAuthToken());
         String apiEndpoint = "/sellers/locations/allLocations";
 
-        HttpSender httpSender = HttpSenderFactory.getHttpSender();
+        HttpSender httpSender = HttpSenderFactory.getHttpSenderNoProxy();
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
         try {
             String response = httpSender.executeGet(channelBaseUrl + apiEndpoint, Collections.emptyMap(), headersMap, httpResponseWrapper);
@@ -573,7 +573,12 @@ public class FlipkartSellerApiService {
             if ( HttpStatus.BAD_REQUEST.name().equalsIgnoreCase(status.name()) ){
                 errorMessage = "Bad Request";
             }
-            else if ( HttpStatus.UNAUTHORIZED.name().equalsIgnoreCase(status.name()) || HttpStatus.FORBIDDEN.name().equalsIgnoreCase(status.name())) {
+            else if ( HttpStatus.UNAUTHORIZED.name().equalsIgnoreCase(status.name())) {
+                errorMessage = isResponseTypeIsJson ? responseJson.get("error_description").getAsString() : errorMessage;
+                if ( errorMessage.contains("Invalid access token"))
+                    errorMessage = "Invalid access token, Kindly Reconfigure the connectors";
+            }
+            else if ( HttpStatus.FORBIDDEN.name().equalsIgnoreCase(status.name())) {
                 errorMessage = isResponseTypeIsJson ? responseJson.get("error_description").getAsString() : errorMessage;
             }
             else if ( HttpStatus.TOO_MANY_REQUESTS.name().equalsIgnoreCase(status.name()) ) {

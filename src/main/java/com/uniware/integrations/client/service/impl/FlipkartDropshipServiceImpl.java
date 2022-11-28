@@ -53,6 +53,8 @@ import com.uniware.integrations.client.dto.api.responseDto.ShipmentPackV3Respons
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadNUploadHistoryResponse;
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadRequestStatusResponse;
 import com.uniware.integrations.client.dto.api.responseDto.UpdateInventoryV3Response;
+import com.uniware.integrations.client.utils.FKDelimitedFileParser;
+import com.uniware.integrations.client.utils.FKExcelSheetParser;
 import com.uniware.integrations.uniware.catalog.request.dto.CatalogPreProcessorRequest;
 import com.uniware.integrations.uniware.catalog.response.dto.CatalogPreProcessorResponse;
 import com.uniware.integrations.uniware.catalog.request.dto.CatalogSyncRequest;
@@ -153,7 +155,6 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     private static final String UNIWARE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssXXX";
     private static final String FK_CODE        =  "fk_code";
     private static final Map<String,List<String>> sourceCodeToFulfilmentModeList = new HashMap();
-    private static final Map<String,Integer> listingSheetColumnNameToColumnIndex = new HashMap<>();
     private static final List<String> disabledInventoryErrorMessageList = new ArrayList<>();
 
     static  {
@@ -182,17 +183,6 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                 sourceCodeToFulfilmentModeList.put(channelSource.getChannelSourceCode(),fullfilmentByList);
             }
         }
-
-        listingSheetColumnNameToColumnIndex.put("Product Title",0);
-        listingSheetColumnNameToColumnIndex.put("Seller SKU Id",1);
-        listingSheetColumnNameToColumnIndex.put("Flipkart Serial Number",4);
-        listingSheetColumnNameToColumnIndex.put("Listing ID",5);
-        listingSheetColumnNameToColumnIndex.put("Fulfillment By",13);
-        listingSheetColumnNameToColumnIndex.put("Listing Archival",37);
-        listingSheetColumnNameToColumnIndex.put("Shipping Provider",18);
-        listingSheetColumnNameToColumnIndex.put("Inactive Reason",7);
-        listingSheetColumnNameToColumnIndex.put("MRP",8);
-        listingSheetColumnNameToColumnIndex.put("Your Selling Price",10);
 
         disabledInventoryErrorMessageList.add("Invalid location provided");
 
@@ -279,6 +269,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             String authToken = connectorParameters.get(AUTH_TOKEN);
             String refreshToken = connectorParameters.get(REFRESH_TOKEN);
             Long authTokenExpiresIn = Long.valueOf(connectorParameters.get(AUTH_TOKEN_EXPIRES_IN));
+            String locationId = connectorParameters.get(LOCATION_ID);
 
             boolean isAuthTokenExpiryNear = isAuthTokenExpiryNear(authTokenExpiresIn);
             if ( isAuthTokenExpiryNear ) {
@@ -289,10 +280,20 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                 refreshToken = authTokenResponse.getRefreshToken();
                 authTokenExpiresIn = authTokenResponse.getExpiresIn();
                 authTokenExpiresIn = (authTokenExpiresIn * 1000) + DateUtils.getCurrentTime().getTime();
+                FlipkartRequestContext.current().setAuthToken(authToken);
                 responseParams.put(AUTH_TOKEN,authToken);
                 responseParams.put(REFRESH_TOKEN,refreshToken);
                 responseParams.put(AUTH_TOKEN_EXPIRES_IN, String.valueOf(authTokenExpiresIn));
             }
+
+            LocationDetailsResponse locationDetailsResponse = flipkartSellerApiService.getAllLocations();
+            if ( locationDetailsResponse == null )
+                return ResponseUtil.failure("Getting error while fetching location details");
+            boolean isValidLocation = locationDetailsResponse.getLocations().stream().anyMatch(location -> locationId.equalsIgnoreCase(location.getLocationId()));
+            if ( !isValidLocation ) {
+                return ResponseUtil.failure("Invalid locationId. Kindly check");
+            }
+
         }
         connectorVerificationResponse.setConnectorParamters(responseParams);
         return ResponseUtil.success("Connector verified successfully ", connectorVerificationResponse);
@@ -309,15 +310,17 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         }
         
         String fileFormat = stockFilePath.substring(stockFilePath.lastIndexOf('.')+1);
-        int skipIntialLines = (catalogSyncRequest.getPageNumber()-1) * catalogSyncRequest.getPageSize();
+        int pageSize = catalogSyncRequest.getPageSize();
+        int pageNumber = catalogSyncRequest.getPageNumber();
+        int skipIntialLines = (catalogSyncRequest.getPageNumber()-1) * pageSize;
 
         Iterator<Row> rows = null;
         try {
-            if ( ("CSV").equalsIgnoreCase(fileFormat)){
-                rows = new DelimitedFileParser(stockFilePath).parse(skipIntialLines,true);
+            if ( stockFilePath.endsWith(".csv")){
+                rows = new FKDelimitedFileParser(stockFilePath).parse(skipIntialLines,true);
             }
-            else if (("XLS").equalsIgnoreCase(fileFormat)) {
-                rows = new ExcelSheetParser(stockFilePath).parse(skipIntialLines,true);
+            else if ( stockFilePath.endsWith(".xls") || stockFilePath.endsWith(".xlsx")) {
+                rows = new FKExcelSheetParser(stockFilePath).parse(skipIntialLines,true);
             } else {
                 LOGGER.error("file format not supported {}",fileFormat);
                 return ResponseUtil.failure("file format not supported, fileFormat : " +fileFormat);
@@ -328,19 +331,18 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         }
 
         if ( rows.hasNext() ) {
-            // Skipping second row as it's containing header description.
-            if ( catalogSyncRequest.getPageNumber() == 1) {
-                rows.next();
-            }
-            catalogSyncResponse = fetchCatalogInternal(rows, catalogSyncRequest.getPageSize());
+            // pageSize++ : in hasNext() implementation we skip the first row always. So Consume the first line of the following
+            // page in previous page.
+            catalogSyncResponse = fetchCatalogInternal(rows, pageSize++);
         }
         else {
             return ResponseUtil.failure("Invalid Listing report found, path : " + stockFilePath);
         }
         if ( rows.hasNext() ){
             catalogSyncResponse.setHasMore(true);
-            // have to add functionality in FileParsing utility to get total number of lines after parsing the file
-            catalogSyncResponse.setTotalPages(catalogSyncRequest.getPageNumber()+1);
+            catalogSyncResponse.setTotalPages(pageNumber + 1);
+        } else {
+            catalogSyncResponse.setTotalPages(pageNumber);
         }
 
         return ResponseUtil.success("Catalog fetched successfully", catalogSyncResponse);
@@ -1140,23 +1142,23 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                 ChannelItemType channelItemType = new ChannelItemType.Builder()
                         .setChannelCode(TenantRequestContext.current().getChannelCode())
                         .setChannelProductId(getChannelProductIdBySourceCode(row,TenantRequestContext.current().getSourceCode()))
-                        .setSellerSkuCode(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Seller SKU Id")))
-                        .setProductName(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Product Title")))
+                        .setSellerSkuCode(row.getColumnValue("Seller SKU Id"))
+                        .setProductName(row.getColumnValue("Product Title"))
                         .setLive(true)
-                        .setSellingPrice(new BigDecimal(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Your Selling Price"))))
-                        .setMrp(new BigDecimal(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("MRP"))))
+                        .setSellingPrice(new BigDecimal(row.getColumnValue("Your Selling Price")))
+                        .setMrp(new BigDecimal(row.getColumnValue("MRP")))
                         .setCurrencyCode("INR")
                         .build();
 
                 if ("FLIPKART".equalsIgnoreCase(TenantRequestContext.current().getSourceCode())){
                     channelItemType.addAttribute(new ChannelItemType.Attribute.Builder()
                             .setName("FSN")
-                            .setValue(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Flipkart Serial Number")))
+                            .setValue(row.getColumnValue("Flipkart Serial Number"))
                             .build());
                 }
                 catalogSyncResponse.addChannelItemType(channelItemType);
-                pageSize--;
             }
+            pageSize--;
         }
         return catalogSyncResponse;
     }
@@ -1164,22 +1166,22 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
     private boolean validateRow(Row row) {
 
-        if ( StringUtils.isNotBlank(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Inactive Reason")))){
-            LOGGER.info("Skipped row {}, due to inactive reason {}",row,row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Inactive Reason")));
+        if ( StringUtils.isNotBlank(row.getColumnValue("Inactive Reason"))){
+            LOGGER.info("Skipped row : {}, due to inactive reason : {}",row,row.getColumnValue("Inactive Reason"));
             return false;
-        }   else if ( row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Listing Archival")) != null
-                && ("ARCHIVED").equalsIgnoreCase(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Listing Archival")))) {
-            LOGGER.info("Skipped row {}, as either its  Listing Archival is null or has value ARCHIVED",row);
+        }   else if ( row.getColumnValue("Listing Archival") != null
+                && ("ARCHIVED").equalsIgnoreCase(row.getColumnValue("Listing Archival"))) {
+            LOGGER.info("Skipped row : {}, as either its  Listing Archival is null or has value ARCHIVED",row);
             return false;
-        }   else if ( row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Fulfillment By")) != null
-                && !sourceCodeToFulfilmentModeList.get(TenantRequestContext.current().getSourceCode()).stream().anyMatch(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Fulfillment By"))::equalsIgnoreCase)) {
-            LOGGER.info("Skipped row {}, Fulfiment mode not match",row);
+        }   else if ( row.getColumnValue("Fulfillment By") != null
+                && !sourceCodeToFulfilmentModeList.get(TenantRequestContext.current().getSourceCode()).stream().anyMatch(row.getColumnValue("Fulfillment By")::equalsIgnoreCase)) {
+            LOGGER.info("Skipped row : {}, Fulfiment mode not match",row);
             return false;
         }
 
         if ( "FLIPKART_OMNI".equalsIgnoreCase(TenantRequestContext.current().getSourceCode())
-                && "SELLER".equalsIgnoreCase(row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Shipping Provider")))) {
-            LOGGER.info("Skipped row {}, For FLIPKART_OMNI we don't fetch listing have SHIPPING_PROVDER : SELLER",row);
+                && !"SELLER".equalsIgnoreCase(row.getColumnValue("Shipping Provider"))) {
+            LOGGER.info("Skipped row : {}, For FLIPKART_OMNI we only fetch listings have SHIPPING_PROVDER : SELLER",row);
             return false;
         }
         return true;
@@ -1199,9 +1201,9 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
     private String getChannelProductIdBySourceCode(Row row, String sourceCode) {
         if ( "FLIPKART_FA".equalsIgnoreCase(sourceCode))
-            return row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Flipkart Serial Number"));
+            return row.getColumnValue("Flipkart Serial Number");
 
-        return row.getColumnValue(listingSheetColumnNameToColumnIndex.get("Listing ID"));
+        return row.getColumnValue("Listing ID");
     }
 
     private SearchShipmentRequest prepareFetchPendencyRequestForApprovedShipments(Date fromOrderDate) {
