@@ -1150,7 +1150,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                         .setCurrencyCode("INR")
                         .build();
 
-                if ("FLIPKART".equalsIgnoreCase(TenantRequestContext.current().getSourceCode())){
+                if (StringUtils.equalsIngoreCaseAny(TenantRequestContext.current().getSourceCode(), "FLIPKART", "FLIPKART_OMNI") ){
                     channelItemType.addAttribute(new ChannelItemType.Attribute.Builder()
                             .setName("FSN")
                             .setValue(row.getColumnValue("Flipkart Serial Number"))
@@ -1513,9 +1513,9 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     private String getProductIdForInventoryUpdate(String channelProductId, List<UpdateInventoryRequest.Attributes> attributes) {
 
         String fsn = null;
-        Optional<UpdateInventoryRequest.Attributes> attribute = attributes.stream().filter(lineItem -> "fsn".equalsIgnoreCase(lineItem.getName())).findFirst();
+        Optional<UpdateInventoryRequest.Attributes> attribute = attributes == null ? null : attributes.stream().filter(lineItem -> "fsn".equalsIgnoreCase(lineItem.getName())).findFirst();
 
-        if (attribute.isPresent()) {
+        if (attribute != null && attribute.isPresent()) {
             fsn = attribute.get().getValue();
         } else {
             fsn = channelProductId.substring(3, channelProductId.length() - 6);

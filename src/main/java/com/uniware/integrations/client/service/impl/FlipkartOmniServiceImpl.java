@@ -9,17 +9,15 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-/**
- * Created by vipin on 20/05/22.
- */
-@Service(value = "FlipkartFaServiceImpl")
-@FlipkartClient(version = "v1",channelSource = { ChannelSource.FLIPKART_FA})
-public class FlipkartFaServiceImpl extends AbstractSalesFlipkartService {
+@Service(value = "FlipkartOmniServiceImpl")
+@FlipkartClient(version = "v1",channelSource = { ChannelSource.FLIPKART_OMNI})
+public class FlipkartOmniServiceImpl extends AbstractSalesFlipkartService {
 
     @Autowired
     FlipkartDropshipServiceImpl flipkartDropshipService;
 
-    @Override public Response catalogSyncPreProcessor(Map<String, String> headers, CatalogPreProcessorRequest catalogPreProcessorRequest) {
+    @Override public Response catalogSyncPreProcessor(
+            Map<String, String> headers, CatalogPreProcessorRequest catalogPreProcessorRequest) {
         return flipkartDropshipService.catalogSyncPreProcessor(headers,catalogPreProcessorRequest);
     }
 
