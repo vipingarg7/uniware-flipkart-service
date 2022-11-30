@@ -26,7 +26,7 @@
                  -->
                 <Route key="$${ctx:TENANT_CODE_LOG_KEY}">
                     <RollingFile name="UniRollingFileAppender" append="true" filename="${sys:logDir}/server.log"
-                                 filePattern="${sys:logPath}/archived/server.log.%d{yyyy-MM-dd}">
+                                 filePattern="${sys:logDir}/archived/server.log.%d{yyyy-MM-dd}">
                         <!-- cm is our custom Alias which wil be used for Masking -->
                         <PatternLayout>
                             <Pattern>%d{HH:mm:ss,SSS} %-5p [%X{REQUEST_IDENTIFIER}][%X{TENANT}][%t][%c{1}] - %m%n</Pattern>
