@@ -15,7 +15,7 @@ public class CreateInvoiceResponse {
     private boolean thirdPartyInvoicingNotAvailable;
     private String invoiceCode;
     private String displayCode;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone="IST")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone="IST")
     private Date channelCreatedTime;
     private Set<String> cancelledSaleOrderItemCodes;
     private String invoiceUrl;
