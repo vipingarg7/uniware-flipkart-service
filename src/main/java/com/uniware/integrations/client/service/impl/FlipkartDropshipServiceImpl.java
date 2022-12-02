@@ -95,6 +95,7 @@ import com.uniware.integrations.utils.ResponseUtil;
 import com.uniware.integrations.web.context.TenantRequestContext;
 import com.uniware.integrations.web.exception.BadRequest;
 import com.uniware.integrations.web.exception.FailureResponse;
+import java.io.DataInput;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -152,7 +153,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     private static final String CODE = "code";
     private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS+05:30";
     private static final String DEFAULT_PHONE_NUMBER = "9999999999";
-    private static final String UNIWARE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssXXX";
+    private static final String UNIWARE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ssXXX";
     private static final String FK_CODE        =  "fk_code";
     private static final Map<String,List<String>> sourceCodeToFulfilmentModeList = new HashMap();
     private static final List<String> disabledInventoryErrorMessageList = new ArrayList<>();
@@ -506,16 +507,17 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         boolean isInvoiceLabelDownloaded = flipkartSellerApiService.downloadInvoiceAndLabel(shippingPackage.getSaleOrder().getCode(),filePath);
 
         if (isInvoiceLabelDownloaded) {
-            String labelSize   = headers.get("labelSize");
-            String invoiceSize = headers.get("invoiceSize");
+            String labelSize   = headers.get("labelsize");
+            String invoiceSize = headers.get("invoicesize");
 
+            String labelS3URL = null;
             if(StringUtils.isNotBlank(labelSize) && !("A4_FK_Label+Invoice").equals(labelSize)){
-                String labelS3URL = formatLabel(labelSize, filePath);
-                createInvoiceResponse.getShippingProviderInfo().setShippingLabelLink(labelS3URL);
+                labelS3URL = formatLabel(labelSize, filePath);
             }else{
-                String labelS3URL = s3Service.uploadFile(new File(filePath),BUCKET_NAME);
-                createInvoiceResponse.getShippingProviderInfo().setShippingLabelLink(labelS3URL);
+                labelS3URL = s3Service.uploadFile(new File(filePath),BUCKET_NAME);
             }
+            createInvoiceResponse.getShippingProviderInfo().setLabelFormat("PDF");
+            createInvoiceResponse.getShippingProviderInfo().setShippingLabelLink(labelS3URL);
 
             if(StringUtils.isNotBlank(invoiceSize) && !("Default_UC_Invoice").equals(invoiceSize)){
                 String invoiceUrl = formatInvoice(invoiceSize, filePath);
@@ -562,12 +564,12 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
         if (invoiceDetailsV3Response != null) {
             if (StringUtils.isNotBlank(shippingPackage.getInvoiceCode()))
-                createInvoiceResponse.setInvoiceCode(shippingPackage.getInvoiceCode());
+                createInvoiceResponse.setInvoiceCode(shippingPackage.getInvoiceCode().split("-")[1]);
             else
                 createInvoiceResponse.setInvoiceCode(invoiceDetailsV3Response.getInvoices().get(0).getInvoiceNumber());
 
             createInvoiceResponse.setDisplayCode(invoiceDetailsV3Response.getInvoices().get(0).getInvoiceNumber());
-            createInvoiceResponse.setChannelCreatedTime(invoiceDetailsV3Response.getInvoices().get(0).getInvoiceDate());
+            createInvoiceResponse.setChannelCreatedTime(DateUtils.stringToDate(invoiceDetailsV3Response.getInvoices().get(0).getInvoiceDate(),"yyyy-MM-dd"));
             CreateInvoiceResponse.TaxInformation taxInformation = new CreateInvoiceResponse.TaxInformation();
             for ( Invoice.OrderItem orderItem : invoiceDetailsV3Response.getInvoices().get(0).getOrderItems()) {
                 CreateInvoiceResponse.ProductTax productTax = new CreateInvoiceResponse.ProductTax();
@@ -986,11 +988,34 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
     private boolean packShipment(ShippingPackage shippingPackage, ShipmentDetailsV3WithSubPackages shipmentDetails) {
 
+        int packShipmentFailureCount = 0;
+        boolean retryableError = false;
         ShipmentPackV3Request shipmentPackV3Request = preparePackShipmentRequest(shippingPackage, shipmentDetails);
-        ShipmentPackV3Response shipmentPackV3Response = flipkartSellerApiService.packShipment(shipmentPackV3Request);
-        if("SUCCESS".equalsIgnoreCase(shipmentPackV3Response.getShipments().get(0).getStatus())){
-            return confirmIfShipmentPacked(shippingPackage.getSaleOrder().getCode());
-        }
+        ShipmentPackV3Response shipmentPackV3Response = null;
+        do {
+            shipmentPackV3Response = flipkartSellerApiService.packShipment(shipmentPackV3Request);
+            if ( "FAILURE".equalsIgnoreCase(shipmentPackV3Response.getShipments().get(0).getStatus())
+                    && shipmentPackV3Response.getShipments().get(0).getErrorMessage().contains("Please re-check your packaging")) {
+                packShipmentFailureCount += 1;
+                retryableError = true;
+                Dimensions dimensions = null;
+                if ( packShipmentFailureCount == 1) {
+                    dimensions = getPackDimension(shippingPackage);
+                    dimensions.setWeight(dimensions.getWeight().divide(BigDecimal.valueOf(10)));
+                }
+                else {
+                    dimensions = new Dimensions().defaultDimensions();
+                }
+                shipmentPackV3Request.getShipments().get(0).getSubShipments().get(0).setDimensions(dimensions);
+                flipkartSellerApiService.packShipment(shipmentPackV3Request);
+            }
+            else if( "SUCCESS".equalsIgnoreCase(shipmentPackV3Response.getShipments().get(0).getStatus())) {
+                retryableError = false;
+                return confirmIfShipmentPacked(shippingPackage.getSaleOrder().getCode());
+            }
+
+        } while ( retryableError );
+
         return false;
     }
 
@@ -1044,9 +1069,17 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         Map<String,Integer> channelSaleOrderItemCodeToQty = new HashMap<>();
         HashSet<String> combinationIdentifierSet = new HashSet<>();
         for (ShippingPackage.SaleOrderItem saleOrderItem: shippingPackage.getSaleOrderItems() ) {
-            if (channelSaleOrderItemCodeToQty.computeIfPresent(saleOrderItem.getChannelSaleOrderItemCode(), (key, val) -> val + 1) == null && combinationIdentifierSet.add(saleOrderItem.getCombinationIdentifier())) {
-                channelSaleOrderItemCodeToQty.put(saleOrderItem.getChannelSaleOrderItemCode(),1);
+            if ( StringUtils.isBlank(saleOrderItem.getCombinationIdentifier())   ) {
+                if (channelSaleOrderItemCodeToQty.computeIfPresent(saleOrderItem.getChannelSaleOrderItemCode(), (key, val) -> val + 1) == null ) {
+                    channelSaleOrderItemCodeToQty.put(saleOrderItem.getChannelSaleOrderItemCode(),1);
+                }
             }
+            else if ( combinationIdentifierSet.add(saleOrderItem.getCombinationIdentifier()) ) {
+                if (channelSaleOrderItemCodeToQty.computeIfPresent(saleOrderItem.getChannelSaleOrderItemCode(), (key, val) -> val + 1) == null ) {
+                    channelSaleOrderItemCodeToQty.put(saleOrderItem.getChannelSaleOrderItemCode(),1);
+                }
+            }
+
         }
 
         channelSaleOrderItemCodeToQty.entrySet().stream().forEach(entry -> { TaxItem taxItem = new TaxItem();
@@ -1073,8 +1106,8 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         SubShipments subShipment = new SubShipments().subShipmentId("SS-1").dimensions(dimensions != null ? dimensions : getPackDimension(shippingPackage));
         Invoice invoice = new Invoice()
                 .orderId(shippingPackage.getSaleOrder().getDisplayOrderCode())
-                .invoiceNumber(shippingPackage.getInvoiceCode())
-                .invoiceDate(DateUtils.stringToDate(DateUtils.dateToString(DateUtils.getCurrentDate(),"yyyy-MM-dd"),"yyyy-MM-dd"));
+                .invoiceNumber("")
+                .invoiceDate(DateUtils.dateToString(DateUtils.getCurrentDate(),"yyyy-MM-dd"));
 
         packRequest.shipmentId(shippingPackage.getSaleOrder().getCode());
         packRequest.setLocationId(FlipkartRequestContext.current().getLocationId());

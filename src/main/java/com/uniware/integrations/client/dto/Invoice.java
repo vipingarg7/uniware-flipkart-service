@@ -15,7 +15,7 @@ public class Invoice {
     private List<OrderItem> orderItems = null;
 
     @SerializedName("invoiceDate")
-    private Date invoiceDate = null;
+    private String invoiceDate = null;
 
     @SerializedName("orderId")
     private String orderId = null;
@@ -67,7 +67,7 @@ public class Invoice {
         this.orderItems = orderItems;
     }
 
-    public Invoice invoiceDate(Date invoiceDate) {
+    public Invoice invoiceDate(String invoiceDate) {
         this.invoiceDate = invoiceDate;
         return this;
     }
@@ -77,11 +77,11 @@ public class Invoice {
      * @return invoiceDate
      **/
     
-    public Date getInvoiceDate() {
+    public String getInvoiceDate() {
         return invoiceDate;
     }
 
-    public void setInvoiceDate(Date invoiceDate) {
+    public void setInvoiceDate(String invoiceDate) {
         this.invoiceDate = invoiceDate;
     }
 

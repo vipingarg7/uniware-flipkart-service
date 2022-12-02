@@ -350,7 +350,7 @@ public class FlipkartSellerApiService {
         Map<String, String> headersMap = new HashMap<>();
         headersMap.put("Content-Type", "application/json");
         headersMap.put("Authorization", FlipkartRequestContext.current().getAuthToken());
-        String apiEndpoint = "sellers/v3/shipments/labels";
+        String apiEndpoint = "/sellers/v3/shipments/labels";
         try {
             String response = httpSender.executePost(channelBaseUrl + apiEndpoint, shipmentPackRequestJson, headersMap, httpResponseWrapper);
             handleResponseCode(httpResponseWrapper);

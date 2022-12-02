@@ -1,5 +1,7 @@
 package com.uniware.integrations.client.dto.uniware;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,6 +15,7 @@ public class CreateInvoiceResponse {
     private boolean thirdPartyInvoicingNotAvailable;
     private String invoiceCode;
     private String displayCode;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone="IST")
     private Date channelCreatedTime;
     private Set<String> cancelledSaleOrderItemCodes;
     private String invoiceUrl;

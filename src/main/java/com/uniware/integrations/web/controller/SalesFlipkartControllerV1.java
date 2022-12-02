@@ -69,7 +69,7 @@ public class SalesFlipkartControllerV1 extends BaseController {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).fetchCatalog(headers, catalogSyncRequest));
     }
 
-    @PostMapping(value = "/generate", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/invoice/generate", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> generateInvoice(@RequestHeader Map<String,String> headers, @RequestBody GenerateInvoiceRequest generateInvoiceRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).generateInvoice(headers, generateInvoiceRequest));
     }
