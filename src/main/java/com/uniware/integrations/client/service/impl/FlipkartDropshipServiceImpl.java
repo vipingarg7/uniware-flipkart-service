@@ -1537,7 +1537,10 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
         ShippingPackage shippingPackage = dispatchShipmentRequest.getShippingPackage();
         DispatchSelfShipmentV3Request dispatchSelfShipmentV3Request = new DispatchSelfShipmentV3Request();
-        DispatchRequest shipment = new DispatchRequest();
+
+        DispatchRequest.Invoice invoice = new DispatchRequest.Invoice();
+        invoice.setInvoiceNumber(shippingPackage.getInvoiceCode());
+        invoice.setInvoiceDate(DateUtils.dateToString(shippingPackage.getInvoiceDate(),"yyyy-MM-dd"));
         HashSet<String> combinationIdentifierSet = new HashSet<>();
         HashSet<String> channelSaleOrderItemCodeSet = new HashSet<>();
         for (ShippingPackage.SaleOrderItem saleOrderItem : shippingPackage.getSaleOrderItems()) {
@@ -1548,29 +1551,28 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                     && channelSaleOrderItemCodeSet.add(saleOrderItem.getChannelSaleOrderItemCode()) ) {
                 confirmItemRow.orderItemId(saleOrderItem.getChannelSaleOrderItemCode());
                 confirmItemRow.quantity(1);
-                shipment.addOrderItemsItem(confirmItemRow);
+                confirmItemRow.serialNumbers(new ArrayList<>());
+                invoice.addOrderItemsItem(confirmItemRow);
             }
             else {
                 if ( channelSaleOrderItemCodeSet.add(saleOrderItem.getChannelSaleOrderItemCode())){
                     confirmItemRow.orderItemId(saleOrderItem.getChannelSaleOrderItemCode());
                     confirmItemRow.quantity(1);
-                    shipment.addOrderItemsItem(confirmItemRow);
+                    confirmItemRow.serialNumbers(new ArrayList<>());
+                    invoice.addOrderItemsItem(confirmItemRow);
                 } else {
-                    shipment.incrementOrderItemQuantityByOne(saleOrderItem.getChannelSaleOrderItemCode());
+                    invoice.incrementOrderItemQuantityByOne(saleOrderItem.getChannelSaleOrderItemCode());
                 }
             }
         }
 
-        DispatchRequest.Invoice invoice = new DispatchRequest.Invoice();
-        invoice.setInvoiceNumber(shippingPackage.getInvoiceCode());
-        invoice.setInvoiceDate(DateUtils.dateToString(shippingPackage.getInvoiceDate(),"yyyy-MM-dd"));
-
+        DispatchRequest shipment = new DispatchRequest();
         shipment.setInvoice(invoice);
         shipment.setShipmentId(shippingPackage.getSaleOrder().getCode());
-        shipment.setDispatchDate(shippingPackage.getSaleOrder().getDisplaySaleOrderDateTime());
+        shipment.setDispatchDate(DateUtils.dateToString(DateUtils.addDaysToDate(shippingPackage.getSaleOrder().getDisplaySaleOrderDateTime(),5),"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
         shipment.setLocationId(FlipkartRequestContext.current().getLocationId());
         shipment.setTrackingId(shippingPackage.getShippingProviderInfo().getTrackingNumber());
-        shipment.setTentativeDeliveryDate((DateUtils.addDaysToDate(DateUtils.getCurrentDate(),5)));
+        shipment.setTentativeDeliveryDate((DateUtils.dateToString(DateUtils.addDaysToDate(DateUtils.getCurrentTime(),5),"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")));
         if (shippingPackage.getShippingProviderInfo().isShippingProviderIsAggregator())
             shipment.setDeliveryPartner(shippingPackage.getShippingProviderInfo().getAggregatorAllocatedCourier());
         else
@@ -1580,6 +1582,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
     }
 
     private String getVendorGroupCode(String shippingProviderCode) {
+        // Should lowercase the string then check contains method
         String vendorGroupCode = shippingProviderCode;
         if ( shippingProviderCode.contains("Delhivery") )
             vendorGroupCode = "Delhivery";

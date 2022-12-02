@@ -4,8 +4,6 @@ import com.google.gson.annotations.SerializedName;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
-import org.joda.time.LocalDate;
 
 public class DispatchRequest {
 
@@ -27,9 +25,6 @@ public class DispatchRequest {
     @SerializedName("locationId")
     private String locationId = null;
 
-    @SerializedName("orderItems")
-    private List<ConfirmItemRow> orderItems = new ArrayList<>();
-
     @SerializedName("invoice")
     private Invoice invoice;
 
@@ -37,21 +32,13 @@ public class DispatchRequest {
     private String trackingId = null;
 
     @SerializedName("tentativeDeliveryDate")
-    private Date tentativeDeliveryDate = null;
+    private String tentativeDeliveryDate = null;
 
     @SerializedName("deliveryPartner")
     private String deliveryPartner = null;
 
     @SerializedName("dispatchDate")
-    private Date dispatchDate = null;
-
-    public DispatchRequest incrementOrderItemQuantityByOne(String orderItemId) {
-        for (ConfirmItemRow item : this.getOrderItems()) {
-            if (item.getOrderItemId().equalsIgnoreCase(orderItemId))
-                item.quantity(item.getQuantity() + 1);
-        }
-        return this;
-    }
+    private String dispatchDate = null;
 
     public DispatchRequest facilityId(String facilityId) {
         this.facilityId = facilityId;
@@ -161,29 +148,6 @@ public class DispatchRequest {
         this.locationId = locationId;
     }
 
-    public DispatchRequest orderItems(List<ConfirmItemRow> orderItems) {
-        this.orderItems = orderItems;
-        return this;
-    }
-
-    public DispatchRequest addOrderItemsItem(ConfirmItemRow orderItemsItem) {
-        this.orderItems.add(orderItemsItem);
-        return this;
-    }
-
-    /**
-     * Get orderItems
-     * @return orderItems
-     **/
-    
-    public List<ConfirmItemRow> getOrderItems() {
-        return orderItems;
-    }
-
-    public void setOrderItems(List<ConfirmItemRow> orderItems) {
-        this.orderItems = orderItems;
-    }
-
     public Boolean getValidTrackingLength() {
         return validTrackingLength;
     }
@@ -222,7 +186,7 @@ public class DispatchRequest {
         this.trackingId = trackingId;
     }
 
-    public DispatchRequest tentativeDeliveryDate(Date tentativeDeliveryDate) {
+    public DispatchRequest tentativeDeliveryDate(String tentativeDeliveryDate) {
         this.tentativeDeliveryDate = tentativeDeliveryDate;
         return this;
     }
@@ -232,11 +196,11 @@ public class DispatchRequest {
      * @return tentativeDeliveryDate
      **/
     
-    public Date getTentativeDeliveryDate() {
+    public String getTentativeDeliveryDate() {
         return tentativeDeliveryDate;
     }
 
-    public void setTentativeDeliveryDate(Date tentativeDeliveryDate) {
+    public void setTentativeDeliveryDate(String tentativeDeliveryDate) {
         this.tentativeDeliveryDate = tentativeDeliveryDate;
     }
 
@@ -258,7 +222,7 @@ public class DispatchRequest {
         this.deliveryPartner = deliveryPartner;
     }
 
-    public DispatchRequest dispatchDate(Date dispatchDate) {
+    public DispatchRequest dispatchDate(String dispatchDate) {
         this.dispatchDate = dispatchDate;
         return this;
     }
@@ -268,72 +232,21 @@ public class DispatchRequest {
      * @return dispatchDate
      **/
     
-    public Date getDispatchDate() {
+    public String getDispatchDate() {
         return dispatchDate;
     }
 
-    public void setDispatchDate(Date dispatchDate) {
+    public void setDispatchDate(String dispatchDate) {
         this.dispatchDate = dispatchDate;
     }
 
-
-    @Override
-    public boolean equals(java.lang.Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        DispatchRequest dispatchRequest = (DispatchRequest) o;
-        return Objects.equals(this.facilityId, dispatchRequest.facilityId) &&
-                Objects.equals(this.validTrackingLength, dispatchRequest.validTrackingLength) &&
-                Objects.equals(this.dispatchDateValid, dispatchRequest.dispatchDateValid) &&
-                Objects.equals(this.shipmentId, dispatchRequest.shipmentId) &&
-                Objects.equals(this.tentativeDeliveryDateValid, dispatchRequest.tentativeDeliveryDateValid) &&
-                Objects.equals(this.locationId, dispatchRequest.locationId) &&
-                Objects.equals(this.orderItems, dispatchRequest.orderItems) &&
-                Objects.equals(this.trackingId, dispatchRequest.trackingId) &&
-                Objects.equals(this.tentativeDeliveryDate, dispatchRequest.tentativeDeliveryDate) &&
-                Objects.equals(this.deliveryPartner, dispatchRequest.deliveryPartner) &&
-                Objects.equals(this.dispatchDate, dispatchRequest.dispatchDate);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(facilityId, validTrackingLength, dispatchDateValid, shipmentId, tentativeDeliveryDateValid, locationId, orderItems, trackingId, tentativeDeliveryDate, deliveryPartner, dispatchDate);
-    }
-
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("class DispatchRequest {\n");
-
-        sb.append("    facilityId: ").append(toIndentedString(facilityId)).append("\n");
-        sb.append("    validTrackingLength: ").append(toIndentedString(validTrackingLength)).append("\n");
-        sb.append("    dispatchDateValid: ").append(toIndentedString(dispatchDateValid)).append("\n");
-        sb.append("    shipmentId: ").append(toIndentedString(shipmentId)).append("\n");
-        sb.append("    tentativeDeliveryDateValid: ").append(toIndentedString(tentativeDeliveryDateValid)).append("\n");
-        sb.append("    locationId: ").append(toIndentedString(locationId)).append("\n");
-        sb.append("    orderItems: ").append(toIndentedString(orderItems)).append("\n");
-        sb.append("    trackingId: ").append(toIndentedString(trackingId)).append("\n");
-        sb.append("    tentativeDeliveryDate: ").append(toIndentedString(tentativeDeliveryDate)).append("\n");
-        sb.append("    deliveryPartner: ").append(toIndentedString(deliveryPartner)).append("\n");
-        sb.append("    dispatchDate: ").append(toIndentedString(dispatchDate)).append("\n");
-        sb.append("}");
-        return sb.toString();
-    }
-
-    /**
-     * Convert the given object to string with each line indented by 4 spaces
-     * (except the first line).
-     */
-    private String toIndentedString(java.lang.Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
+    @Override public String toString() {
+        return "DispatchRequest{" + "facilityId='" + facilityId + '\'' + ", validTrackingLength=" + validTrackingLength
+                + ", dispatchDateValid=" + dispatchDateValid + ", shipmentId='" + shipmentId + '\''
+                + ", tentativeDeliveryDateValid=" + tentativeDeliveryDateValid + ", locationId='" + locationId + '\''
+                + ", invoice=" + invoice + ", trackingId='" + trackingId + '\'' + ", tentativeDeliveryDate="
+                + tentativeDeliveryDate + ", deliveryPartner='" + deliveryPartner + '\'' + ", dispatchDate="
+                + dispatchDate + '}';
     }
 
     public static class Invoice {
@@ -343,6 +256,9 @@ public class DispatchRequest {
 
         @SerializedName("invoiceDate")
         private String invoiceDate = null;
+
+        @SerializedName("items")
+        private List<ConfirmItemRow> orderItems = new ArrayList<>();
 
         public String getInvoiceNumber() {
             return invoiceNumber;
@@ -358,6 +274,37 @@ public class DispatchRequest {
 
         public void setInvoiceDate(String invoiceDate) {
             this.invoiceDate = invoiceDate;
+        }
+
+        public List<ConfirmItemRow> getOrderItems() {
+            return orderItems;
+        }
+
+        public void setOrderItems(List<ConfirmItemRow> orderItems) {
+            this.orderItems = orderItems;
+        }
+
+        public Invoice orderItems(List<ConfirmItemRow> orderItems) {
+            this.orderItems = orderItems;
+            return this;
+        }
+
+        public Invoice addOrderItemsItem(ConfirmItemRow orderItemsItem) {
+            this.orderItems.add(orderItemsItem);
+            return this;
+        }
+
+        public Invoice incrementOrderItemQuantityByOne(String orderItemId) {
+            for (ConfirmItemRow item : this.getOrderItems()) {
+                if (item.getOrderItemId().equalsIgnoreCase(orderItemId))
+                    item.quantity(item.getQuantity() + 1);
+            }
+            return this;
+        }
+
+        @Override public String toString() {
+            return "Invoice{" + "invoiceNumber='" + invoiceNumber + '\'' + ", invoiceDate='" + invoiceDate + '\''
+                    + ", orderItems=" + orderItems + '}';
         }
     }
 
