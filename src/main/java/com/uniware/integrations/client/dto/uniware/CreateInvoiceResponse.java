@@ -38,16 +38,6 @@ public class CreateInvoiceResponse {
     }
 
     @Data
-    public static class ShippingProviderInfo {
-
-        private String trackingNumber;
-        private String shippingProvider;
-        private String shippingLabelLink;
-        private String labelFormat;
-
-    }
-
-    @Data
     public static class ProductTax {
 
         private String channelProductId;

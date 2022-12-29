@@ -54,6 +54,9 @@ public class EnqueDownloadRequest extends BaseRequest {
         @SerializedName("internal_state")
         List<InternalState> internalStateList;
 
+        @SerializedName("service_profile")
+        List<ServiceProfile> serviceProfiles;
+
         public Refiner() {}
         private Refiner(Builder builder) {
             setInternalStateList(builder.internalStateList);
@@ -64,6 +67,14 @@ public class EnqueDownloadRequest extends BaseRequest {
                 this.internalStateList = new ArrayList<>();
             }
             this.internalStateList.add(internalState);
+            return this;
+        }
+
+        public Refiner addServiceProfile(ServiceProfile serviceProfile) {
+            if (this.serviceProfiles == null) {
+                this.serviceProfiles = new ArrayList<>();
+            }
+            this.serviceProfiles.add(serviceProfile);
             return this;
         }
 
@@ -93,6 +104,57 @@ public class EnqueDownloadRequest extends BaseRequest {
         }
     }
 
+    public static class ServiceProfile {
+
+        @SerializedName("exactValue")
+        private ExactValue exactValue;
+
+        @SerializedName("valueType")
+        private String valueType;
+
+        public ExactValue getExactValue() {
+            return exactValue;
+        }
+
+        public void setExactValue(ExactValue exactValue) {
+            this.exactValue = exactValue;
+        }
+
+        public String getValueType() {
+            return valueType;
+        }
+
+        public void setValueType(String valueType) {
+            this.valueType = valueType;
+        }
+
+        private ServiceProfile(Builder builder) {
+            exactValue = builder.exactValue;
+            valueType = builder.valueType;
+        }
+
+        public static final class Builder {
+            private ExactValue exactValue;
+            private String valueType;
+
+            public Builder() {
+            }
+
+            public Builder setExactValue(ExactValue val) {
+                exactValue = val;
+                return this;
+            }
+
+            public Builder setValueType(String val) {
+                valueType = val;
+                return this;
+            }
+
+            public ServiceProfile build() {
+                return new ServiceProfile(this);
+            }
+        }
+    }
     public static class InternalState {
 
         @SerializedName("exactValue")

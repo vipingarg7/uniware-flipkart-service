@@ -9,9 +9,9 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service(value = "flipkartOmniServiceImpl")
-@FlipkartClient(version = "v1",channelSource = { ChannelSource.FLIPKART_OMNI})
-public class FlipkartOmniServiceImpl extends AbstractSalesFlipkartService {
+@Service(value = "flipkartLiteServiceImpl")
+@FlipkartClient(version = "v1",channelSource = { ChannelSource.FLIPKART_LITE})
+public class FlipkartLiteServiceImpl extends AbstractSalesFlipkartService {
 
     @Autowired
     FlipkartDropshipServiceImpl flipkartDropshipService;

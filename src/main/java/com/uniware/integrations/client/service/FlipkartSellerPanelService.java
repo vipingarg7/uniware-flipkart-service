@@ -11,6 +11,7 @@ import com.unifier.core.utils.StringUtils;
 import com.uniware.integrations.client.context.FlipkartRequestContext;
 import com.uniware.integrations.client.dto.api.requestDto.EnqueDownloadRequest;
 import com.uniware.integrations.client.dto.api.requestDto.FetchOnHoldOrderRequest;
+import com.uniware.integrations.client.dto.api.requestDto.ListingFilterRequest;
 import com.uniware.integrations.client.dto.api.responseDto.SearchShipmentV3Response;
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadNUploadHistoryResponse;
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadRequestStatusResponse;
@@ -237,6 +238,9 @@ public class FlipkartSellerPanelService {
 
         try {
             String response = httpSender.executePost(SELLER_PANEL_URL + apiEndpoint,enqueDownloadRequestJson,FlipkartRequestContext.current().getSellerPanelHeaders(), httpResponseWrapper );
+            if ( response != null && response.contains("File already under download for seller") )
+                return true;
+
             handleResponseCode(httpResponseWrapper);
             JsonObject responseJson = new Gson().fromJson(response, JsonObject.class);
             return true;
@@ -249,10 +253,8 @@ public class FlipkartSellerPanelService {
     /*
         Description - Download stock file   [ path => Seller panel Home page -> MyListings -> Download ]
      */
-    public String downloadStockFile(String fileName, String fileLink, String fileFormat) {
+    public String downloadStockFile(String fileName, String fileLink, String downloadFilePath) {
 
-        String currentDate = DateUtils.dateToString(DateUtils.getCurrentTime(),"yyyy-MM-dd");
-        String downloadFilePath = "/tmp/" +TenantRequestContext.current().getTenantCode() + "_" + currentDate + "." + fileFormat;
         HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
         String apiEndpoint = "/napi/listing/stockFileDownload";
@@ -273,6 +275,27 @@ public class FlipkartSellerPanelService {
         }
         return null;
     }
+//
+//    public void addFilterOnListing(ListingFilterRequest listingFilterRequest) {
+//
+//        String listingFilterRequestJson = new Gson().toJson(listingFilterRequest);
+//
+//        HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
+//        HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
+//        String apiEndpoint = "/napi/listing/listingsDataForStates";
+//
+//        try {
+//            String response = httpSender.executePost(SELLER_PANEL_URL + apiEndpoint, listingFilterRequestJson, FlipkartRequestContext.current().getSellerPanelHeaders(), httpResponseWrapper);
+//            if (HttpStatus.OK.name().equalsIgnoreCase(httpResponseWrapper.getResponseStatus().name())){
+//                LOGGER.info("Successfully Added the filters on listing page");
+//            } else {
+//                LOGGER.error("Unable to add filters on listing page, response : {}",response);
+//            }
+//        } catch (HttpTransportException | JsonSyntaxException ex) {
+//            LOGGER.error("Something went wrong apiEndpoint {}, Error {}",apiEndpoint, ex);
+//            throw new FailureResponse("Something went wrong - " + apiEndpoint + " , error : " + ex.getMessage());
+//        }
+//    }
 
     private void handleResponseCode(HttpResponseWrapper httpResponseWrapper) {
         String response = null;

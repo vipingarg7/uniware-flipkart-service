@@ -22,11 +22,6 @@ public class ConfirmItemRow {
         return this;
     }
 
-    /**
-     * Get orderItemId
-     * @return orderItemId
-     **/
-    
     public String getOrderItemId() {
         return orderItemId;
     }

@@ -7,8 +7,6 @@ public class GenerateLabelRequest {
 
     private String saleOrderCode;
     private String shippingPackageCode;
-    private String invoiceCode;
-    private List<SaleOrderItem> saleOrderItems;
 
     public String getSaleOrderCode() {
         return saleOrderCode;
@@ -26,19 +24,4 @@ public class GenerateLabelRequest {
         this.shippingPackageCode = shippingPackageCode;
     }
 
-    public String getInvoiceCode() {
-        return invoiceCode;
-    }
-
-    public void setInvoiceCode(String invoiceCode) {
-        this.invoiceCode = invoiceCode;
-    }
-
-    public List<SaleOrderItem> getSaleOrderItems() {
-        return saleOrderItems;
-    }
-
-    public void setSaleOrderItems(List<SaleOrderItem> saleOrderItems) {
-        this.saleOrderItems = saleOrderItems;
-    }
 }

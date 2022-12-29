@@ -79,6 +79,11 @@ public class SalesFlipkartControllerV1 extends BaseController {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).generateShipLabel(headers, generateLabelRequest));
     }
 
+    @PutMapping(value = "/inventory", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Response> updateInventory(@RequestHeader Map<String,String> headers, @RequestBody UpdateInventoryRequest updateInventoryRequest) {
+        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).updateInventory(headers, updateInventoryRequest));
+    }
+
     @PostMapping(value = "/dispatch/shipment",consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> dispatchShipments(@RequestHeader Map<String,String> headers, @RequestBody DispatchShipmentRequest dispatchShipmentRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).dispatchShipments(headers, dispatchShipmentRequest));
@@ -87,11 +92,6 @@ public class SalesFlipkartControllerV1 extends BaseController {
     @PostMapping(value = "/manifest/close", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Response> closeShippingManifest(@RequestHeader Map<String,String> headers, @RequestBody CloseShippingManifestRequest closeShippingManifestRequest) {
         return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).closeShippingManifest(headers, closeShippingManifestRequest));
-    }
-
-    @PutMapping(value = "/inventory", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Response> updateInventory(@RequestHeader Map<String,String> headers, @RequestBody UpdateInventoryRequest updateInventoryRequest) {
-        return ResponseEntity.ok().body(((SalesFlipkartService)getFlipkartModel()).updateInventory(headers, updateInventoryRequest));
     }
 
     @PostMapping(value = "/manifest/currentChannel", consumes = MediaType.APPLICATION_JSON_VALUE)

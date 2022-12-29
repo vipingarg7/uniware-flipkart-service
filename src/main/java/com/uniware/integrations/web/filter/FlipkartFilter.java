@@ -63,6 +63,7 @@ public class FlipkartFilter extends OncePerRequestFilter {
             FlipkartRequestContext.current().setLocationId(request.getHeader("locationId"));
             FlipkartRequestContext.current().setUserName(request.getHeader("userName"));
             FlipkartRequestContext.current().setPassword(request.getHeader("password"));
+            FlipkartRequestContext.current().setSellerId(request.getHeader("sellerId"));
 
 //            if (!FlipkartRequestContext.current().validate()) {
 //                response.sendError(HttpServletResponse.SC_BAD_REQUEST);

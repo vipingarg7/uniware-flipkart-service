@@ -9,7 +9,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service(value = "FlipkartSmartServiceImpl")
+@Service(value = "flipkartSmartServiceImpl")
 @FlipkartClient(version = "v1",channelSource = { ChannelSource.FLIPKART_SMART})
 public class FlipkartSmartServiceImpl extends AbstractSalesFlipkartService {
 
