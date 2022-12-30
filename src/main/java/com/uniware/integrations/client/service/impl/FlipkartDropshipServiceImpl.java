@@ -1567,8 +1567,10 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             }
             String customerPhoneNumber = shipmentDetailsWithAddress.getDeliveryAddress().getContactNumber();
             saleOrder.setNotificationMobile(StringUtils.isNotBlank(customerPhoneNumber) ? customerPhoneNumber : DEFAULT_PHONE_NUMBER);
-            Map<String,String> shipmentIdJson = new HashMap<>();
-            shipmentIdJson.put("shipmentId",shipment.getShipmentId());
+            Map<String, Object> shipmentIdJson = new HashMap<>();
+            Map<String,String> tempMap = new HashMap<>();
+            tempMap.put("value",shipment.getShipmentId());
+            shipmentIdJson.put("shipmentId",tempMap);
             saleOrder.setAdditionalInfo(JsonUtils.objectToString(shipmentIdJson));
 
             if ( "EXPRESS".equalsIgnoreCase(shipment.getShipmentType()) ) {
@@ -1645,7 +1647,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         addressDetail.setName(address.getFirstName() + " " + address.getLastName());
         addressDetail.setAddressLine1(address.getAddressLine1());
 
-        if (addressDetail.getAddressLine2() != null) {
+        if ( StringUtils.isNotBlank(address.getAddressLine2())) {
             addressDetail.setAddressLine2(address.getAddressLine2());
         }
 
@@ -1654,7 +1656,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         addressDetail.setCountry("IN");
         addressDetail.setPincode(address.getPinCode());
 
-        if (addressDetail.getPhone() != null) {
+        if ( StringUtils.isNotBlank(address.getContactNumber())) {
             addressDetail.setPhone(address.getContactNumber());
         } else {
             addressDetail.setPhone(DEFAULT_PHONE_NUMBER);

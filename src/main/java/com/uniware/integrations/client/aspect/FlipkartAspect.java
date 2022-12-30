@@ -50,7 +50,7 @@ public class FlipkartAspect {
 
             if (result instanceof BaseResponse) {
                 try {
-                    LOG.info("{} Response: {}", method.getName(), mapper.writeValueAsString(result));
+                    LOG.info("{} Response: {}", method.getName(), mapper.writeValueAsString(result).replaceAll("\n", ""));
                 } catch (JsonProcessingException e) {
                     LOG.info("{} Response: {}", method.getName(), result.toString());
                 }
