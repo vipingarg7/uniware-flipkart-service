@@ -1595,7 +1595,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                     saleOrderItem.setItemSku(orderItem.getSku().replaceAll("&quot;", ""));
                     saleOrderItem.setChannelProductId(orderItem.getListingId().replaceAll("&quot;", ""));
 
-                    String itemName = orderItem.getTitle() + orderItem.getSku().replaceAll("&quot;", "");
+                    String itemName = orderItem.getTitle() + " " + orderItem.getSku().replaceAll("&quot;", "");
                     saleOrderItem.setItemName(itemName.length() > 200 ? itemName.substring(0,200) : itemName);
                     saleOrderItem.setShippingMethodCode("STD");
 
