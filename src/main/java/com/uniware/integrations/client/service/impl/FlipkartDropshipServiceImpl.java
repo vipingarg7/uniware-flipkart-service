@@ -270,10 +270,12 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             if (!loginSuccess) {
                 return ResponseUtil.failure("Unable to login on Flipkart panel.");
             }
-            String sellerId = flipkartSellerPanelService.getFeaturesForSeller().getFirst();
-            responseParams.put(USERNAME, username);
-            responseParams.put(PASSWORD, password);
-            responseParams.put("sellerId", sellerId);
+            if ( connectorVerificationRequest.getUserTriggeredVerification()) {
+                String sellerId = flipkartSellerPanelService.getFeaturesForSeller().getFirst();
+                responseParams.put(USERNAME, username);
+                responseParams.put(PASSWORD, password);
+                responseParams.put("sellerId", sellerId);
+            }
         }
         else if (FLIPKART_INVENTORY_PANEL.equalsIgnoreCase(connectorVerificationRequest.getConnectorName())) {
             String authToken = connectorParameters.get(AUTH_TOKEN);
