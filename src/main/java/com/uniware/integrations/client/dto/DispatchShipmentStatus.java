@@ -8,7 +8,7 @@ public class DispatchShipmentStatus {
     @SerializedName("shipmentId")
     private String shipmentId = null;
 
-    @SerializedName("processingStatus")
+    @SerializedName(value="status", alternate="processingStatus")
     private String status = null;
 
     @SerializedName("errorCode")
