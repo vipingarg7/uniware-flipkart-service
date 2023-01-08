@@ -170,11 +170,11 @@ public class FlipkartSellerPanelService {
                 LOGGER.error("Got http error for TOO_MANY_REQUESTS, resposne:{} ", mpsEnabledResponse);
                 Thread.sleep(1000);
                 mpsEnabledResponse = httpSender.executeGet(SELLER_PANEL_URL + apiEndpoint, Collections.emptyMap(), Collections.EMPTY_MAP, httpResponseWrapper);
-                if (httpResponseWrapper.getResponseStatus().equals(HttpStatus.TOO_MANY_REQUESTS)) {
-                    LOGGER.error("Got http error for TOO_MANY_REQUESTS, resposne:{} ", mpsEnabledResponse);
-                    return false;
-                }
-            } else {
+            }
+            if (httpResponseWrapper.getResponseStatus().equals(HttpStatus.TOO_MANY_REQUESTS)) {
+                LOGGER.error("Got http error for TOO_MANY_REQUESTS, resposne:{} ", mpsEnabledResponse);
+                return false;
+            }else {
                 if (StringUtils.isBlank(mpsEnabledResponse)) {
                     LOGGER.error("Error in checking login");
                     return false;
