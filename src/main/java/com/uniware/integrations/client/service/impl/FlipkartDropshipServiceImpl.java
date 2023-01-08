@@ -440,7 +440,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                                 if ( StringUtils.isBlank(stockfilePath) ) {
                                     StockFileDownloadNUploadHistoryResponse stockFileDownloadNUploadHistoryResponse = flipkartSellerPanelService.getStockFileDownloadNUploadHistory();
                                     stockfilePath = getStockFile(stockFileDownloadNUploadHistoryResponse);
-                                    LOGGER.info("Stock file generation completed.");
+                                    LOGGER.info("Stock file generation completed, filePath {}", stockfilePath);
                                 }
                             }
                             else {
@@ -1422,6 +1422,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
 
         String onHoldOrderReport = "/tmp/" + TenantRequestContext.current().getHttpSenderIdentifier() + "-" + UUID.randomUUID() + "pendency" + ".csv";
         flipkartSellerPanelService.getOnHoldOrdersReport(onHoldOrderReport);
+        LOGGER.info("Onhold orders report downloaded, filepath {}", onHoldOrderReport);
         Iterator<Row> rows = null;
         try {
             rows = new FKDelimitedFileParser(onHoldOrderReport).parse();
