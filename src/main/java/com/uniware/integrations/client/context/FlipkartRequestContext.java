@@ -35,10 +35,11 @@ public class FlipkartRequestContext {
 
     public FlipkartRequestContext() {
         sellerPanelHeaders.put("Accept", "application/json, text/javascript, */*; q=0.01");
-        sellerPanelHeaders.put("Accept-Encoding", "gzip");
+        sellerPanelHeaders.put("Accept-Encoding", "gzip, deflate, br");
         sellerPanelHeaders.put("X-Requested-With", "XMLHttpRequest");
         sellerPanelHeaders.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36");
         sellerPanelHeaders.put("Content-Type", "application/json");
+        sellerPanelHeaders.put("Host", "seller.flipkart.com");
     }
 
     public FlipkartRequestContext(FlipkartRequestContext flipkartRequestContext) {
@@ -46,7 +47,7 @@ public class FlipkartRequestContext {
         setRequestURI(flipkartRequestContext.getRequestURI());
         setRequestIdentifier(flipkartRequestContext.getRequestIdentifier());
         setSellerPanelHeaders(flipkartRequestContext.getSellerPanelHeaders());
-        setSellerId(this.sellerId = flipkartRequestContext.getSellerId());
+        setSellerId(flipkartRequestContext.getSellerId());
         setLocationId(flipkartRequestContext.getLocationId());
         setUserName(flipkartRequestContext.getUserName());
         setPassword(flipkartRequestContext.getPassword());

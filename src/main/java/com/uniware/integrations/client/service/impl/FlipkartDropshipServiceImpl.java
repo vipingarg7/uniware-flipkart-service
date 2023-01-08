@@ -409,6 +409,10 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             }
 
             if ( !catalogPreProcessorRequest.isAsyncRun() ) {
+                boolean fetchCsrfToken = flipkartSellerPanelService.fetchCsrfToken();
+                if ( !fetchCsrfToken ) {
+                    return ResponseUtil.failure("Unable to fetch CsrfToken");
+                }
                 EnqueDownloadRequest enqueDownloadRequest = prepareEnqueStockFileRequest();
                 boolean isRequestStockFileSuccessful = flipkartSellerPanelService.requestStockFile(enqueDownloadRequest);
                 if (isRequestStockFileSuccessful) {
@@ -430,7 +434,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                         Lock lock = lockingService.getLock(Namespace.CHANNEL_CATALOG_SYNC_DO, FlipkartRequestContext.current().getSellerId(), Level.TENANT);
                         boolean lockAcquired = false;
                         try {
-                            lockAcquired = lock.tryLock(10, TimeUnit.SECONDS);
+                            lockAcquired = lock.tryLock(100, TimeUnit.MILLISECONDS);
                             if (lockAcquired) {
                                 stockfilePath = checkIfStockFileExistAtLocal();
                                 if ( StringUtils.isBlank(stockfilePath) ) {
@@ -438,6 +442,10 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                                     stockfilePath = getStockFile(stockFileDownloadNUploadHistoryResponse);
                                     LOGGER.info("Stock file generation completed.");
                                 }
+                            }
+                            else {
+                                catalogPreProcessorResponse.setReportStatus(CatalogPreProcessorResponse.Status.PROCESSING);
+                                return ResponseUtil.success("Unable to aquire lock, will sync catalog in next async run", catalogPreProcessorResponse);
                             }
                         } catch (InterruptedException e) {
                             e.printStackTrace();
@@ -494,7 +502,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
             return ResponseUtil.failure("Unable to fetch pendency of Approved shipments");
         }
 
-        boolean isPendencyFetchedForOnHoldsShipments = getPendencyOfOnHoldsOrders(channelProductIdToPendency);
+        boolean isPendencyFetchedForOnHoldsShipments = getPendencyOfOnHoldOrdersFromReport(channelProductIdToPendency);
         if ( !isPendencyFetchedForOnHoldsShipments) {
             return ResponseUtil.failure("Unable to fetch pendency of OnHold Orders");
         }
@@ -1409,6 +1417,68 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
         return fetchOnHoldOrderRequest;
     }
 
+    // Fetching onhold orders from report instead of scraping API, assuming number of ONHOLD orders count is low.
+    private boolean getPendencyOfOnHoldOrdersFromReport(Map<String,Pendency> channelProductIdToPendency) {
+
+        String onHoldOrderReport = "/tmp/" + TenantRequestContext.current().getHttpSenderIdentifier() + "-" + UUID.randomUUID() + "pendency" + ".csv";
+        flipkartSellerPanelService.getOnHoldOrdersReport(onHoldOrderReport);
+        Iterator<Row> rows = null;
+        try {
+            rows = new FKDelimitedFileParser(onHoldOrderReport).parse();
+        }
+        catch (Exception ex) {
+            LOGGER.error("Exception occur while parsing stock file, exception : {}", ex);
+            return false;
+        }
+
+        int shipmentBatchSize = 20;
+        boolean hasAnyOnHoldShipment = false;
+        ArrayList<ArrayList<String>> shipmentIdsInBatches= new ArrayList<>();
+        int counter = 0;
+        int batchCounter = 0;
+        while (rows.hasNext()) {
+            Row row = rows.next();
+            if ( shipmentIdsInBatches.size() == batchCounter ) {
+                shipmentIdsInBatches.add(new ArrayList<>());
+            }
+            shipmentIdsInBatches.get(batchCounter).add(row.getColumnValue("Shipment ID"));
+            counter++;
+            if ( counter % shipmentBatchSize == 0) {
+                counter = 0;
+                batchCounter++;
+            }
+            hasAnyOnHoldShipment = true;
+        }
+        
+        if ( !hasAnyOnHoldShipment ) {
+            LOGGER.info("There is not any shipment in ONHOLD state");
+            return true;
+        }
+
+        for (ArrayList<String> shipmentIds: shipmentIdsInBatches) {
+            String commaSepratedShipmentIds = StringUtils.join(shipmentIds);
+            ShipmentDetailsV3WithSubPackages shipmentDetails = flipkartSellerApiService.getShipmentDetailsWithSubPackages(commaSepratedShipmentIds);
+            for (Shipment shipment: shipmentDetails.getShipments()) {
+                int qty = 0;
+                for (OrderItem orderItem: shipment.getOrderItems()) {
+                    String listingId = orderItem.getListingId();
+                    qty += orderItem.getQuantity();
+                    if (channelProductIdToPendency.computeIfPresent(listingId, (key, val) -> val.addRequiredInventory(orderItem.getQuantity())) == null) {
+                        Pendency pendency = new Pendency();
+                        pendency.setChannelProductId(listingId);
+                        pendency.setProductName(orderItem.getTitle());
+                        pendency.setRequiredInventory(orderItem.getQuantity());
+                        pendency.setSellerSkuCode(orderItem.getSku().replaceAll("&quot;", ""));
+                        channelProductIdToPendency.put(listingId,pendency);
+                    }
+                    LOGGER.info("Pendency count for order : {} is : {}", shipment.getOrderItems().get(0).getOrderId(), qty);
+                }
+            }
+        }
+
+        return true;
+    }
+        
     private boolean getPendencyOfOnHoldsOrders(Map<String,Pendency> channelProductIdToPendency) {
 
         int pageNumber = 1;

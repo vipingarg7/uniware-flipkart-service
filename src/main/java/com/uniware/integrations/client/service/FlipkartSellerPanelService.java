@@ -6,13 +6,10 @@ import com.google.gson.JsonSyntaxException;
 import com.unifier.core.transport.http.HttpResponseWrapper;
 import com.unifier.core.transport.http.HttpSender;
 import com.unifier.core.transport.http.HttpTransportException;
-import com.unifier.core.utils.DateUtils;
 import com.unifier.core.utils.StringUtils;
 import com.uniware.integrations.client.context.FlipkartRequestContext;
 import com.uniware.integrations.client.dto.api.requestDto.EnqueDownloadRequest;
 import com.uniware.integrations.client.dto.api.requestDto.FetchOnHoldOrderRequest;
-import com.uniware.integrations.client.dto.api.requestDto.ListingFilterRequest;
-import com.uniware.integrations.client.dto.api.responseDto.SearchShipmentV3Response;
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadNUploadHistoryResponse;
 import com.uniware.integrations.client.dto.api.responseDto.StockFileDownloadRequestStatusResponse;
 import com.uniware.integrations.utils.http.HttpSenderFactory;
@@ -67,6 +64,14 @@ public class FlipkartSellerPanelService {
        Description - Checking if session is logged in or not
      */
     public boolean verifySession(){
+
+        boolean isSessionLoggedIn = isSessionLoggedIn();
+        return isSessionLoggedIn;
+
+    }
+
+    public boolean fetchCsrfToken() {
+
         Pair<String,String> sellerIdCSRFTokenPair  = getFeaturesForSeller();
         if (sellerIdCSRFTokenPair!=null) {
             LOGGER.info("SellerID:{}, CSRF Token:{}", sellerIdCSRFTokenPair.getFirst(), sellerIdCSRFTokenPair.getSecond());
@@ -75,6 +80,7 @@ public class FlipkartSellerPanelService {
             return true;
         }
         return false;
+
     }
 
     /*
@@ -153,6 +159,41 @@ public class FlipkartSellerPanelService {
         return null;
     }
 
+    public boolean isSessionLoggedIn(){
+        HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
+        HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
+        String apiEndpoint = "/napi/listing/mspEnabled";
+
+        try {
+            String mpsEnabledResponse = httpSender.executeGet(SELLER_PANEL_URL + apiEndpoint, Collections.emptyMap(), Collections.emptyMap(), httpResponseWrapper);
+            if (httpResponseWrapper.getResponseStatus().equals(HttpStatus.TOO_MANY_REQUESTS)) {
+                LOGGER.error("Got http error for TOO_MANY_REQUESTS, resposne:{} ", mpsEnabledResponse);
+                Thread.sleep(1000);
+                mpsEnabledResponse = httpSender.executeGet(SELLER_PANEL_URL + apiEndpoint, Collections.emptyMap(), Collections.EMPTY_MAP, httpResponseWrapper);
+                if (httpResponseWrapper.getResponseStatus().equals(HttpStatus.TOO_MANY_REQUESTS)) {
+                    LOGGER.error("Got http error for TOO_MANY_REQUESTS, resposne:{} ", mpsEnabledResponse);
+                    return false;
+                }
+            } else {
+                if (StringUtils.isBlank(mpsEnabledResponse)) {
+                    LOGGER.error("Error in checking login");
+                    return false;
+                } else {
+                    if ( mpsEnabledResponse.contains("DOCTYPE html")){
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            }
+        } catch (HttpTransportException | JsonSyntaxException e) {
+            LOGGER.error("Exception while fetching mps enabled", e);
+        }
+        catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
+    }
     /*
        Description - Fetch orders with onhold status from flipkart
      */
@@ -174,6 +215,21 @@ public class FlipkartSellerPanelService {
             return response;
         }
         catch (HttpTransportException ex) {
+            LOGGER.error("Something went wrong apiEndpoint {}, Error {}",apiEndpoint, ex);
+            throw new FailureResponse("Something went wrong - " + apiEndpoint + " , error : " + ex.getMessage());
+        }
+    }
+
+    public void getOnHoldOrdersReport(String filePath) {
+
+        HttpSender httpSender = HttpSenderFactory.getHttpSender(FlipkartRequestContext.current().getUserName());
+        HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper();
+        String apiEndpoint = "/napi/orders/download_csv_v3?state=shipments_upcoming&payload[pagination][page_num]=1&payload[pagination][page_size]=200&payload[params][seller_id]="+ FlipkartRequestContext.current().getSellerId()+ "&payload[params][on_hold]=true&locationId=" + FlipkartRequestContext.current().getLocationId() +"&sellerId=" + FlipkartRequestContext.current().getSellerId();
+
+        try {
+            httpSender.downloadToFile(SELLER_PANEL_URL + apiEndpoint, Collections.EMPTY_MAP, Collections.EMPTY_MAP, HttpSender.MethodType.GET, filePath,httpResponseWrapper);
+            handleResponseCode(null,httpResponseWrapper);
+        } catch (HttpTransportException ex) {
             LOGGER.error("Something went wrong apiEndpoint {}, Error {}",apiEndpoint, ex);
             throw new FailureResponse("Something went wrong - " + apiEndpoint + " , error : " + ex.getMessage());
         }
