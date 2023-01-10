@@ -7,20 +7,8 @@ import java.util.List;
 
 public class DispatchRequest {
 
-    @SerializedName("facilityId")
-    private String facilityId = null;
-
-    @SerializedName("validTrackingLength")
-    private Boolean validTrackingLength = null;
-
-    @SerializedName("dispatchDateValid")
-    private Boolean dispatchDateValid = null;
-
     @SerializedName("shipmentId")
     private String shipmentId = null;
-
-    @SerializedName("tentativeDeliveryDateValid")
-    private Boolean tentativeDeliveryDateValid = null;
 
     @SerializedName("locationId")
     private String locationId = null;
@@ -40,60 +28,6 @@ public class DispatchRequest {
     @SerializedName("dispatchDate")
     private String dispatchDate = null;
 
-    public DispatchRequest facilityId(String facilityId) {
-        this.facilityId = facilityId;
-        return this;
-    }
-
-    /**
-     * Get facilityId
-     * @return facilityId
-     **/
-    
-    public String getFacilityId() {
-        return facilityId;
-    }
-
-    public void setFacilityId(String facilityId) {
-        this.facilityId = facilityId;
-    }
-
-    public DispatchRequest validTrackingLength(Boolean validTrackingLength) {
-        this.validTrackingLength = validTrackingLength;
-        return this;
-    }
-
-    /**
-     * Get validTrackingLength
-     * @return validTrackingLength
-     **/
-    
-    public Boolean isValidTrackingLength() {
-        return validTrackingLength;
-    }
-
-    public void setValidTrackingLength(Boolean validTrackingLength) {
-        this.validTrackingLength = validTrackingLength;
-    }
-
-    public DispatchRequest dispatchDateValid(Boolean dispatchDateValid) {
-        this.dispatchDateValid = dispatchDateValid;
-        return this;
-    }
-
-    /**
-     * Get dispatchDateValid
-     * @return dispatchDateValid
-     **/
-    
-    public Boolean isDispatchDateValid() {
-        return dispatchDateValid;
-    }
-
-    public void setDispatchDateValid(Boolean dispatchDateValid) {
-        this.dispatchDateValid = dispatchDateValid;
-    }
-
     public DispatchRequest shipmentId(String shipmentId) {
         this.shipmentId = shipmentId;
         return this;
@@ -112,24 +46,6 @@ public class DispatchRequest {
         this.shipmentId = shipmentId;
     }
 
-    public DispatchRequest tentativeDeliveryDateValid(Boolean tentativeDeliveryDateValid) {
-        this.tentativeDeliveryDateValid = tentativeDeliveryDateValid;
-        return this;
-    }
-
-    /**
-     * Get tentativeDeliveryDateValid
-     * @return tentativeDeliveryDateValid
-     **/
-    
-    public Boolean isTentativeDeliveryDateValid() {
-        return tentativeDeliveryDateValid;
-    }
-
-    public void setTentativeDeliveryDateValid(Boolean tentativeDeliveryDateValid) {
-        this.tentativeDeliveryDateValid = tentativeDeliveryDateValid;
-    }
-
     public DispatchRequest locationId(String locationId) {
         this.locationId = locationId;
         return this;
@@ -146,18 +62,6 @@ public class DispatchRequest {
 
     public void setLocationId(String locationId) {
         this.locationId = locationId;
-    }
-
-    public Boolean getValidTrackingLength() {
-        return validTrackingLength;
-    }
-
-    public Boolean getDispatchDateValid() {
-        return dispatchDateValid;
-    }
-
-    public Boolean getTentativeDeliveryDateValid() {
-        return tentativeDeliveryDateValid;
     }
 
     public Invoice getInvoice() {
@@ -241,12 +145,10 @@ public class DispatchRequest {
     }
 
     @Override public String toString() {
-        return "DispatchRequest{" + "facilityId='" + facilityId + '\'' + ", validTrackingLength=" + validTrackingLength
-                + ", dispatchDateValid=" + dispatchDateValid + ", shipmentId='" + shipmentId + '\''
-                + ", tentativeDeliveryDateValid=" + tentativeDeliveryDateValid + ", locationId='" + locationId + '\''
-                + ", invoice=" + invoice + ", trackingId='" + trackingId + '\'' + ", tentativeDeliveryDate="
-                + tentativeDeliveryDate + ", deliveryPartner='" + deliveryPartner + '\'' + ", dispatchDate="
-                + dispatchDate + '}';
+        return "DispatchRequest{" + "shipmentId='" + shipmentId + '\'' + ", locationId='" + locationId + '\''
+                + ", invoice=" + invoice + ", trackingId='" + trackingId + '\'' + ", tentativeDeliveryDate='"
+                + tentativeDeliveryDate + '\'' + ", deliveryPartner='" + deliveryPartner + '\'' + ", dispatchDate='"
+                + dispatchDate + '\'' + '}';
     }
 
     public static class Invoice {
