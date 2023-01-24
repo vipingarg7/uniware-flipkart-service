@@ -760,7 +760,6 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                         dimensions = new Dimensions().defaultDimensions();
                     }
                     shipmentPackV3Request.getShipments().get(0).getSubShipments().get(0).setDimensions(dimensions);
-                    shipmentPackV3Response = flipkartSellerApiService.packShipment(shipmentPackV3Request);
                 } else {
                     throw new FailureResponse("Unable to generate invoice, error : " + shipmentResponse.getErrorMessage());
                 }
@@ -769,7 +768,7 @@ public class FlipkartDropshipServiceImpl extends AbstractSalesFlipkartService {
                 return confirmIfShipmentPacked(shippingPackage.getSaleOrder().getCode());
             }
 
-        } while ( retryableError );
+        } while ( retryableError && packShipmentFailureCount < 3);
 
         return false;
     }
