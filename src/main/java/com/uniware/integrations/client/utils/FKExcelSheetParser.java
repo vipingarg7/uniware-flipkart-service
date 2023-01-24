@@ -113,12 +113,6 @@ public class FKExcelSheetParser implements FileParser {
         }
     }
 
-    public static void main(String[] args) {
-        FKExcelSheetParser ex = new FKExcelSheetParser("/tmp/vipin_2022-10-19.xls");
-        ex.parse();
-        System.out.println("done");
-    }
-
     private Iterator<Row> parseXLS(int skipInitialLines) {
         try {
             HSSFWorkbook workbook = new HSSFWorkbook(new FileInputStream(file));

@@ -10,11 +10,10 @@ import org.springframework.context.annotation.PropertySources;
 
 @PropertySources(
         {
-                @PropertySource("classpath:/flipkart_dropship/flipkartDropship-prod.properties"),
+                @PropertySource("classpath:/flipkart/flipkart-prod.properties"),
         }
 )
 @Configuration
 public class ConfigurationManager {
-
 
 }
