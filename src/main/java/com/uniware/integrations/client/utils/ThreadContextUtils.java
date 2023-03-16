@@ -2,7 +2,7 @@ package com.uniware.integrations.client.utils;
 
 import com.unifier.core.utils.StringUtils;
 import com.uniware.integrations.client.context.FlipkartRequestContext;
-import com.uniware.integrations.web.context.TenantRequestContext;
+import com.unicommerce.platform.web.context.TenantRequestContext;
 
 /**
  * Created by vipin on 20/05/22.

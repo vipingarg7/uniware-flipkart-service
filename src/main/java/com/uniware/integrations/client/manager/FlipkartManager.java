@@ -2,7 +2,7 @@ package com.uniware.integrations.client.manager;
 
 import com.uniware.integrations.client.annotation.FlipkartClient;
 import com.uniware.integrations.client.constants.ChannelSource;
-import com.uniware.integrations.client.service.FlipkartService;
+import com.uniware.integrations.flipkart.services.FlipkartService;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.PostConstruct;
@@ -30,21 +30,28 @@ public class FlipkartManager {
             for (ChannelSource channelSource: flipkartClient.channelSource()) {
                 flipkartModelsMap.putIfAbsent(channelSource,new HashMap<String, FlipkartService>());
                 Map<String, FlipkartService> flipkartServiceVersionMap= flipkartModelsMap.get(channelSource);
-                if(null==flipkartServiceVersionMap.get(flipkartClient.version())){
-                    flipkartServiceVersionMap.put(flipkartClient.version(),(FlipkartService) bean);
-                }else{
+                String moduleVersionIdentifier = getModuleVersionIdentifier(flipkartClient.module(),flipkartClient.version());
+                if( null == flipkartServiceVersionMap.get(moduleVersionIdentifier) ) {
+                    flipkartServiceVersionMap.put(moduleVersionIdentifier,(FlipkartService) bean);
+                } else {
                     throw new RuntimeException("Multiple versions found for ->" +flipkartClient.toString());
                 }
             }
         });
     }
 
-    public FlipkartService getFlipkartModel(String version, ChannelSource channelSource) {
+    public FlipkartService getFlipkartModel(String module, String version, ChannelSource channelSource) {
         Map<String, FlipkartService> flipkartServiceVersionMap = flipkartModelsMap.get(channelSource);
+        String moduleVersionIdentifier = getModuleVersionIdentifier(module, version);
         if (flipkartServiceVersionMap != null) {
-            return flipkartServiceVersionMap.get(version);
+            return flipkartServiceVersionMap.get(moduleVersionIdentifier);
         } else {
             return null;
         }
     }
+
+    public String getModuleVersionIdentifier(String module, String version) {
+        return new StringBuilder().append(module).append('_').append(version).toString();
+    }
+
 }

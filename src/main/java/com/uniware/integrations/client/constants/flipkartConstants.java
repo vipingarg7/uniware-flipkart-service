@@ -16,7 +16,7 @@ public class flipkartConstants {
     public static final String FLIPKART_INVENTORY_PANEL = "FLIPKART_INVENTORY_PANEL";
     public static final String DOWNLOADING = "DOWNLOADING";
     public static final String FAILED = "FAILED";
-    public static final String FLIPKART = "FLIPKART";
+    public static final String FLIPKART = "FLIPKART_DROPSHIP";
     public static final String FLIPKART_FA = "FLIPKART_FA";
     public static final String FLIPKART_OMNI = "FLIPKART_OMNI";
     public static final String FLIPKART_LITE = "FLIPKART_LITE";
@@ -50,5 +50,7 @@ public class flipkartConstants {
 
     public static final String COMPLETED = "COMPLETED";
     public static final String PENDENCY = "PENDENCY";
+    public static final String CSV = "csv";
+    public static final String PDF = "pdf";
 
 }

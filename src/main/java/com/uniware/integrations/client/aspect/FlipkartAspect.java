@@ -24,7 +24,7 @@ public class FlipkartAspect {
 
     private static final Logger LOG  = LoggerFactory.getLogger(FlipkartAspect.class);
 
-    @Around("execution(* com.uniware.integrations.client.service.FlipkartSellerApiService.*(..)) || execution(* com.uniware.integrations.client.service.FlipkartSellerPanelService.*(..))")
+    @Around("execution(* com.uniware.integrations.flipkart.services.FlipkartSellerApiService.*(..)) || execution(* com.uniware.integrations.flipkart.services.FlipkartSellerPanelService.*(..))")
     public Object capture(final ProceedingJoinPoint pjp) throws Throwable {
 
         MethodSignature signature = (MethodSignature) pjp.getSignature();

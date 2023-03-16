@@ -12,6 +12,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface FlipkartClient {
+
+    // module is integration module like - connectorAuth, order etc
+    String module();
+
+    // version is used of versioning of service
     String version();
+
+    // channelSource is different type of sources like - flipkart_dropship, flipkart_omni, flipkart_fa etc
     ChannelSource[] channelSource();
 }

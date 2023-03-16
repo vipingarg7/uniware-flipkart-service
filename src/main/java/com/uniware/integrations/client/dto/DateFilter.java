@@ -72,7 +72,7 @@ public class DateFilter {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("class DateFilter {\n");
+        sb.append("class DateRange {\n");
 
         sb.append("    to: ").append(toIndentedString(to)).append("\n");
         sb.append("    from: ").append(toIndentedString(from)).append("\n");
