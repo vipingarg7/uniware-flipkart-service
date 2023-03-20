@@ -75,7 +75,7 @@ public class dropshipShipmentServiceImpl implements IShipmentService {
 
     @Autowired FlipkartHelperService flipkartHelperService;
     @Autowired private FlipkartSellerApiService flipkartSellerApiService;
-    private S3Service s3Service;
+    @Autowired private S3Service s3Service;
     private static final Logger LOGGER = LoggerFactory.getLogger(dropshipShipmentServiceImpl.class);
 
     @Override public InvoiceCreateResponse createInvoice(InvoiceCreateRequest invoiceCreateRequest) {
@@ -133,7 +133,6 @@ public class dropshipShipmentServiceImpl implements IShipmentService {
 
         });
 
-        // todo collectionUtils
         if ( packedShipments.size() != 0) {
             packShipments(approvedShipments, shipmentIdToUniwareShipment, shipmentIdToFlipkartShipment, failedShipmentToError);
         }
